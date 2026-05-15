@@ -203,36 +203,13 @@
 
 <!-- TABS -->
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('status',this)">📋 Status</div>
-  <div class="tab" onclick="switchTab('gantt',this)">📊 Gantt</div>
+  <div class="tab active" onclick="switchTab('gantt',this)">📊 Gantt</div>
   <div class="tab" onclick="switchTab('report',this)">📝 Status Report</div>
   <div class="tab" onclick="switchTab('reqs',this)">📦 Requisições</div>
 </div>
 
-<!-- TAB: STATUS -->
-<div id="tab-status" class="tab-panel active">
-  <!-- KPI HERO -->
-  <div class="kpi-hero">
-    <div class="kpi-hero-label">Marcos Concluídos</div>
-    <div class="kpi-hero-val" id="kpi-pct">–</div>
-    <div class="kpi-hero-sub" id="kpi-sub">–</div>
-  </div>
-  <!-- KPI STRIP (filtros) -->
-  <div class="kpi-strip" id="kpi-strip">
-    <div class="strip-item-all active-filter" id="strip-all" onclick="filterStatus(null,this)">
-      <span class="strip-all-val" id="strip-total">–</span>
-      <span class="strip-all-label">Todos</span>
-    </div>
-  </div>
-  <!-- EIXO LIST -->
-  <div class="eixo-section">
-    <div class="section-title" id="filter-label">Status por Eixo</div>
-    <div id="eixo-list"><div class="loading"><div class="spinner"></div><br>Carregando dados...</div></div>
-  </div>
-</div>
-
 <!-- TAB: GANTT -->
-<div id="tab-gantt" class="tab-panel">
+<div id="tab-gantt" class="tab-panel active">
   <div class="eixo-section" style="padding-top:12px">
     <div class="section-title">Cronograma por Eixo</div>
     <div id="gantt-list"><div class="loading"><div class="spinner"></div><br>Carregando...</div></div>
@@ -673,23 +650,18 @@ function renderGantt(){
   const el=document.getElementById('gantt-list');
   if(!WBS.length){el.innerHTML='<div class="empty">Sem dados</div>';return;}
   const{mn,mx}=getProjectRange();
-  el.innerHTML=WBS.map((e,ei)=>`
-    <div class="eixo-card">
-      <div class="eixo-header" onclick="toggleGanttEixo('ge${ei}')">
+  el.innerHTML=WBS.map(e=>`
+    <div class="eixo-card" style="margin-bottom:12px">
+      <div class="eixo-header" style="cursor:default">
         <span class="eixo-id">${e.id}</span>
         <span class="eixo-name">${escHtml(e.name)}</span>
         <span class="eixo-chip ${S_COLOR[e.status]||'s-iniciar'}">${S_LABEL[e.status]||e.status}</span>
-        <span class="eixo-chev" id="gec-ge${ei}">▶</span>
       </div>
-      <div class="eixo-body" id="geb-ge${ei}">
+      <div style="background:#fff;padding:4px 0">
         <div class="gantt-hint">← Role para ver o cronograma completo →</div>
         <div class="gantt-scroll">${buildGanttSVG(e.children,mn,mx)}</div>
       </div>
     </div>`).join('');
-}
-function toggleGanttEixo(key){
-  const b=document.getElementById('geb-'+key),c=document.getElementById('gec-'+key);
-  const o=b.classList.toggle('open');c.style.transform=o?'rotate(90deg)':'';
 }
 
 /* ── TAB SWITCH ── */
@@ -715,9 +687,9 @@ async function loadData(){
     const MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     document.getElementById('header-date').textContent=`${String(now.getDate()).padStart(2,'0')} ${MONTHS[now.getMonth()]} ${now.getFullYear()} · MAZ ELD`;
     document.getElementById('refresh-time').textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-    renderKPIs();renderEixos();renderGantt();renderStatusReport();renderReqs();
+    renderGantt();renderStatusReport();renderReqs();
   }catch(err){
-    document.getElementById('eixo-list').innerHTML=`<div class="error-msg">Erro: ${escHtml(err.message)}</div>`;
+    document.getElementById('gantt-list').innerHTML=`<div class="error-msg">Erro: ${escHtml(err.message)}</div>`;
   }
   btn.disabled=false;btn.textContent='⟳ Atualizar';
 }
