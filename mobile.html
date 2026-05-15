@@ -111,17 +111,35 @@
 
   /* STATUS REPORT TAB */
   .sr-card{background:var(--card);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-  .sr-header{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#6BA030;cursor:pointer}
-  .sr-eixo-name{font-size:13px;font-weight:700;color:#FFF;flex:1;line-height:1.2}
-  .sr-body{overflow:hidden;transition:max-height .3s ease;max-height:0;padding:0}
-  .sr-body.open{max-height:9999px}
-  .sr-grupo{border-bottom:1px solid var(--border);padding:10px 12px}
-  .sr-grupo:last-child{border-bottom:none}
-  .sr-grupo-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px}
-  .sr-field{margin-bottom:6px}
-  .sr-field-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#0077AA;margin-bottom:2px}
-  .sr-field-text{font-size:12px;color:var(--text);line-height:1.5;white-space:pre-wrap}
-  .sr-empty{font-size:11px;color:var(--muted);font-style:italic}
+  .sr-eixo-header{display:flex;align-items:center;gap:8px;padding:12px 12px;background:#6BA030;cursor:pointer;min-height:48px}
+  .sr-eixo-name{font-size:13px;font-weight:700;color:#FFF;flex:1;line-height:1.25}
+  .sr-eixo-body{overflow:hidden;transition:max-height .35s ease;max-height:0}
+  .sr-eixo-body.open{max-height:9999px}
+  /* grupo inside SR */
+  .sr-grupo-item{border-bottom:1px solid var(--border)}
+  .sr-grupo-item:last-child{border-bottom:none}
+  .sr-grupo-header{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#F0F7E8;cursor:pointer;min-height:44px}
+  .sr-grupo-header:active{background:#E0EDD5}
+  .sr-grupo-name{font-size:13px;font-weight:700;color:var(--text);flex:1;line-height:1.3}
+  .sr-grupo-body{overflow:hidden;transition:max-height .3s ease;max-height:0;background:#FAFBFC}
+  .sr-grupo-body.open{max-height:9999px}
+  /* marco inside SR */
+  .sr-marco{padding:10px 14px 10px 24px;border-bottom:1px solid #EEF2F6}
+  .sr-marco:last-child{border-bottom:none}
+  .sr-marco-header{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+  .sr-marco-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .sr-marco-name{font-size:12px;font-weight:700;color:var(--text);flex:1;line-height:1.3}
+  .sr-marco-chip{font-size:10px;font-weight:800;padding:2px 7px;border-radius:3px;color:#FFF;white-space:nowrap;flex-shrink:0}
+  /* field blocks */
+  .sr-field{margin-top:6px;border-radius:6px;overflow:hidden}
+  .sr-field-label{font-size:9px;font-weight:800;letter-spacing:.8px;padding:4px 10px;display:block}
+  .sr-field-label.prog{background:#DBEAFE;color:#0077AA}
+  .sr-field-label.enc{background:#F3E8FF;color:#7C3AED}
+  .sr-field-text{font-size:12px;color:#0F172A;line-height:1.6;padding:6px 10px;white-space:pre-wrap;background:#F8FAFC;font-weight:500}
+  .sr-no-update{font-size:11px;color:var(--muted);font-style:italic;padding:2px 0}
+  /* tarefa inside marco */
+  .sr-tarefa{padding:7px 10px 7px 16px;border-left:2px solid #E2E8F0;margin:6px 0 0 8px;background:#F8FAFC;border-radius:0 6px 6px 0}
+  .sr-tarefa-name{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
 
   /* REQS */
   .req-filters{display:flex;gap:6px;padding:10px 10px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -437,40 +455,62 @@ function toggleMarco(key){
 }
 
 /* ── STATUS REPORT ── */
+function srFields(prog,enc){
+  const hasProg=prog&&prog.trim();
+  const hasEnc=enc&&enc.trim();
+  if(!hasProg&&!hasEnc) return`<span class="sr-no-update">Sem atualização</span>`;
+  return(hasProg?`<div class="sr-field"><span class="sr-field-label prog">PROGRESSO</span><div class="sr-field-text">${escHtml(prog)}</div></div>`:'')+
+        (hasEnc?`<div class="sr-field"><span class="sr-field-label enc">ENCAMINHAMENTO</span><div class="sr-field-text">${escHtml(enc)}</div></div>`:'');
+}
+
 function renderStatusReport(){
   const el=document.getElementById('sr-list');
   if(!WBS.length){el.innerHTML='<div class="empty">Sem dados</div>';return;}
   el.innerHTML=WBS.map((e,ei)=>`
     <div class="sr-card">
-      <div class="sr-header" onclick="toggleSR('sr${ei}')">
+      <div class="sr-eixo-header" onclick="toggleSREixo('sre${ei}')">
         <span class="eixo-id" style="font-size:13px">${e.id}</span>
         <span class="sr-eixo-name">${escHtml(e.name)}</span>
         <span class="eixo-chip ${S_COLOR[e.status]||'s-iniciar'}">${S_LABEL[e.status]||e.status}</span>
-        <span class="eixo-chev" id="src-sr${ei}">▶</span>
+        <span class="eixo-chev" id="srec-sre${ei}">▶</span>
       </div>
-      <div class="sr-body" id="srb-sr${ei}">
-        ${e.children.map(g=>{
-          const hasProg=g.prog&&g.prog.trim();
-          const hasEnc=g.enc&&g.enc.trim();
-          const taskProgs=g.marcos.flatMap(m=>m.subs.filter(t=>t.prog||t.enc));
-          if(!hasProg&&!hasEnc&&!taskProgs.length)return`<div class="sr-grupo"><div class="sr-grupo-name"><span class="grupo-dot ${S_COLOR[g.status]||'s-iniciar'}" style="width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0"></span>${escHtml(g.name)}</div><div class="sr-empty">Sem atualizações desta semana</div></div>`;
-          return`<div class="sr-grupo">
-            <div class="sr-grupo-name"><span class="grupo-dot ${S_COLOR[g.status]||'s-iniciar'}" style="width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0"></span>${escHtml(g.name)}</div>
-            ${hasProg?`<div class="sr-field"><div class="sr-field-label">Progresso</div><div class="sr-field-text">${escHtml(g.prog)}</div></div>`:''}
-            ${hasEnc?`<div class="sr-field"><div class="sr-field-label">Encaminhamento</div><div class="sr-field-text">${escHtml(g.enc)}</div></div>`:''}
-            ${taskProgs.map(t=>`
-              <div class="sr-field" style="margin-top:6px;border-top:1px dashed #E2E8F0;padding-top:6px">
-                <div class="sr-field-label" style="color:var(--muted)">${escHtml(t.tarefa)}</div>
-                ${t.prog?`<div class="sr-field"><div class="sr-field-label">Progresso</div><div class="sr-field-text">${escHtml(t.prog)}</div></div>`:''}
-                ${t.enc?`<div class="sr-field"><div class="sr-field-label">Encaminhamento</div><div class="sr-field-text">${escHtml(t.enc)}</div></div>`:''}
-              </div>`).join('')}
+      <div class="sr-eixo-body" id="sreb-sre${ei}">
+        ${e.children.map((g,gi)=>{
+          const gKey=`sre${ei}g${gi}`;
+          return`<div class="sr-grupo-item">
+            <div class="sr-grupo-header" onclick="toggleSRGrupo('${gKey}')">
+              <span class="grupo-dot ${S_COLOR[g.status]||'s-iniciar'}" style="width:9px;height:9px;border-radius:50%;flex-shrink:0"></span>
+              <span class="sr-grupo-name">${escHtml(g.name)}</span>
+              <span class="grupo-chip ${S_COLOR[g.status]||'s-iniciar'}">${S_LABEL[g.status]||g.status}</span>
+              <span class="grupo-chev" id="srgc-${gKey}">▶</span>
+            </div>
+            <div class="sr-grupo-body" id="srgb-${gKey}">
+              ${g.marcos.map((m,mi)=>`
+                <div class="sr-marco">
+                  <div class="sr-marco-header">
+                    <span class="sr-marco-dot ${S_COLOR[m.status]||'s-iniciar'}"></span>
+                    <span class="sr-marco-name">${escHtml(m.tarefa)}</span>
+                    <span class="sr-marco-chip ${S_COLOR[m.status]||'s-iniciar'}">${S_LABEL[m.status]||m.status}</span>
+                  </div>
+                  ${srFields(m.prog,m.enc)}
+                  ${m.subs.map(t=>`
+                    <div class="sr-tarefa">
+                      <div class="sr-tarefa-name">${escHtml(t.tarefa)}</div>
+                      ${srFields(t.prog,t.enc)}
+                    </div>`).join('')}
+                </div>`).join('')}
+            </div>
           </div>`;
         }).join('')}
       </div>
     </div>`).join('');
 }
-function toggleSR(key){
-  const b=document.getElementById('srb-'+key),c=document.getElementById('src-'+key);
+function toggleSREixo(key){
+  const b=document.getElementById('sreb-'+key),c=document.getElementById('srec-'+key);
+  const o=b.classList.toggle('open');c.style.transform=o?'rotate(90deg)':'';
+}
+function toggleSRGrupo(key){
+  const b=document.getElementById('srgb-'+key),c=document.getElementById('srgc-'+key);
   const o=b.classList.toggle('open');c.style.transform=o?'rotate(90deg)':'';
 }
 
