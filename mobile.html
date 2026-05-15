@@ -473,7 +473,7 @@ function renderStatusReport(){
         <span class="eixo-chip ${S_COLOR[e.status]||'s-iniciar'}">${S_LABEL[e.status]||e.status}</span>
         <span class="eixo-chev" id="srec-sre${ei}">▶</span>
       </div>
-      <div class="sr-eixo-body" id="sreb-sre${ei}">
+      <div class="sr-eixo-body" id="sreb-sre${ei}" style="display:none">
         ${e.children.map((g,gi)=>{
           const gKey=`sre${ei}g${gi}`;
           return`<div class="sr-grupo-item">
@@ -483,7 +483,7 @@ function renderStatusReport(){
               <span class="grupo-chip ${S_COLOR[g.status]||'s-iniciar'}">${S_LABEL[g.status]||g.status}</span>
               <span class="grupo-chev" id="srgc-${gKey}">▶</span>
             </div>
-            <div class="sr-grupo-body" id="srgb-${gKey}">
+            <div class="sr-grupo-body" id="srgb-${gKey}" style="display:none">
               ${g.marcos.map((m,mi)=>{
                 const mKey=`sre${ei}g${gi}m${mi}`;
                 return`<div class="sr-marco">
@@ -493,7 +493,7 @@ function renderStatusReport(){
                     <span class="sr-marco-chip ${S_COLOR[m.status]||'s-iniciar'}">${S_LABEL[m.status]||m.status}</span>
                     <span class="grupo-chev" id="srmc-${mKey}">▶</span>
                   </div>
-                  <div class="sr-marco-body" id="srmb-${mKey}">
+                  <div class="sr-marco-body" id="srmb-${mKey}" style="display:none">
                     ${srFields(m.prog,m.enc)}
                     ${m.subs.map(t=>`
                       <div class="sr-tarefa">
