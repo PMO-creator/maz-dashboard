@@ -688,37 +688,92 @@ function buildGanttSVG(groups,mn,mx){
   return s;
 }
 
+function ganttBar(start,end,status){
+  const gs=validDate(start),ge=validDate(end);
+  if(!gs||!ge)return'<span style="font-size:10px;color:#CBD5E1">Sem data</span>';
+  const col=GANTT_COLOR[status]||'#5A6E85';
+  const today=new Date();
+  const pct=Math.round(Math.min(100,Math.max(0,(today-gs)/(ge-gs)*100)));
+  const s=start.substring(5),e=end.substring(5);
+  return`<div style="display:flex;align-items:center;gap:6px;padding:2px 0">
+    <div style="flex:1;height:5px;background:#E2E8F0;border-radius:3px;overflow:hidden;min-width:40px">
+      <div style="width:${pct}%;height:100%;background:${col};border-radius:3px"></div>
+    </div>
+    <span style="font-size:10px;color:#64748B;white-space:nowrap">${s}→${e}</span>
+  </div>`;
+}
+
 function renderGantt(){
   const el=document.getElementById('gantt-list');
   if(!WBS.length){el.innerHTML='<div class="empty">Sem dados</div>';return;}
-  const{mn,mx}=getProjectRange();
   el.innerHTML=WBS.map((e,ei)=>`
     <div class="eixo-card">
-      <div class="eixo-header" onclick="toggleGanttEixo('ge${ei}',${JSON.stringify(mn.getTime())},${JSON.stringify(mx.getTime())})">
+      <div class="eixo-header" onclick="toggleGanttEixo(${ei})">
         <span class="eixo-id">${e.id}</span>
         <span class="eixo-name">${escHtml(e.name)}</span>
         <span class="eixo-chip ${S_COLOR[e.status]||'s-iniciar'}">${S_LABEL[e.status]||e.status}</span>
-        <span class="eixo-chev" id="gec-ge${ei}">▶</span>
+        <span class="eixo-chev" id="gec-${ei}">▶</span>
       </div>
-      <div class="eixo-body" id="geb-ge${ei}" style="display:none">
-        <div class="gantt-hint">← Role para ver o cronograma completo →</div>
-        <div class="gantt-scroll" id="gs-ge${ei}">${buildGanttSVG(e.children,mn,mx)}</div>
+      <div class="eixo-body" id="geb-${ei}" style="display:none">
+        ${e.children.map((g,gi)=>{
+          const gKey=`${ei}_${gi}`;
+          return`<div class="grupo-item">
+            <div class="grupo-header" onclick="toggleGanttGrupo('${gKey}')">
+              <span class="grupo-dot ${S_COLOR[g.status]||'s-iniciar'}"></span>
+              <div class="grupo-name-wrap">
+                <div class="grupo-name">${escHtml(g.name)}</div>
+                ${ganttBar(g.start,g.end,g.status)}
+              </div>
+              <span class="grupo-chip ${S_COLOR[g.status]||'s-iniciar'}">${S_LABEL[g.status]||g.status}</span>
+              <span class="grupo-chev" id="ggc-${gKey}">▶</span>
+            </div>
+            <div class="marco-body" id="ggb-${gKey}" style="display:none">
+              ${g.marcos.length?g.marcos.map((m,mi)=>{
+                const mKey=`${gKey}_${mi}`;
+                return`<div class="marco-item">
+                  <div class="marco-row" onclick="toggleGanttMarco('${mKey}')">
+                    <span class="marco-dot ${S_COLOR[m.status]||'s-iniciar'}"></span>
+                    <div class="marco-info">
+                      <div class="marco-name">${escHtml(m.tarefa)}</div>
+                      <div class="marco-meta">${ganttBar(m.start,m.end,m.status)}</div>
+                    </div>
+                    ${m.subs.length?`<span class="marco-chev" id="gmc-${mKey}">▶</span>`:''}
+                  </div>
+                  ${m.subs.length?`<div class="tarefa-body" id="gmb-${mKey}" style="display:none">
+                    ${m.subs.map(t=>`<div class="tarefa-item">
+                      <div class="tarefa-header">
+                        <span class="tarefa-chip ${S_COLOR[t.status]||'s-iniciar'}">${S_LABEL[t.status]||t.status}</span>
+                        <span class="tarefa-name">${escHtml(t.tarefa)}</span>
+                      </div>
+                      ${ganttBar(t.start,t.end,t.status)}
+                    </div>`).join('')}
+                  </div>`:''}
+                </div>`;
+              }).join(''):'<div class="empty" style="padding:10px 12px;font-size:11px">Sem marcos</div>'}
+            </div>
+          </div>`;
+        }).join('')}
       </div>
     </div>`).join('');
 }
-function toggleGanttEixo(key,mnT,mxT){
-  const b=document.getElementById('geb-'+key),c=document.getElementById('gec-'+key);
-  const opening=b.style.display==='none';
-  b.style.display=opening?'block':'none';
-  c.style.transform=opening?'rotate(90deg)':'';
-  if(opening){
-    const mn=new Date(mnT),mx=new Date(mxT);
-    const LBL=128,totalDays=Math.max(1,(mx-mn)/86400000);
-    const SCALE=Math.max(1.5,900/totalDays);
-    const scrollX=Math.max(0,(new Date()-mn)/86400000*SCALE+LBL-120);
-    const gs=document.getElementById('gs-'+key);
-    if(gs)setTimeout(()=>{gs.scrollLeft=scrollX;},50);
-  }
+function toggleGanttEixo(ei){
+  const b=document.getElementById('geb-'+ei),c=document.getElementById('gec-'+ei);
+  const o=b.style.display==='none';
+  b.style.display=o?'block':'none';
+  c.style.transform=o?'rotate(90deg)':'';
+}
+function toggleGanttGrupo(key){
+  const b=document.getElementById('ggb-'+key),c=document.getElementById('ggc-'+key);
+  const o=b.style.display==='none';
+  b.style.display=o?'block':'none';
+  c.style.transform=o?'rotate(90deg)':'';
+}
+function toggleGanttMarco(key){
+  const b=document.getElementById('gmb-'+key);if(!b)return;
+  const c=document.getElementById('gmc-'+key);
+  const o=b.style.display==='none';
+  b.style.display=o?'block':'none';
+  if(c)c.style.transform=o?'rotate(90deg)':'';
 }
 
 /* ── TAB SWITCH ── */
