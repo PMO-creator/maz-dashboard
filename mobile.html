@@ -70,8 +70,8 @@
   .eixo-chev{color:rgba(255,255,255,.7);font-size:11px;transition:transform .25s;flex-shrink:0;width:14px;text-align:center}
 
   /* GRUPO LIST inside eixo */
-  .eixo-body{overflow:hidden;transition:max-height .35s ease;max-height:0}
-  .eixo-body.open{max-height:9999px}
+  .eixo-body{display:none}
+  .eixo-body.open{display:block}
   .grupo-item{border-bottom:1px solid var(--border)}
   .grupo-item:last-child{border-bottom:none}
   .grupo-header{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;cursor:pointer;user-select:none;transition:background .1s;background:#F0F7E8;min-height:44px}
@@ -84,8 +84,8 @@
   .grupo-chev{color:var(--muted);font-size:10px;transition:transform .2s;flex-shrink:0;margin-top:4px}
 
   /* MARCO LIST inside grupo */
-  .marco-body{overflow:hidden;transition:max-height .3s ease;max-height:0;background:#FAFBFC}
-  .marco-body.open{max-height:9999px}
+  .marco-body{display:none;background:#FAFBFC}
+  .marco-body.open{display:block}
   .marco-item{border-bottom:1px solid #EEF2F6;padding:9px 14px 9px 28px;cursor:pointer}
   .marco-item:last-child{border-bottom:none}
   .marco-row{display:flex;align-items:flex-start;gap:8px}
@@ -98,8 +98,8 @@
   .marco-chev{color:var(--muted);font-size:10px;transition:transform .2s;flex-shrink:0;margin-top:2px}
 
   /* TAREFA LIST inside marco */
-  .tarefa-body{overflow:hidden;transition:max-height .3s ease;max-height:0;background:#F8FAFC}
-  .tarefa-body.open{max-height:9999px}
+  .tarefa-body{display:none;background:#F8FAFC}
+  .tarefa-body.open{display:block}
   .tarefa-item{padding:8px 12px 8px 36px;border-bottom:1px solid #EEF2F6}
   .tarefa-item:last-child{border-bottom:none}
   .tarefa-header{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}
