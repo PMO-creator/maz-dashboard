@@ -511,48 +511,47 @@ function renderStatusReport(){
 }
 function toggleSREixo(key){
   const b=document.getElementById('sreb-'+key),c=document.getElementById('srec-'+key);
-  const o=b.classList.toggle('open');c.style.transform=o?'rotate(90deg)':'';
+  const o=b.style.display==='none'||b.style.display==='';
+  b.style.display=o?'block':'none';
+  c.style.transform=o?'rotate(90deg)':'';
   if(o){
-    b.querySelectorAll('.sr-grupo-body').forEach(g=>{g.classList.remove('open');g.style.display='none';});
-    b.querySelectorAll('.sr-marco-body').forEach(m=>{m.classList.remove('open');m.style.display='none';});
+    b.querySelectorAll('.sr-grupo-body').forEach(g=>{g.style.display='none';});
+    b.querySelectorAll('.sr-marco-body').forEach(m=>{m.style.display='none';});
     b.querySelectorAll('[id^="srgc-"],[id^="srmc-"]').forEach(ch=>{ch.style.transform='';});
   }
 }
 function toggleSRGrupo(key){
   const b=document.getElementById('srgb-'+key),c=document.getElementById('srgc-'+key);
-  const isOpen=b.classList.contains('open');
-  // close all other grupo bodies in the same eixo
+  const isOpen=b.style.display==='block';
   const eixoBody=b.closest('.sr-eixo-body');
   if(eixoBody){
     eixoBody.querySelectorAll('.sr-grupo-body').forEach(g=>{
-      if(g!==b){g.classList.remove('open');g.style.display='none';}
+      if(g!==b){g.style.display='none';}
     });
     eixoBody.querySelectorAll('[id^="srgc-"]').forEach(ch=>{
       if(ch!==c){ch.style.transform='';}
     });
   }
-  if(isOpen){b.classList.remove('open');b.style.display='none';c.style.transform='';}
+  if(isOpen){b.style.display='none';c.style.transform='';}
   else{
-    b.classList.add('open');b.style.display='block';c.style.transform='rotate(90deg)';
-    // close all marco bodies inside this grupo
-    b.querySelectorAll('.sr-marco-body').forEach(m=>{m.classList.remove('open');m.style.display='none';});
+    b.style.display='block';c.style.transform='rotate(90deg)';
+    b.querySelectorAll('.sr-marco-body').forEach(m=>{m.style.display='none';});
     b.querySelectorAll('[id^="srmc-"]').forEach(ch=>{ch.style.transform='';});
   }
 }
 function toggleSRMarco(key){
   const b=document.getElementById('srmb-'+key),c=document.getElementById('srmc-'+key);
-  // close other marcos in the same grupo
   const grupoBody=b.closest('.sr-grupo-body');
   if(grupoBody){
     grupoBody.querySelectorAll('.sr-marco-body').forEach(m=>{
-      if(m!==b){m.classList.remove('open');m.style.display='none';}
+      if(m!==b){m.style.display='none';}
     });
     grupoBody.querySelectorAll('[id^="srmc-"]').forEach(ch=>{
       if(ch!==c){ch.style.transform='';}
     });
   }
-  const o=!b.classList.contains('open');
-  b.classList.toggle('open',o);b.style.display=o?'block':'none';
+  const o=b.style.display!=='block';
+  b.style.display=o?'block':'none';
   if(c)c.style.transform=o?'rotate(90deg)':'';
 }
 
