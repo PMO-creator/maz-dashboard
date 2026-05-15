@@ -689,16 +689,24 @@ function buildGanttSVG(groups,mn,mx){
 
 function ganttBar(start,end,status){
   const gs=validDate(start),ge=validDate(end);
-  if(!gs||!ge)return'<span style="font-size:10px;color:#CBD5E1">Sem data</span>';
+  if(!gs||!ge)return'<span style="font-size:10px;color:#CBD5E1;font-style:italic">Sem data definida</span>';
   const col=GANTT_COLOR[status]||'#5A6E85';
   const today=new Date();
-  const pct=Math.round(Math.min(100,Math.max(0,(today-gs)/(ge-gs)*100)));
-  const s=start.substring(5),e=end.substring(5);
-  return`<div style="display:flex;align-items:center;gap:6px;padding:2px 0">
-    <div style="flex:1;height:5px;background:#E2E8F0;border-radius:3px;overflow:hidden;min-width:40px">
-      <div style="width:${pct}%;height:100%;background:${col};border-radius:3px"></div>
+  const total=ge-gs;
+  const pct=Math.round(Math.min(100,Math.max(0,(today-gs)/total*100)));
+  const todayPct=Math.min(100,Math.max(0,(today-gs)/total*100));
+  const fmtD=d=>{const[,m,dy]=d.split('-');const mon=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];return`${+dy} ${mon[+m]}`;};
+  const todayMarker=todayPct>2&&todayPct<98?`<div style="position:absolute;left:${todayPct.toFixed(1)}%;top:-2px;bottom:-2px;width:2px;background:#FF2525;border-radius:1px;opacity:.8"></div>`:'';
+  return`<div style="padding:4px 0 2px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <span style="font-size:10px;color:#64748B">${fmtD(start)}</span>
+      <span style="font-size:10px;font-weight:800;color:${col}">${pct}%</span>
+      <span style="font-size:10px;color:#64748B">${fmtD(end)}</span>
     </div>
-    <span style="font-size:10px;color:#64748B;white-space:nowrap">${s}→${e}</span>
+    <div style="position:relative;height:10px;background:#E2E8F0;border-radius:5px;overflow:visible">
+      <div style="width:${pct}%;height:100%;background:${col};border-radius:5px;box-shadow:0 1px 3px ${col}66"></div>
+      ${todayMarker}
+    </div>
   </div>`;
 }
 
