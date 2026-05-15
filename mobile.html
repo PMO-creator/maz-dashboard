@@ -692,24 +692,33 @@ function renderGantt(){
   const el=document.getElementById('gantt-list');
   if(!WBS.length){el.innerHTML='<div class="empty">Sem dados</div>';return;}
   const{mn,mx}=getProjectRange();
-  const LBL=128;
-  const totalDays=Math.max(1,(mx-mn)/86400000);
-  const SCALE=Math.max(1.5,900/totalDays);
-  const today=new Date();
-  const scrollX=Math.max(0,(today-mn)/86400000*SCALE+LBL-120);
-  el.innerHTML=WBS.map(e=>`
-    <div class="eixo-card" style="margin-bottom:12px">
-      <div class="eixo-header" style="cursor:default">
+  el.innerHTML=WBS.map((e,ei)=>`
+    <div class="eixo-card">
+      <div class="eixo-header" onclick="toggleGanttEixo('ge${ei}',${JSON.stringify(mn.getTime())},${JSON.stringify(mx.getTime())})">
         <span class="eixo-id">${e.id}</span>
         <span class="eixo-name">${escHtml(e.name)}</span>
         <span class="eixo-chip ${S_COLOR[e.status]||'s-iniciar'}">${S_LABEL[e.status]||e.status}</span>
+        <span class="eixo-chev" id="gec-ge${ei}">▶</span>
       </div>
-      <div style="background:#fff;padding:4px 0">
+      <div class="eixo-body" id="geb-ge${ei}" style="display:none">
         <div class="gantt-hint">← Role para ver o cronograma completo →</div>
-        <div class="gantt-scroll">${buildGanttSVG(e.children,mn,mx)}</div>
+        <div class="gantt-scroll" id="gs-ge${ei}">${buildGanttSVG(e.children,mn,mx)}</div>
       </div>
     </div>`).join('');
-  el.querySelectorAll('.gantt-scroll').forEach(d=>{d.scrollLeft=scrollX;});
+}
+function toggleGanttEixo(key,mnT,mxT){
+  const b=document.getElementById('geb-'+key),c=document.getElementById('gec-'+key);
+  const opening=b.style.display==='none';
+  b.style.display=opening?'block':'none';
+  c.style.transform=opening?'rotate(90deg)':'';
+  if(opening){
+    const mn=new Date(mnT),mx=new Date(mxT);
+    const LBL=128,totalDays=Math.max(1,(mx-mn)/86400000);
+    const SCALE=Math.max(1.5,900/totalDays);
+    const scrollX=Math.max(0,(new Date()-mn)/86400000*SCALE+LBL-120);
+    const gs=document.getElementById('gs-'+key);
+    if(gs)setTimeout(()=>{gs.scrollLeft=scrollX;},50);
+  }
 }
 
 /* ── TAB SWITCH ── */
