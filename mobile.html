@@ -170,6 +170,13 @@
   .s-risco{background:var(--risco)}.s-iniciar{background:var(--iniciar)}.s-definir{background:var(--definir)}
   .s-cancel{background:var(--cancel)}
 
+  /* GANTT */
+  .gantt-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--accent) transparent;padding-bottom:6px}
+  .gantt-scroll::-webkit-scrollbar{height:4px}
+  .gantt-scroll::-webkit-scrollbar-track{background:transparent}
+  .gantt-scroll::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
+  .gantt-hint{font-size:10px;color:var(--muted);padding:6px 12px 2px;font-style:italic;text-align:center}
+
   /* FOOTER */
   .footer{text-align:center;padding:14px;font-size:10px;color:var(--muted);border-top:1px solid var(--border);margin-top:4px}
   .footer a{color:var(--accent);text-decoration:none;font-weight:700}
@@ -193,7 +200,8 @@
 <!-- TABS -->
 <div class="tabs">
   <div class="tab active" onclick="switchTab('status',this)">📋 Status</div>
-  <div class="tab" onclick="switchTab('report',this)">📊 Status Report</div>
+  <div class="tab" onclick="switchTab('gantt',this)">📊 Gantt</div>
+  <div class="tab" onclick="switchTab('report',this)">📝 Status Report</div>
   <div class="tab" onclick="switchTab('reqs',this)">📦 Requisições</div>
 </div>
 
@@ -216,6 +224,14 @@
   <div class="eixo-section">
     <div class="section-title" id="filter-label">Status por Eixo</div>
     <div id="eixo-list"><div class="loading"><div class="spinner"></div><br>Carregando dados...</div></div>
+  </div>
+</div>
+
+<!-- TAB: GANTT -->
+<div id="tab-gantt" class="tab-panel">
+  <div class="eixo-section" style="padding-top:12px">
+    <div class="section-title">Cronograma por Eixo</div>
+    <div id="gantt-list"><div class="loading"><div class="spinner"></div><br>Carregando...</div></div>
   </div>
 </div>
 
@@ -322,7 +338,9 @@ function parseWBS(rows){
       const status=s?s.status:worst(marcos.map(m=>m.status));
       const resp=s?s.resp:(marcos[0]?.resp||'');
       const prog=s?s.prog:'';const enc=s?s.enc:'';
-      return{name:gName,status,resp,prog,enc,marcos};
+      const start=s?s.start:(marcos.map(m=>m.start).filter(Boolean).sort()[0]||'');
+      const end=s?s.end:(marcos.map(m=>m.end).filter(Boolean).sort().reverse()[0]||'');
+      return{name:gName,status,resp,prog,enc,start,end,marcos};
     });
     return{id:String(idx+1),name,status:worst(children.map(c=>c.status)),children};
   });
@@ -547,6 +565,120 @@ function filterReq(status,el){
   renderReqs();
 }
 
+/* ── GANTT ── */
+const GANTT_COLOR={'Feito':'#05C46B','Em andamento':'#1A56FF','Atrasado':'#FF2525','Risco de atraso':'#FF6B00','A iniciar':'#5A6E85','Definir datas':'#92400E','Cancelado':'#374151','Cancelado/Congelado':'#374151'};
+function escSvg(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+const DATE_MIN=new Date('2024-01-01'),DATE_MAX=new Date('2027-12-31');
+function validDate(d){if(!d)return null;const dt=new Date(d);if(isNaN(dt)||dt<DATE_MIN||dt>DATE_MAX)return null;return dt;}
+
+function getProjectRange(){
+  let mn=null,mx=null;
+  WBS.forEach(e=>e.children.forEach(g=>{
+    [g.start,g.end,...g.marcos.flatMap(m=>[m.start,m.end,...m.subs.flatMap(t=>[t.start,t.end])])].forEach(d=>{
+      const dt=validDate(d);if(!dt)return;
+      if(!mn||dt<mn)mn=new Date(dt);
+      if(!mx||dt>mx)mx=new Date(dt);
+    });
+  }));
+  if(!mn)mn=new Date('2025-01-01');
+  if(!mx)mx=new Date('2026-12-31');
+  mn.setDate(1);
+  mx.setMonth(mx.getMonth()+1,0);
+  return{mn,mx};
+}
+
+function buildGanttSVG(groups,mn,mx){
+  const LBL=128,ROW=34,PAD=12;
+  const totalDays=Math.max(1,(mx-mn)/86400000);
+  const SCALE=Math.max(1.5,900/totalDays);
+  const BW=Math.ceil(totalDays*SCALE);
+  const W=LBL+BW+PAD;
+  const H=ROW*(groups.length+1.8);
+  const today=new Date();
+
+  let s=`<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="display:block">`;
+  s+=`<rect width="${W}" height="${H}" fill="#FAFBFC"/>`;
+
+  // month grid + labels
+  const cur=new Date(mn);cur.setDate(1);
+  while(cur<=mx){
+    const x=LBL+Math.max(0,(cur-mn)/86400000*SCALE);
+    s+=`<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="#E2E8F0" stroke-width="1"/>`;
+    const lbl=cur.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
+    s+=`<text x="${x+3}" y="13" font-size="9" fill="#94A3B8" font-family="sans-serif">${escSvg(lbl)}</text>`;
+    cur.setMonth(cur.getMonth()+1);
+  }
+
+  // today line
+  if(today>=mn&&today<=mx){
+    const tx=LBL+(today-mn)/86400000*SCALE;
+    s+=`<line x1="${tx}" y1="0" x2="${tx}" y2="${H}" stroke="#FF2525" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+    s+=`<text x="${tx+2}" y="13" font-size="8" fill="#FF2525" font-family="sans-serif" font-weight="700">HOJE</text>`;
+  }
+
+  // separator
+  s+=`<line x1="${LBL}" y1="0" x2="${LBL}" y2="${H}" stroke="#CBD5E1" stroke-width="1"/>`;
+  s+=`<rect width="${LBL}" height="${H}" fill="rgba(255,255,255,0.92)"/>`;
+
+  // rows
+  groups.forEach((g,i)=>{
+    const y=ROW*1.8+i*ROW;
+    if(i%2===0)s+=`<rect x="0" y="${y-ROW*0.55}" width="${W}" height="${ROW}" fill="#F1F5F9" opacity="0.6"/>`;
+
+    // label (truncated)
+    const lbl=(g.name||'').substring(0,17)+(g.name&&g.name.length>17?'…':'');
+    s+=`<text x="${LBL-6}" y="${y+4}" font-size="10.5" fill="#334155" text-anchor="end" font-family="sans-serif" font-weight="600">${escSvg(lbl)}</text>`;
+
+    // bar
+    const gs=validDate(g.start),ge=validDate(g.end);
+    if(gs&&ge){
+      const bx=LBL+Math.max(0,(gs-mn)/86400000*SCALE);
+      const ex=LBL+Math.min(BW,(ge-mn)/86400000*SCALE);
+      const bw=Math.max(8,ex-bx);
+      const col=GANTT_COLOR[g.status]||'#5A6E85';
+      s+=`<rect x="${bx}" y="${y-ROW*0.38}" width="${bw}" height="${ROW*0.76}" rx="4" fill="${col}" opacity="0.88"/>`;
+      // date label inside bar if wide enough
+      if(bw>50){
+        const barLabel=g.end.substring(5);
+        s+=`<text x="${bx+bw/2}" y="${y+4}" font-size="9" fill="#FFF" text-anchor="middle" font-family="sans-serif" font-weight="700" opacity="0.9">${escSvg(barLabel)}</text>`;
+      }
+    } else {
+      s+=`<text x="${LBL+BW/2}" y="${y+4}" font-size="9" fill="#CBD5E1" text-anchor="middle" font-family="sans-serif">sem data</text>`;
+    }
+  });
+
+  // legend header row
+  s+=`<rect x="0" y="0" width="${W}" height="${ROW*1.5}" fill="rgba(248,250,252,0.95)"/>`;
+  s+=`<rect width="${LBL}" height="${ROW*1.5}" fill="rgba(248,250,252,0.95)"/>`;
+
+  s+=`</svg>`;
+  return s;
+}
+
+function renderGantt(){
+  const el=document.getElementById('gantt-list');
+  if(!WBS.length){el.innerHTML='<div class="empty">Sem dados</div>';return;}
+  const{mn,mx}=getProjectRange();
+  el.innerHTML=WBS.map((e,ei)=>`
+    <div class="eixo-card">
+      <div class="eixo-header" onclick="toggleGanttEixo('ge${ei}')">
+        <span class="eixo-id">${e.id}</span>
+        <span class="eixo-name">${escHtml(e.name)}</span>
+        <span class="eixo-chip ${S_COLOR[e.status]||'s-iniciar'}">${S_LABEL[e.status]||e.status}</span>
+        <span class="eixo-chev" id="gec-ge${ei}">▶</span>
+      </div>
+      <div class="eixo-body" id="geb-ge${ei}">
+        <div class="gantt-hint">← Role para ver o cronograma completo →</div>
+        <div class="gantt-scroll">${buildGanttSVG(e.children,mn,mx)}</div>
+      </div>
+    </div>`).join('');
+}
+function toggleGanttEixo(key){
+  const b=document.getElementById('geb-'+key),c=document.getElementById('gec-'+key);
+  const o=b.classList.toggle('open');c.style.transform=o?'rotate(90deg)':'';
+}
+
 /* ── TAB SWITCH ── */
 function switchTab(name,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -570,7 +702,7 @@ async function loadData(){
     const MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     document.getElementById('header-date').textContent=`${String(now.getDate()).padStart(2,'0')} ${MONTHS[now.getMonth()]} ${now.getFullYear()} · MAZ ELD`;
     document.getElementById('refresh-time').textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-    renderKPIs();renderEixos();renderStatusReport();renderReqs();
+    renderKPIs();renderEixos();renderGantt();renderStatusReport();renderReqs();
   }catch(err){
     document.getElementById('eixo-list').innerHTML=`<div class="error-msg">Erro: ${escHtml(err.message)}</div>`;
   }
