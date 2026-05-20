@@ -117,9 +117,9 @@ async function loadSheetsData() {
   if(btn){btn.disabled=true;btn.innerHTML='<span class="spinning">⟳</span> Atualizando...';}
   try {
     // Busca cronograma (obrigatório) e REQS (opcional) independentemente
-    let wbsRows, reqsRows=null;
+    let wbsRows, reqsRows=null, reqsOk=false;
     wbsRows = await fetchSheet(CRONOGRAMA_ID, CRONOGRAMA_SHEET);
-    try { reqsRows = await fetchSheet(REQS_SHEET_ID, REQS_SHEET_NAME); }
+    try { reqsRows = await fetchSheet(REQS_SHEET_ID, REQS_SHEET_NAME); reqsOk=true; }
     catch(e){ console.warn('REQS não atualizado:',e.message); }
     // Atualizar WBS
     const {wbs:newWBS,weekLabel}=_parseWBS(wbsRows);
@@ -144,14 +144,16 @@ async function loadSheetsData() {
     renderGanttSection();
     document.getElementById('group-list').style.maxHeight='none';
     const timeStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-    if(lbl) lbl.textContent=`Atualizado às ${timeStr}`;
+    const statusTxt=reqsOk?`🟢 Ao vivo · ${timeStr}`:`🟡 Cronograma OK · REQ erro · ${timeStr}`;
+    const statusClr=reqsOk?'#15803d':'#b45309';
+    if(lbl){lbl.innerHTML=`<span style="color:${statusClr};font-weight:700">${statusTxt}</span>`;}
     if(btn){btn.disabled=false;btn.innerHTML='⟳ Atualizar';}
     // Reiniciar timer
     if(_refreshTimer) clearInterval(_refreshTimer);
     _refreshTimer=setInterval(loadSheetsData,AUTO_REFRESH_MS);
   } catch(err) {
     console.error('Erro ao buscar planilhas:',err);
-    if(lbl) lbl.textContent=`Erro: ${err.message.substring(0,40)}`;
+    if(lbl){lbl.innerHTML=`<span style="color:#dc2626;font-weight:700">🔴 Erro — dados locais · ${err.message.substring(0,35)}</span>`;}
     if(btn){btn.disabled=false;btn.innerHTML='⟳ Tentar novamente';}
   }
 }
@@ -2253,9 +2255,9 @@ async function loadSheetsData() {
   if(btn){btn.disabled=true;btn.innerHTML='<span class="spinning">⟳</span> Atualizando...';}
   try {
     // Busca cronograma (obrigatório) e REQS (opcional) independentemente
-    let wbsRows, reqsRows=null;
+    let wbsRows, reqsRows=null, reqsOk=false;
     wbsRows = await fetchSheet(CRONOGRAMA_ID, CRONOGRAMA_SHEET);
-    try { reqsRows = await fetchSheet(REQS_SHEET_ID, REQS_SHEET_NAME); }
+    try { reqsRows = await fetchSheet(REQS_SHEET_ID, REQS_SHEET_NAME); reqsOk=true; }
     catch(e){ console.warn('REQS não atualizado:',e.message); }
     // Atualizar WBS
     const {wbs:newWBS,weekLabel}=_parseWBS(wbsRows);
@@ -2280,14 +2282,16 @@ async function loadSheetsData() {
     renderGanttSection();
     document.getElementById('group-list').style.maxHeight='none';
     const timeStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-    if(lbl) lbl.textContent=`Atualizado às ${timeStr}`;
+    const statusTxt=reqsOk?`🟢 Ao vivo · ${timeStr}`:`🟡 Cronograma OK · REQ erro · ${timeStr}`;
+    const statusClr=reqsOk?'#15803d':'#b45309';
+    if(lbl){lbl.innerHTML=`<span style="color:${statusClr};font-weight:700">${statusTxt}</span>`;}
     if(btn){btn.disabled=false;btn.innerHTML='⟳ Atualizar';}
     // Reiniciar timer
     if(_refreshTimer) clearInterval(_refreshTimer);
     _refreshTimer=setInterval(loadSheetsData,AUTO_REFRESH_MS);
   } catch(err) {
     console.error('Erro ao buscar planilhas:',err);
-    if(lbl) lbl.textContent=`Erro: ${err.message.substring(0,40)}`;
+    if(lbl){lbl.innerHTML=`<span style="color:#dc2626;font-weight:700">🔴 Erro — dados locais · ${err.message.substring(0,35)}</span>`;}
     if(btn){btn.disabled=false;btn.innerHTML='⟳ Tentar novamente';}
   }
 }

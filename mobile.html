@@ -198,6 +198,7 @@
   <div class="header-right">
     <button class="btn-refresh-m" id="btn-refresh" onclick="loadData()">⟳ Atualizar</button>
     <span class="refresh-time" id="refresh-time"></span>
+    <span id="data-status" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:#374151;color:#9CA3AF;margin-top:3px;display:inline-block">—</span>
   </div>
 </div>
 
@@ -795,20 +796,26 @@ function switchTab(name,el){
 async function loadData(){
   const btn=document.getElementById('btn-refresh');
   btn.disabled=true;btn.textContent='…';
+  const statusEl=document.getElementById('data-status');
   try{
     const wbsRows=await fetchSheet(CRONOGRAMA_ID,CRONOGRAMA_SHEET);
     WBS.length=0;parseWBS(wbsRows).forEach(e=>WBS.push(e));
+    let reqsOk=false;
     try{
       const reqsRows=await fetchSheet(REQS_SHEET_ID,REQS_SHEET_NAME);
       REQS.length=0;parseREQS(reqsRows).forEach(r=>REQS.push(r));
+      reqsOk=true;
     }catch(e){console.warn('REQS:',e.message);}
     const now=new Date();
     const MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0');
     document.getElementById('header-date').textContent=`${String(now.getDate()).padStart(2,'0')} ${MONTHS[now.getMonth()]} ${now.getFullYear()} · MAZ ELD`;
-    document.getElementById('refresh-time').textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    document.getElementById('refresh-time').textContent=`${hh}:${mm}`;
+    if(statusEl){statusEl.textContent=reqsOk?'🟢 Ao vivo':'🟡 Cronograma OK · REQ erro';statusEl.style.background=reqsOk?'#052e16':'#422006';statusEl.style.color=reqsOk?'#4ade80':'#fb923c';}
     renderGantt();renderStatusReport();renderReqs();
   }catch(err){
     document.getElementById('gantt-list').innerHTML=`<div class="error-msg">Erro: ${escHtml(err.message)}</div>`;
+    if(statusEl){statusEl.textContent='🔴 Erro — sem dados';statusEl.style.background='#450a0a';statusEl.style.color='#f87171';}
   }
   btn.disabled=false;btn.textContent='⟳ Atualizar';
 }
