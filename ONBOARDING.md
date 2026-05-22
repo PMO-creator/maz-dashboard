@@ -8,6 +8,10 @@
 > Para uma leitura mais confortável, abra o arquivo
 > `ONBOARDING_GUIA.pdf` incluído neste repositório.
 
+> 📋 **Dois documentos disponíveis neste repositório:**
+> - `Onboarding_Dashboard_MAZ_2026_v9.pdf` → **Para desenvolvedores** — como modificar, publicar e manter o código
+> - `Manual_Dashboard_MAZ_2026.pdf` → **Para usuários finais** — como usar o dashboard no dia a dia
+
 ---
 
 ## Índice
