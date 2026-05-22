@@ -178,3 +178,54 @@ const SRH = 38   // altura linha tarefa
 
 8\. \*\*Emoji com CSS filter\*\* → nunca — renderizado pelo SO
 
+
+
+---
+
+\## Histórico de decisões importantes
+
+\### Mai/2026 — Reestruturação completa
+
+\*\*API Key:\*\*
+
+\- Chave antiga (AIzaSyAayG0UP7kFxt165Zu38BMz0P1hgvGtq18) invalidada e deletada no Google Console
+
+\- Nova chave restrita a pmo-creator.github.io/\* apenas
+
+\- Localhost retorna 403 propositalmente — comportamento esperado
+
+\- Dev local deve criar chave própria restrita a localhost:8765
+
+
+
+\*\*Arquitetura:\*\*
+
+\- Arquivos migrados de Dashboard/ para raiz do repositório
+
+\- gerar\_dashboard.py e ATUALIZAR\_DASHBOARD.bat descontinuados
+
+\- Dados passaram a ser buscados diretamente no browser via API Key
+
+\- Não há mais geração local de HTML via Python
+
+
+
+\*\*Repositório:\*\*
+
+\- CLAUDE.md criado como contexto técnico para o Claude Code
+
+\- SERVE\_DASHBOARD.bat adicionado para teste local
+
+\- ONBOARDING.md melhorado com emojis e separadores
+
+\- ONBOARDING\_GUIA.pdf adicionado — versão visual do guia
+
+\- Manual\_Dashboard\_MAZ\_2026.pdf adicionado — manual do usuário final
+
+
+
+\*\*Abas das planilhas (mudança crítica):\*\*
+
+\- Cronograma: de "cronograma exposição " para "master data"
+
+\- Requisições: de "Planilha de Status de Compras P" para "Planilha de Status de Compras Prod"
