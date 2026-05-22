@@ -72,6 +72,7 @@ Google Sheets (Cronograma + REQS)
 - ✅ Um commit por alteração com descrição clara do que foi feito
 - ✅ Testar no celular também antes de publicar
 - ✅ Verificar os dois arquivos (index.html E mobile.html) quando a mudança afeta ambos
+- ✅ Validar JavaScript com `node --check` após qualquer alteração no código. Extrair o bloco script para um arquivo `.js` temporário e rodar: `node --check arquivo.js`
 
 ### Nunca fazer
 - ❌ Editar direto no GitHub pelo browser (vai direto para produção sem teste)
@@ -259,9 +260,9 @@ git push --force
 > ⚠️ Ambas as planilhas precisam estar com **"Qualquer pessoa com o link pode ver"** ativado. Sem isso o dashboard retorna erro 403/400.
 
 ### API Key Google Sheets
-- Chave: `SUA_API_KEY_AQUI`
+- Chave: `[solicitar ao responsável]`
 - Projeto GCP: `maz-dashboard-495414`
-- Restrição: Nenhuma (qualquer origem pode usar)
+- Restrição: `pmo-creator.github.io/*`
 - Gerenciar em: `console.cloud.google.com` → APIs e serviços → Credenciais
 
 ### Colunas das planilhas (índices 0-based)
@@ -302,6 +303,18 @@ Rollup: **grupo = pior status dos marcos / eixo = pior status dos grupos**
 
 ### Auto-refresh
 15 minutos — constante `AUTO_REFRESH_MS` em ambos os HTMLs.
+
+---
+
+## 8. Armadilhas técnicas conhecidas
+
+| Armadilha | Como evitar |
+|---|---|
+| Dashboard branco sem erro no console | Verificar: (a) null bytes no HTML, (b) palavra `function` ausente em declaração JS, (c) JS truncado sem `</script>`, (d) template literals aninhados |
+| Template literals aninhados | Nunca usar crase dentro de `${}` dentro de outro crase — `node --check` passa mas browser quebra |
+| JS truncado | Verificar se `</script>` existe no final do arquivo antes de editar |
+| Prioridade REQS | Usar APENAS coluna E (índice 4) — coluna B gera falsos positivos |
+| `node --check` no Node v22 | Não aceita `.html` — extrair bloco script para arquivo `.js` temporário |
 
 ---
 
