@@ -4,20 +4,26 @@
 
 ---
 
-## Índice
-1. [O que é este projeto](#1-o-que-é-este-projeto)
-2. [Boas práticas de desenvolvimento](#2-boas-práticas-de-desenvolvimento)
-3. [Configuração inicial](#3-configuração-inicial)
-4. [Alternativa visual — GitHub Desktop](#4-alternativa-visual--github-desktop)
-5. [Fluxo de trabalho — do teste ao ar](#5-fluxo-de-trabalho--do-teste-ao-ar)
-6. [Testar no celular pela rede local](#6-testar-no-celular-pela-rede-local)
-7. [Reverter para uma versão anterior](#7-reverter-para-uma-versão-anterior)
-8. [Referências técnicas](#8-referências-técnicas)
-9. [Armadilhas técnicas conhecidas](#9-armadilhas-técnicas-conhecidas)
+> 📄 **Versão visual deste guia:**
+> Para uma leitura mais confortável, abra o arquivo
+> `ONBOARDING_GUIA.pdf` incluído neste repositório.
 
 ---
 
-## 1. O que é este projeto
+## Índice
+1. [📋 O que é este projeto](#1-o-que-é-este-projeto)
+2. [✅ Boas práticas de desenvolvimento](#2-boas-práticas-de-desenvolvimento)
+3. [⚙️ Configuração inicial](#3-configuração-inicial)
+4. [🖥️ Alternativa visual — GitHub Desktop](#4-alternativa-visual--github-desktop)
+5. [🔄 Fluxo de trabalho — do teste ao ar](#5-fluxo-de-trabalho--do-teste-ao-ar)
+6. [📱 Testar no celular pela rede local](#6-testar-no-celular-pela-rede-local)
+7. [⏪ Reverter para uma versão anterior](#7-reverter-para-uma-versão-anterior)
+8. [📚 Referências técnicas](#8-referências-técnicas)
+9. [⚠️ Armadilhas técnicas conhecidas](#9-armadilhas-técnicas-conhecidas)
+
+---
+
+## 📋 1. O que é este projeto
 
 Dashboard interativo do **Museu das Amazônias 2026 (MAZ ELD)** — acompanhamento de cronograma, status report e requisições de compras.
 
@@ -47,7 +53,7 @@ Google Sheets (Cronograma + REQS)
 
 ---
 
-## 2. Boas práticas de desenvolvimento
+## ✅ 2. Boas práticas de desenvolvimento
 
 ### Ferramentas certas para cada tarefa
 
@@ -93,7 +99,7 @@ Google Sheets (Cronograma + REQS)
 
 ---
 
-## 3. Configuração inicial
+## ⚙️ 3. Configuração inicial
 
 ### Pré-requisitos (instalar uma vez)
 ```
@@ -132,7 +138,7 @@ O repositório inclui um arquivo `CLAUDE.md` na raiz. Ele é lido automaticament
 
 ---
 
-## 4. Alternativa visual — GitHub Desktop
+## 🖥️ 4. Alternativa visual — GitHub Desktop
 
 Para quem prefere uma interface gráfica ao terminal, o **GitHub Desktop** é a alternativa recomendada ao uso de comandos `git` na linha de comando.
 
@@ -158,7 +164,7 @@ https://desktop.github.com
 
 ---
 
-## 5. Fluxo de trabalho — do teste ao ar
+## 🔄 5. Fluxo de trabalho — do teste ao ar
 
 ### Passo 1 — Subir o ambiente de teste local
 
@@ -201,7 +207,7 @@ Fazer **hard refresh** no GitHub Pages para confirmar (`Ctrl+Shift+R`).
 
 ---
 
-## 6. Testar no celular pela rede local
+## 📱 6. Testar no celular pela rede local
 
 Celular e computador precisam estar na **mesma rede Wi-Fi**.
 
@@ -227,7 +233,7 @@ O redirect automático vai direcionar para `mobile.html`.
 
 ---
 
-## 7. Reverter para uma versão anterior
+## ⏪ 7. Reverter para uma versão anterior
 
 ### Ver o histórico de commits
 ```bash
@@ -270,7 +276,7 @@ git push --force
 
 ---
 
-## 8. Referências técnicas
+## 📚 8. Referências técnicas
 
 ### URLs
 | Recurso | URL |
@@ -335,7 +341,7 @@ Rollup: **grupo = pior status dos marcos / eixo = pior status dos grupos**
 
 ---
 
-## 9. Armadilhas técnicas conhecidas
+## ⚠️ 9. Armadilhas técnicas conhecidas
 
 | Armadilha | Como evitar |
 |---|---|
