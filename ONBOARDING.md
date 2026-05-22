@@ -23,8 +23,8 @@ Dashboard interativo do **Museu das Amazônias 2026 (MAZ ELD)** — acompanhamen
 
 ### Arquitetura
 - **Dois arquivos HTML** são o projeto inteiro:
-  - `Dashboard/index.html` → versão desktop
-  - `Dashboard/mobile.html` → versão mobile (3 abas: Gantt, Status Report, Requisições)
+  - `index.html` → versão desktop
+  - `mobile.html` → versão mobile (3 abas: Gantt, Status Report, Requisições)
 - **Dados ao vivo** — buscados direto do Google Sheets via API Key no browser, sem backend
 - **Publicado** em `https://pmo-creator.github.io/maz-dashboard/` via GitHub Pages
 - **Redirect automático**: o mesmo link detecta desktop ou celular e abre a versão correta
@@ -173,7 +173,7 @@ python -m http.server 8765
 Depois abrir `http://localhost:8765/index.html` no browser.
 
 ### Passo 2 — Fazer as alterações
-Edite `Dashboard/index.html` e/ou `Dashboard/mobile.html` com Claude Code ou VS Code.
+Edite `index.html` e/ou `mobile.html` com Claude Code ou VS Code.
 
 > ⚠️ Alterações que afetam layout, KPIs, lógica de dados ou parsing de colunas **normalmente afetam os dois arquivos**. Sempre verifique ambos.
 
@@ -190,7 +190,7 @@ Celular → http://[SEU-IP]:8765/index.html  (ver seção 5)
 
 ### Passo 4 — Publicar (só quando aprovado)
 ```bash
-git add Dashboard/index.html Dashboard/mobile.html
+git add index.html mobile.html
 git commit -m "Descrição clara do que foi alterado"
 git push
 ```
