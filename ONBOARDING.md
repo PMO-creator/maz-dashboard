@@ -8,10 +8,12 @@
 1. [O que é este projeto](#1-o-que-é-este-projeto)
 2. [Boas práticas de desenvolvimento](#2-boas-práticas-de-desenvolvimento)
 3. [Configuração inicial](#3-configuração-inicial)
-4. [Fluxo de trabalho — do teste ao ar](#4-fluxo-de-trabalho--do-teste-ao-ar)
-5. [Testar no celular pela rede local](#5-testar-no-celular-pela-rede-local)
-6. [Reverter para uma versão anterior](#6-reverter-para-uma-versão-anterior)
-7. [Referências técnicas](#7-referências-técnicas)
+4. [Alternativa visual — GitHub Desktop](#4-alternativa-visual--github-desktop)
+5. [Fluxo de trabalho — do teste ao ar](#5-fluxo-de-trabalho--do-teste-ao-ar)
+6. [Testar no celular pela rede local](#6-testar-no-celular-pela-rede-local)
+7. [Reverter para uma versão anterior](#7-reverter-para-uma-versão-anterior)
+8. [Referências técnicas](#8-referências-técnicas)
+9. [Armadilhas técnicas conhecidas](#9-armadilhas-técnicas-conhecidas)
 
 ---
 
@@ -115,30 +117,57 @@ cd maz-dashboard
 Você terá a estrutura:
 ```
 maz-dashboard/
-  Dashboard/
-    index.html       ← dashboard desktop
-    mobile.html      ← dashboard mobile
-    backups/         ← backups datados
-  SERVE_DASHBOARD.bat
+  index.html          ← dashboard desktop
+  mobile.html         ← dashboard mobile
+  SERVE_DASHBOARD.bat ← servidor local de teste
+  ONBOARDING.md       ← este guia
 ```
 
 ### Configurar acesso ao GitHub
 O responsável anterior precisa te adicionar como colaborador:
 - `github.com/PMO-creator/maz-dashboard` → Settings → Collaborators → Add people
 
+### Contexto para o Claude Code
+O repositório inclui um arquivo `CLAUDE.md` na raiz. Ele é lido automaticamente pelo Claude Code ao abrir o projeto e contém todo o contexto técnico necessário (arquitetura, CSS, SVG, armadilhas conhecidas). Você não precisa fazer nada — funciona automaticamente.
+
 ---
 
-## 4. Fluxo de trabalho — do teste ao ar
+## 4. Alternativa visual — GitHub Desktop
+
+Para quem prefere uma interface gráfica ao terminal, o **GitHub Desktop** é a alternativa recomendada ao uso de comandos `git` na linha de comando.
+
+### Download e instalação
+```
+https://desktop.github.com
+```
+
+### Configuração inicial
+1. Abrir o GitHub Desktop após instalação
+2. Entrar com a conta GitHub (`File → Sign in`)
+3. Clonar o repositório: `File → Clone repository → URL`
+   - URL: `https://github.com/PMO-creator/maz-dashboard`
+   - Local path: pasta de sua preferência
+
+### Fluxo de trabalho no GitHub Desktop
+1. **Antes de editar** — clicar em `Fetch origin` para garantir que está na versão mais recente
+2. **Após editar** os arquivos no VS Code ou Claude Code, as mudanças aparecem automaticamente na aba `Changes`
+3. **Commit** — preencher o campo `Summary` com a descrição da alteração e clicar em `Commit to main`
+4. **Push** — clicar em `Push origin` para publicar no GitHub
+
+> ⚠️ O fluxo de teste local (subir o servidor Python, hard refresh, verificar indicador 🟢) continua sendo obrigatório antes do commit — o GitHub Desktop não substitui essa etapa.
+
+---
+
+## 5. Fluxo de trabalho — do teste ao ar
 
 ### Passo 1 — Subir o ambiente de teste local
-```
-Rodar: SERVE_DASHBOARD.bat
+
+O repositório já inclui o arquivo `SERVE_DASHBOARD.bat`. Basta executá-lo com duplo clique.
 → Abre automaticamente http://localhost:8765/index.html
-```
 
 Ou manualmente no terminal:
 ```bash
-cd Dashboard
+cd maz-dashboard
 python -m http.server 8765
 ```
 Depois abrir `http://localhost:8765/index.html` no browser.
@@ -172,7 +201,7 @@ Fazer **hard refresh** no GitHub Pages para confirmar (`Ctrl+Shift+R`).
 
 ---
 
-## 5. Testar no celular pela rede local
+## 6. Testar no celular pela rede local
 
 Celular e computador precisam estar na **mesma rede Wi-Fi**.
 
@@ -198,7 +227,7 @@ O redirect automático vai direcionar para `mobile.html`.
 
 ---
 
-## 6. Reverter para uma versão anterior
+## 7. Reverter para uma versão anterior
 
 ### Ver o histórico de commits
 ```bash
@@ -241,7 +270,7 @@ git push --force
 
 ---
 
-## 7. Referências técnicas
+## 8. Referências técnicas
 
 ### URLs
 | Recurso | URL |
@@ -306,7 +335,7 @@ Rollup: **grupo = pior status dos marcos / eixo = pior status dos grupos**
 
 ---
 
-## 8. Armadilhas técnicas conhecidas
+## 9. Armadilhas técnicas conhecidas
 
 | Armadilha | Como evitar |
 |---|---|
