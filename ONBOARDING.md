@@ -259,7 +259,7 @@ git push --force
 > ⚠️ Ambas as planilhas precisam estar com **"Qualquer pessoa com o link pode ver"** ativado. Sem isso o dashboard retorna erro 403/400.
 
 ### API Key Google Sheets
-- Chave: `AIzaSyAayG0UP7kFxt165Zu38BMz0P1hgvGtq18`
+- Chave: `SUA_API_KEY_AQUI`
 - Projeto GCP: `maz-dashboard-495414`
 - Restrição: Nenhuma (qualquer origem pode usar)
 - Gerenciar em: `console.cloud.google.com` → APIs e serviços → Credenciais
