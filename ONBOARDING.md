@@ -4,30 +4,19 @@
 
 ---
 
-> 📄 **Versão visual deste guia:**
-> Para uma leitura mais confortável, abra o arquivo
-> `ONBOARDING_GUIA.pdf` incluído neste repositório.
-
-> 📋 **Dois documentos disponíveis neste repositório:**
-> - `Onboarding_Dashboard_MAZ_2026_v9.pdf` → **Para desenvolvedores** — como modificar, publicar e manter o código
-> - `Manual_Dashboard_MAZ_2026.pdf` → **Para usuários finais** — como usar o dashboard no dia a dia
-
----
-
 ## Índice
-1. [📋 O que é este projeto](#1-o-que-é-este-projeto)
-2. [✅ Boas práticas de desenvolvimento](#2-boas-práticas-de-desenvolvimento)
-3. [⚙️ Configuração inicial](#3-configuração-inicial)
-4. [🖥️ Alternativa visual — GitHub Desktop](#4-alternativa-visual--github-desktop)
-5. [🔄 Fluxo de trabalho — do teste ao ar](#5-fluxo-de-trabalho--do-teste-ao-ar)
-6. [📱 Testar no celular pela rede local](#6-testar-no-celular-pela-rede-local)
-7. [⏪ Reverter para uma versão anterior](#7-reverter-para-uma-versão-anterior)
-8. [📚 Referências técnicas](#8-referências-técnicas)
-9. [⚠️ Armadilhas técnicas conhecidas](#9-armadilhas-técnicas-conhecidas)
+1. [O que é este projeto](#1-o-que-é-este-projeto)
+2. [Boas práticas de desenvolvimento](#2-boas-práticas-de-desenvolvimento)
+3. [Configuração inicial](#3-configuração-inicial)
+4. [Fluxo de trabalho — do teste ao ar](#4-fluxo-de-trabalho--do-teste-ao-ar)
+5. [Testar no celular pela rede local](#5-testar-no-celular-pela-rede-local)
+6. [Reverter para uma versão anterior](#6-reverter-para-uma-versão-anterior)
+7. [Referências técnicas](#7-referências-técnicas)
+8. [Armadilhas técnicas conhecidas](#8-armadilhas-técnicas-conhecidas)
 
 ---
 
-## 📋 1. O que é este projeto
+## 1. O que é este projeto
 
 Dashboard interativo do **Museu das Amazônias 2026 (MAZ ELD)** — acompanhamento de cronograma, status report e requisições de compras.
 
@@ -57,7 +46,7 @@ Google Sheets (Cronograma + REQS)
 
 ---
 
-## ✅ 2. Boas práticas de desenvolvimento
+## 2. Boas práticas de desenvolvimento
 
 ### Ferramentas certas para cada tarefa
 
@@ -85,6 +74,7 @@ Google Sheets (Cronograma + REQS)
 - ✅ Testar no celular também antes de publicar
 - ✅ Verificar os dois arquivos (index.html E mobile.html) quando a mudança afeta ambos
 - ✅ Validar JavaScript com `node --check` após qualquer alteração no código. Extrair o bloco script para um arquivo `.js` temporário e rodar: `node --check arquivo.js`
+- ✅ Ao criar ou alterar o filtro de responsável, verificar os **3 estados** em desktop e mobile: (a) todos marcados → cronograma completo, (b) alguns marcados → mostra só os responsáveis selecionados, (c) nenhum marcado → conteúdo some e aparece mensagem de aviso verde
 
 ### Nunca fazer
 - ❌ Editar direto no GitHub pelo browser (vai direto para produção sem teste)
@@ -95,7 +85,6 @@ Google Sheets (Cronograma + REQS)
 
 ### Boas práticas adicionais recomendadas
 - 📌 **Sempre descreva o commit em português** com o que foi alterado e por quê (ex: `"Corrigir nome da aba REQS: 'Compras P' → 'Compras Prod'"`)
-- 📌 **Antes de alterar algo complexo**, faça um backup manual: copie o arquivo para `Dashboard/backups/` com a data no nome (`EAP_MAZ_2026_Dashboard_YYYYMMDD_descricao.html`)
 - 📌 **Nunca altere as constantes de API Key ou IDs de planilha** sem confirmar com o responsável do projeto
 - 📌 **Se o indicador mostrar 🔴**, não é bug do dashboard — é problema de conectividade com o Sheets. Verifique compartilhamento da planilha e API Key
 - 📌 **Qualquer mudança na estrutura das colunas das planilhas** exige atualização do código de parse (`_parseWBS` e `_parseREQS`)
@@ -103,91 +92,107 @@ Google Sheets (Cronograma + REQS)
 
 ---
 
-## ⚙️ 3. Configuração inicial
+## 3. Configuração inicial
 
 ### Pré-requisitos (instalar uma vez)
 ```
 1. Git          → https://git-scm.com
 2. Python 3.x   → https://python.org  (para servidor local)
-3. Claude Code  → https://claude.ai/code  (recomendado para edições)
+3. Node.js      → https://nodejs.org  (para validar JS com node --check)
+4. Claude Code  → https://claude.ai/code  (recomendado para edições)
 ```
 
 Verificar instalações no terminal:
 ```bash
 git --version
 python --version
+node --version
 ```
 
-### Clonar o repositório
+### Estrutura de pastas de trabalho
+
+O projeto usa **duas pastas separadas**:
+
+```
+GitHub\
+  Ambiente de Teste_Dashboard\   ← AQUI você edita e testa
+    index.html
+    mobile.html
+    SERVE_DASHBOARD.bat
+    ONBOARDING.md
+    CLAUDE.md
+
+  maz-dashboard\                 ← AQUI você faz commit e push
+    index.html
+    mobile.html
+    SERVE_DASHBOARD.bat
+    ONBOARDING.md
+    CLAUDE.md
+```
+
+> A separação existe para evitar que um arquivo em edição (potencialmente quebrado) seja publicado acidentalmente. Só vai para `maz-dashboard` o que foi testado e aprovado.
+
+### Clonar o repositório (primeira vez)
 ```bash
 git clone https://github.com/PMO-creator/maz-dashboard
-cd maz-dashboard
 ```
 
-Você terá a estrutura:
-```
-maz-dashboard/
-  index.html          ← dashboard desktop
-  mobile.html         ← dashboard mobile
-  SERVE_DASHBOARD.bat ← servidor local de teste
-  ONBOARDING.md       ← este guia
+Você terá a pasta `maz-dashboard/` com os HTMLs prontos.
+
+Para criar o ambiente de teste, copie os HTMLs para a pasta `Ambiente de Teste_Dashboard`:
+```powershell
+copy maz-dashboard\index.html  "Ambiente de Teste_Dashboard\index.html"
+copy maz-dashboard\mobile.html "Ambiente de Teste_Dashboard\mobile.html"
+copy maz-dashboard\SERVE_DASHBOARD.bat "Ambiente de Teste_Dashboard\SERVE_DASHBOARD.bat"
 ```
 
 ### Configurar acesso ao GitHub
 O responsável anterior precisa te adicionar como colaborador:
 - `github.com/PMO-creator/maz-dashboard` → Settings → Collaborators → Add people
 
-### Contexto para o Claude Code
-O repositório inclui um arquivo `CLAUDE.md` na raiz. Ele é lido automaticamente pelo Claude Code ao abrir o projeto e contém todo o contexto técnico necessário (arquitetura, CSS, SVG, armadilhas conhecidas). Você não precisa fazer nada — funciona automaticamente.
-
 ---
 
-## 🖥️ 4. Alternativa visual — GitHub Desktop
+## 4. Fluxo de trabalho — do teste ao ar
 
-Para quem prefere uma interface gráfica ao terminal, o **GitHub Desktop** é a alternativa recomendada ao uso de comandos `git` na linha de comando.
-
-### Download e instalação
 ```
-https://desktop.github.com
+maz-dashboard  →  Ambiente de Teste  →  (edita + testa)  →  maz-dashboard  →  GitHub Pages
+  (origem)           (trabalho)                               (commit/push)     (produção)
 ```
 
-### Configuração inicial
-1. Abrir o GitHub Desktop após instalação
-2. Entrar com a conta GitHub (`File → Sign in`)
-3. Clonar o repositório: `File → Clone repository → URL`
-   - URL: `https://github.com/PMO-creator/maz-dashboard`
-   - Local path: pasta de sua preferência
+### Passo 0 — Sincronizar o ambiente de teste
 
-### Fluxo de trabalho no GitHub Desktop
-1. **Antes de editar** — clicar em `Fetch origin` para garantir que está na versão mais recente
-2. **Após editar** os arquivos no VS Code ou Claude Code, as mudanças aparecem automaticamente na aba `Changes`
-3. **Commit** — preencher o campo `Summary` com a descrição da alteração e clicar em `Commit to main`
-4. **Push** — clicar em `Push origin` para publicar no GitHub
+Antes de começar, garantir que o ambiente de teste tem a versão mais recente do repositório:
 
-> ⚠️ O fluxo de teste local (subir o servidor Python, hard refresh, verificar indicador 🟢) continua sendo obrigatório antes do commit — o GitHub Desktop não substitui essa etapa.
+```powershell
+# No terminal, dentro de maz-dashboard:
+git pull
 
----
+# Copiar para o ambiente de teste:
+copy index.html  "..\Ambiente de Teste_Dashboard\index.html"
+copy mobile.html "..\Ambiente de Teste_Dashboard\mobile.html"
+```
 
-## 🔄 5. Fluxo de trabalho — do teste ao ar
+### Passo 1 — Subir o servidor local
 
-### Passo 1 — Subir o ambiente de teste local
+Na pasta `Ambiente de Teste_Dashboard`, rodar:
+```
+SERVE_DASHBOARD.bat
+```
+→ Abre automaticamente `http://localhost:8765/index.html`
 
-O repositório já inclui o arquivo `SERVE_DASHBOARD.bat`. Basta executá-lo com duplo clique.
-→ Abre automaticamente http://localhost:8765/index.html
-
-Ou manualmente no terminal:
+Ou manualmente:
 ```bash
-cd maz-dashboard
 python -m http.server 8765
 ```
-Depois abrir `http://localhost:8765/index.html` no browser.
 
 ### Passo 2 — Fazer as alterações
-Edite `index.html` e/ou `mobile.html` com Claude Code ou VS Code.
+
+Edite `index.html` e/ou `mobile.html` com **Claude Code** (abrir o Claude Code na pasta `Ambiente de Teste_Dashboard`).
 
 > ⚠️ Alterações que afetam layout, KPIs, lógica de dados ou parsing de colunas **normalmente afetam os dois arquivos**. Sempre verifique ambos.
 
 ### Passo 3 — Testar localmente
+
 ```
 Desktop → http://localhost:8765/index.html
 Mobile  → http://localhost:8765/mobile.html
@@ -199,7 +204,17 @@ Celular → http://[SEU-IP]:8765/index.html  (ver seção 5)
 - Testar as funcionalidades afetadas pela mudança
 
 ### Passo 4 — Publicar (só quando aprovado)
+
+Copiar os arquivos testados para `maz-dashboard` e fazer o commit:
+
+```powershell
+# Copiar para o repositório:
+copy "Ambiente de Teste_Dashboard\index.html"  maz-dashboard\index.html
+copy "Ambiente de Teste_Dashboard\mobile.html" maz-dashboard\mobile.html
+```
+
 ```bash
+# No terminal, dentro de maz-dashboard:
 git add index.html mobile.html
 git commit -m "Descrição clara do que foi alterado"
 git push
@@ -211,7 +226,7 @@ Fazer **hard refresh** no GitHub Pages para confirmar (`Ctrl+Shift+R`).
 
 ---
 
-## 📱 6. Testar no celular pela rede local
+## 5. Testar no celular pela rede local
 
 Celular e computador precisam estar na **mesma rede Wi-Fi**.
 
@@ -237,37 +252,30 @@ O redirect automático vai direcionar para `mobile.html`.
 
 ---
 
-## ⏪ 7. Reverter para uma versão anterior
+## 6. Reverter para uma versão anterior
 
 ### Ver o histórico de commits
 ```bash
 git log --oneline
 ```
-Exemplo de saída:
-```
-126406f  Corrigir nome da aba REQS: 'Compras P' → 'Compras Prod'
-38249e4  Adicionar indicador de status: 🟢 Ao vivo / 🟡 REQ erro / 🔴 Erro dados locais
-e2247e7  Corrigir nome da aba do cronograma: 'cronograma exposição' → 'master data'
-9a47d9c  REQS: atualizar ID da planilha para Google Sheets nativo
-```
 
 ### Opção A — Reverter um commit específico (recomendado)
 Cria um novo commit que desfaz as mudanças. Histórico fica intacto.
 ```bash
-git revert 38249e4
+git revert <hash-do-commit>
 git push
 ```
 
 ### Opção B — Ver como o arquivo estava em uma versão antiga
 ```bash
-git show 38249e4:Dashboard/index.html > versao_antiga.html
+git show <hash>:index.html > versao_antiga.html
 ```
 Abre `versao_antiga.html` para comparar ou copiar trechos.
 
 ### Opção C — Voltar o repositório inteiro para uma versão (cuidado)
 ⚠️ Apaga tudo que foi feito depois desse commit.
 ```bash
-git reset --hard 38249e4
+git reset --hard <hash>
 git push --force
 ```
 > Só usar em último caso. Avisar o responsável antes.
@@ -280,7 +288,7 @@ git push --force
 
 ---
 
-## 📚 8. Referências técnicas
+## 7. Referências técnicas
 
 ### URLs
 | Recurso | URL |
@@ -343,9 +351,55 @@ Rollup: **grupo = pior status dos marcos / eixo = pior status dos grupos**
 ### Auto-refresh
 15 minutos — constante `AUTO_REFRESH_MS` em ambos os HTMLs.
 
+### Filtros do Dashboard
+
+Os filtros globais (Status, Eixo, Data e Responsável) ficam na barra superior do desktop (`index.html`) e como chips/dropdowns no mobile (`mobile.html`). Todos alimentam a função `applyFilter()` que re-renderiza a árvore EAP e o Gantt.
+
+#### Filtro de Responsável — Desktop (`index.html`)
+
+Localização no HTML: `<div class="ms-resp-wrap">` na barra de filtros, entre o filtro de Eixos e o botão "Limpar Filtros".
+
+| Função JS | Responsabilidade |
+|---|---|
+| `buildRespFilter()` | Lê os nomes únicos de responsável dos dados e monta o dropdown multi-select |
+| `grupoHasResp(grupo, resp)` | Retorna `true` se o grupo ou qualquer uma de suas tarefas pertence ao responsável |
+| `getFilters()` | Retorna o objeto de filtros ativos, incluindo o campo `resp` (array de nomes selecionados) |
+| `applyFilter()` | Detecta "nenhum marcado" via **contagem DOM** (não via `f.resp`), exibe `#gantt-resp-msg` e oculta linhas sem correspondência |
+
+**Label do dropdown:**
+- Todos marcados → `"Todos os responsáveis"`
+- 1–2 marcados → lista os nomes
+- 3+ marcados → `"X selecionados"`
+- Nenhum marcado → `"Nenhum selecionado"`
+
+**Lógica de filtragem (hierarquia):**
+- Marco com o responsável → mostra o marco **com todas** as suas tarefas
+- Marco sem o responsável, mas com alguma tarefa do responsável → mostra o marco **só com as tarefas** do responsável
+- Grupo sem nenhum marco/tarefa do responsável → desaparece
+- Eixo sem nenhum grupo com o responsável → desaparece
+- No Gantt: linhas sem o responsável são **ocultadas** (não esmaecidas)
+
+#### Filtro de Responsável — Mobile (`mobile.html`)
+
+Localização: chips horizontais com classe `.resp-chip` exibidos entre as abas e o conteúdo, nas abas Gantt e Status Report.
+
+| Elemento/Função JS | Responsabilidade |
+|---|---|
+| `activeRespFilterM` | Array de responsáveis ativos no mobile |
+| `buildRespFilterMobile()` | Gera os chips de responsável para o mobile |
+| `grupoHasRespM(grupo)` | Versão mobile de `grupoHasResp` |
+| `toggleRespChip(resp, el)` | Ativa/desativa chip e re-renderiza |
+| `#gantt-resp-msg` | Mensagem "SELECIONE AO MENOS UM RESPONSÁVEL" (Gantt) |
+| `#sr-resp-msg` | Mensagem "SELECIONE AO MENOS UM RESPONSÁVEL" (Status Report) |
+
+**Lógica de filtragem mobile:**
+- Chip "Todos" ativo → mostra tudo (array vazio = sem filtro)
+- Chip de nome ativo → filtra eixos, grupos e marcos sem o responsável
+- Eixos sem match somem da lista (tanto no Gantt quanto no Status Report)
+
 ---
 
-## ⚠️ 9. Armadilhas técnicas conhecidas
+## 8. Armadilhas técnicas conhecidas
 
 | Armadilha | Como evitar |
 |---|---|
@@ -354,7 +408,9 @@ Rollup: **grupo = pior status dos marcos / eixo = pior status dos grupos**
 | JS truncado | Verificar se `</script>` existe no final do arquivo antes de editar |
 | Prioridade REQS | Usar APENAS coluna E (índice 4) — coluna B gera falsos positivos |
 | `node --check` no Node v22 | Não aceita `.html` — extrair bloco script para arquivo `.js` temporário |
+| Edit tool do Claude Code falha | Arquivo contém backticks JS (template literals). Usar PowerShell com `[System.IO.File]::ReadAllBytes` |
+| String não encontrada no Replace | Arquivo usa CRLF. Normalizar: `$content.Replace("\`r\`n", "\`n")` antes de substituir |
 
 ---
 
-*Guia gerado em 22/Mai/2026 — Dashboard MAZ 2026 · IDG PMO*
+*Guia atualizado em 23/Mai/2026 — v11 — Dashboard MAZ 2026 · IDG PMO*
