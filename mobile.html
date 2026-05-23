@@ -477,7 +477,7 @@ function srFields(prog,enc){
 function renderStatusReport(){
   const el=document.getElementById('sr-list');
   if(!WBS.length){el.innerHTML='<div class="empty">Sem dados</div>';return;}
-  el.innerHTML=WBS.map((e,ei)=>`
+  el.innerHTML=WBS.map((e,ei)=>{if(activeRespFilterM.length&&!(e.children||[]).some(g=>grupoHasRespM(g)))return'';return`
     <div class="sr-card">
       <div class="sr-eixo-header" onclick="toggleSREixo('sre${ei}')">
         <span class="eixo-id" style="font-size:13px">${e.id}</span>
@@ -521,7 +521,7 @@ function renderStatusReport(){
           </div>`;
         }).join('')}
       </div>
-    </div>`).join('');
+    </div>`;}).join('');
   srEixoOpenM.forEach(key=>{const b=document.getElementById('sreb-'+key),c=document.getElementById('srec-'+key);if(b)b.style.display='block';if(c)c.style.transform='rotate(90deg)';});
 }
 function toggleSREixo(key){
@@ -725,7 +725,7 @@ function ganttBar(start,end,status){
 function renderGantt(){
   const el=document.getElementById('gantt-list');
   if(!WBS.length){el.innerHTML='<div class="empty">Sem dados</div>';return;}
-  el.innerHTML=WBS.map((e,ei)=>`
+  el.innerHTML=WBS.map((e,ei)=>{if(activeRespFilterM.length&&!(e.children||[]).some(g=>grupoHasRespM(g)))return'';return`
     <div class="eixo-card">
       <div class="eixo-header" onclick="toggleGanttEixo(${ei})">
         <span class="eixo-id">${e.id}</span>
@@ -775,7 +775,7 @@ function renderGantt(){
           </div>`;
         }).join('')}
       </div>
-    </div>`).join('');
+    </div>`;}).join('');
   ganttEixoOpenM.forEach(ei=>{const b=document.getElementById('geb-'+ei),c=document.getElementById('gec-'+ei);if(b)b.style.display='block';if(c)c.style.transform='rotate(90deg)';});
 }
 function toggleGanttEixo(ei){
