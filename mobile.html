@@ -522,17 +522,15 @@ function renderStatusReport(){
         }).join('')}
       </div>
     </div>`).join('');
+  srEixoOpenM.forEach(key=>{const b=document.getElementById('sreb-'+key),c=document.getElementById('srec-'+key);if(b)b.style.display='block';if(c)c.style.transform='rotate(90deg)';});
 }
 function toggleSREixo(key){
   const b=document.getElementById('sreb-'+key),c=document.getElementById('srec-'+key);
   const o=b.style.display==='none'||b.style.display==='';
   b.style.display=o?'block':'none';
   c.style.transform=o?'rotate(90deg)':'';
-  if(o){
-    b.querySelectorAll('.sr-grupo-body').forEach(g=>{g.style.display='none';});
-    b.querySelectorAll('.sr-marco-body').forEach(m=>{m.style.display='none';});
-    b.querySelectorAll('[id^="srgc-"],[id^="srmc-"]').forEach(ch=>{ch.style.transform='';});
-  }
+  if(o){srEixoOpenM.add(key);b.querySelectorAll('.sr-grupo-body').forEach(g=>{g.style.display='none';});b.querySelectorAll('.sr-marco-body').forEach(m=>{m.style.display='none';});b.querySelectorAll('[id^="srgc-"],[id^="srmc-"]').forEach(ch=>{ch.style.transform='';});}
+  else{srEixoOpenM.delete(key);}
 }
 function toggleSRGrupo(key){
   const b=document.getElementById('srgb-'+key),c=document.getElementById('srgc-'+key);
@@ -778,12 +776,14 @@ function renderGantt(){
         }).join('')}
       </div>
     </div>`).join('');
+  ganttEixoOpenM.forEach(ei=>{const b=document.getElementById('geb-'+ei),c=document.getElementById('gec-'+ei);if(b)b.style.display='block';if(c)c.style.transform='rotate(90deg)';});
 }
 function toggleGanttEixo(ei){
   const b=document.getElementById('geb-'+ei),c=document.getElementById('gec-'+ei);
   const o=b.style.display==='none';
   b.style.display=o?'block':'none';
   c.style.transform=o?'rotate(90deg)':'';
+  if(o)ganttEixoOpenM.add(ei);else ganttEixoOpenM.delete(ei);
 }
 function toggleGanttGrupo(key){
   const b=document.getElementById('ggb-'+key),c=document.getElementById('ggc-'+key);
@@ -801,6 +801,8 @@ function toggleGanttMarco(key){
 
 /* ── FILTRO RESPONSÁVEL ── */
 let activeRespFilterM=[];
+const ganttEixoOpenM=new Set();
+const srEixoOpenM=new Set();
 function grupoHasRespM(g){
   if(!activeRespFilterM.length)return true;
   if(g.resp&&activeRespFilterM.includes(g.resp))return true;
