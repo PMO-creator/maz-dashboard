@@ -6,11 +6,6 @@
 <title>EAP – MAZ 2026 | Dashboard Interativo</title>
 <script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||window.innerWidth<=768){location.replace('mobile.html');}</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous">// ── DYNAMIC SHEETS FETCH ─────────────────────────────────────────────────────
-<!--
-  ATENÇÃO DEV: Esta API Key é restrita a pmo-creator.github.io
-  Para testes locais, crie sua própria chave no Google Console.
-  Ver seção 3 do ONBOARDING.md antes de qualquer alteração.
--->
 const SHEETS_API_KEY   = 'AIzaSyCNImX3JgwMuoetVg69-ohC_Fdz5EdHzLY';
 const CRONOGRAMA_ID    = '17nttJ_ShqWztvDWH3l59iNqboLqkviZs3_PM5J3ihdA';
 const CRONOGRAMA_SHEET = 'master data';
@@ -141,7 +136,7 @@ async function loadSheetsData() {
     if(weekLabel){const ws=document.querySelector('[data-semana]');if(ws)ws.setAttribute('data-semana',weekLabel);}
     // Re-renderizar tudo
     preprocessStatuses();
-    buildGroupFilter();buildLegend();renderKPIs();renderTree();
+    buildGroupFilter();buildRespFilter();buildLegend();renderKPIs();renderTree();
     buildReqFilters();renderReqKPIs();renderReqs();
     ganttOpen=new Array(WBS.length).fill(false);
     ganttGroupExpanded={};ganttMarcoExpanded={};
@@ -564,6 +559,7 @@ async function loadSheetsData() {
   .tc-text{font-size:16px;color:#1E293B;font-weight:500;line-height:1.55;word-wrap:break-word;overflow-wrap:break-word;min-width:0;flex:1}
   .tc-text.empty{color:#1E293B;font-style:italic;font-weight:700}
   .tc-text.alert{color:#DC2626;font-style:italic;font-weight:700}
+  .resp-required-msg{display:none;align-items:center;justify-content:center;min-height:300px;font-size:24px;font-weight:900;color:#8AB870;letter-spacing:3px;text-align:center;padding:40px 20px}
 </style>
 </head>
 <body>
@@ -608,6 +604,14 @@ async function loadSheetsData() {
         <!-- populado por buildGroupFilter() -->
       </div>
     </div>
+    <div class="ms-wrap" id="ms-resp-wrap">
+      <button class="ms-btn" onclick="toggleMs('resp');event.stopPropagation()">
+        <span class="ms-label-text" id="ms-resp-label">Todos os responsáveis</span><span class="ms-arrow">▾</span>
+      </button>
+      <div class="ms-menu" id="ms-resp-menu" style="min-width:220px">
+        <!-- populado por buildRespFilter() -->
+      </div>
+    </div>
     <button class="btn-reset-all" onclick="resetAllFilters()">✕ Limpar Filtros</button>
     <div class="filter-sep"></div>
     <span class="filter-date-label">De</span>
@@ -644,6 +648,8 @@ async function loadSheetsData() {
     </div>
     <div class="legend" id="gantt-legend" style="background:#F8FAFC;border-top:1px solid var(--border)"></div>
     <div class="gantt-cards" id="gantt-container"></div>
+    <div class="resp-required-msg" id="gantt-resp-msg">SELECIONE AO MENOS UM RESPONSÁVEL</div>
+
   </div>
   </div><!-- /tab-gantt -->
 
@@ -678,6 +684,8 @@ async function loadSheetsData() {
       📅 Filtro de período ativo: <b id="date-banner-text"></b>
     </div>
     <div id="group-list" class="group-list"></div>
+    <div class="resp-required-msg" id="sr-resp-msg">SELECIONE AO MENOS UM RESPONSÁVEL</div>
+
     <div class="no-results" id="no-results" style="display:none">Nenhum resultado encontrado.</div>
   </div>
 
@@ -864,7 +872,7 @@ function preprocessStatuses(){
 
 window.onload=function(){
   preprocessStatuses();
-  buildGroupFilter();renderKPIs();renderTree();
+  buildGroupFilter();buildRespFilter();renderKPIs();renderTree();
   buildReqFilters();renderReqKPIs();renderReqs();
   renderGanttSection();
   document.getElementById('group-list').style.maxHeight='none';
@@ -918,6 +926,39 @@ function buildGroupFilter(){
     dot.className='ms-dot';dot.style.background=sc(g.status||'Em andamento');
     label.appendChild(inp);label.appendChild(dot);
     label.appendChild(document.createTextNode(g.id+'. '+g.name.substring(0,35)));
+    menu.appendChild(label);
+  });
+}
+function buildRespFilter(){
+  const menu=document.getElementById('ms-resp-menu');
+  if(!menu)return;
+  menu.innerHTML='';
+  const allLbl=document.createElement('label');
+  allLbl.className='ms-option ms-all-opt';
+  const allInp=document.createElement('input');
+  allInp.type='checkbox';allInp.id='ms-resp-chk-all';allInp.checked=true;
+  allInp.onchange=function(){onMsAll('resp',this);};
+  const allTxt=document.createElement('span');
+  allTxt.textContent='Todos';allTxt.style.cssText='font-weight:700;font-style:italic;color:#8AC43A';
+  allLbl.appendChild(allInp);allLbl.appendChild(allTxt);
+  menu.appendChild(allLbl);
+  const hr=document.createElement('hr');hr.className='ms-divider';menu.appendChild(hr);
+  const resps=new Set();
+  WBS.forEach(eixo=>eixo.children.forEach(grupo=>{
+    if(grupo.resp) resps.add(grupo.resp);
+    (grupo.tasks||[]).forEach(m=>{
+      if(m.resp) resps.add(m.resp);
+      (m.subtasks||[]).forEach(t=>{if(t.resp) resps.add(t.resp);});
+    });
+  }));
+  [...resps].sort().forEach(resp=>{
+    const label=document.createElement('label');
+    label.className='ms-option';
+    const inp=document.createElement('input');
+    inp.type='checkbox';inp.value=resp;inp.checked=true;
+    inp.onchange=()=>onMsChange('resp');
+    label.appendChild(inp);
+    label.appendChild(document.createTextNode(resp.length>35?resp.substring(0,33)+'…':resp));
     menu.appendChild(label);
   });
 }
@@ -1051,9 +1092,13 @@ function getFilters(){
   const _grAll=[...document.querySelectorAll('#ms-group-menu input:not([id$="-chk-all"])')];
   const _grChk=_grAll.filter(el=>el.checked).map(el=>el.value);
   const groupChecked=(_grChk.length===_grAll.length||_grChk.length===0)?[]:_grChk;
+  const _rpAll=[...document.querySelectorAll('#ms-resp-menu input:not([id$="-chk-all"])')];
+  const _rpChk=_rpAll.filter(el=>el.checked).map(el=>el.value);
+  const respChecked=(_rpChk.length===_rpAll.length||_rpChk.length===0)?[]:_rpChk;
   return{
     status:statusChecked,
     group:groupChecked,
+    resp:respChecked,
     search:(document.getElementById('searchInput').value||'').trim().toLowerCase(),
     dateStart:document.getElementById('filter-date-start').value||'',
     dateEnd:document.getElementById('filter-date-end').value||'',
@@ -1107,7 +1152,7 @@ function abrevNome(n){
   return p[0]+' '+mid+' '+p[p.length-1];
 }
 
-function buildCommentPanel(gi, mi, m, statusFilter){
+function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
   const tasks = m.tasks||[];
   if(!tasks.length) return '';
 
@@ -1145,7 +1190,8 @@ function buildCommentPanel(gi, mi, m, statusFilter){
   // Filtro bottom-up: só renderiza marcos/tarefas que passam no status filter
   const sfLow=(statusFilter||[]).map(s=>s.toLowerCase());
   function sfOk(v){ return !sfLow.length||sfLow.includes((v||'A iniciar').toLowerCase()); }
-  const visTasks = (!statusFilter||statusFilter.length===0) ? tasks : tasks.filter(t=>{
+  const rfActive = respFilter && respFilter.length>0;
+  let visTasks = (!statusFilter||statusFilter.length===0) ? tasks : tasks.filter(t=>{
     if(t.tipo==='marco'){
       const subs=t.subtasks||[];
       if(subs.length) return subs.some(s=>sfOk(s.status));
@@ -1153,6 +1199,16 @@ function buildCommentPanel(gi, mi, m, statusFilter){
     }
     return sfOk(t.status);
   });
+  // Resp filter: oculta marcos sem o respons\u00e1vel selecionado
+  if(rfActive){
+    visTasks=visTasks.filter(t=>{
+      if(t.tipo==='marco'){
+        if(t.resp&&respFilter.includes(t.resp))return true; // marco.resp bate \u2192 mostra tudo
+        return(t.subtasks||[]).some(s=>s.resp&&respFilter.includes(s.resp));
+      }
+      return t.resp&&respFilter.includes(t.resp);
+    });
+  }
   let html = `<div class="marco-comment-panel" id="cpanel-${gi}-${mi}" style="max-height:0">`;
   visTasks.forEach((t,ti)=>{
     if(t.tipo === 'marco'){
@@ -1162,7 +1218,11 @@ function buildCommentPanel(gi, mi, m, statusFilter){
       const de  = t.end   ? fmtBRshort(t.end)   : '';
       const dateStr = [ds,de].filter(Boolean).join('\u2192');
       const allSubs = t.subtasks||[];
-      const subs = (!statusFilter||statusFilter.length===0) ? allSubs : allSubs.filter(s=>sfOk(s.status));
+      const statusSubs = (!statusFilter||statusFilter.length===0) ? allSubs : allSubs.filter(s=>sfOk(s.status));
+      // Se marco.resp bate \u2192 todas as tarefas; sen\u00e3o \u2192 s\u00f3 as do respons\u00e1vel
+      const subs = rfActive&&!(t.resp&&respFilter.includes(t.resp))
+        ? statusSubs.filter(s=>s.resp&&respFilter.includes(s.resp))
+        : statusSubs;
       const hasSubs = subs.length > 0;
       const mKey = gi+'_'+mi+'_'+ti;
       const mIsOpen = !!marcoOpen[mKey];
@@ -1191,14 +1251,22 @@ function buildCommentPanel(gi, mi, m, statusFilter){
   return html;
 }
 
+function grupoHasResp(m,fResp){
+  if(!fResp.length)return true;
+  if(m.resp&&fResp.includes(m.resp))return true;
+  return(m.tasks||[]).some(t=>
+    (t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp))
+  );
+}
 function renderTree(){
   const f=getFilters();
   const list=document.getElementById('group-list');
   let html=''; let vg=0,vm=0;
 
   WBS.forEach((g,gi)=>{
-    const vis=g.children.filter(m=>matchesFilter(g,m,f));
-    const hasFilter=f.status.length>0||f.group.length>0||f.search||f.dateStart||f.dateEnd;
+    let vis=g.children.filter(m=>matchesFilter(g,m,f));
+    if(f.resp.length>0) vis=vis.filter(m=>grupoHasResp(m,f.resp));
+    const hasFilter=f.status.length>0||f.group.length>0||f.resp.length>0||f.search||f.dateStart||f.dateEnd;
     if(vis.length===0 && hasFilter) return;
     // eixo filter now handled by matchesFilter()
     vg++;vm+=vis.length;
@@ -1212,7 +1280,7 @@ function renderTree(){
       const marcoCount=hasC?m.tasks.filter(t=>t.tipo==='marco').length||m.tasks.length:0;
       const cOpen=!!commentOpen[gi+'_'+mi];
       const cBtn=hasC?`<span class="marco-comment-btn${cOpen?' open':''}" id="cbtn-${gi}-${mi}" onclick="toggleComment(${gi},${mi},event)">▸ ${marcoCount} marco${marcoCount!==1?'s':''}</span>`:'';
-      const cPanel=hasC?buildCommentPanel(gi,mi,m,f.status):'';
+      const cPanel=hasC?buildCommentPanel(gi,mi,m,f.status,f.resp):'';
       const dateStr=m.end?`até ${fmtBRshort(m.end)}`:(m.start?`de ${fmtBRshort(m.start)}`:'');
       const clickAttr=hasC?`onclick="toggleComment(${gi},${mi},event)"`:'';
       return `<div class="marco-wrap" id="mwrap-${gi}-${mi}">
@@ -1257,7 +1325,7 @@ function renderTree(){
   document.getElementById('no-results').style.display=html?'none':'block';
   const rb=document.getElementById('root-badge');if(rb)rb.textContent=`${vg} eixos · ${vm} grupos`;
 
-  const hasFilter=f.status.length>0||f.group.length>0||f.search||f.dateStart||f.dateEnd;
+  const hasFilter=f.status.length>0||f.group.length>0||f.resp.length>0||f.search||f.dateStart||f.dateEnd;
   document.getElementById('visible-count').textContent=hasFilter?`Filtrado: ${vg} eixos · ${vm} grupos`:'Exibindo todos — 9 eixos · 48 grupos';
   const badge=document.getElementById('search-badge');
   if(badge)badge.textContent=hasFilter?`${vm} grupo${vm!==1?'s':''} encontrado${vm!==1?'s':''}`:'Todos os itens';
@@ -1347,6 +1415,9 @@ function resetAllFilters(){
   // Marcar todos os eixos como checked
   document.querySelectorAll('#ms-group-menu input').forEach(el=>el.checked=true);
   onMsChange('group');
+  // Marcar todos os responsáveis como checked
+  document.querySelectorAll('#ms-resp-menu input').forEach(el=>el.checked=true);
+  onMsChange('resp');
   // Limpar datas
   document.getElementById('filter-date-start').value='';
   document.getElementById('filter-date-end').value='';
@@ -1361,16 +1432,30 @@ function clearDates(){
 }
 function applyFilter(){
   const f=getFilters();
+  const _rpAllA=[...document.querySelectorAll('#ms-resp-menu input:not([id$="-chk-all"])')];
+  const noResp=_rpAllA.filter(el=>el.checked).length===0;
   renderTree();
-  // Eixo + Status filter → mostrar/esconder cards do Gantt
-  WBS.forEach((e,gi)=>{
-    const card=document.getElementById('gantt-card-'+gi);
-    if(!card)return;
-    const eixoOut = f.group.length>0 && !f.group.includes(e.id);
-    const hasVisible = f.status.length===0 || (e.children||[]).some(g=>f.status.includes(g.status));
-    card.style.display=(eixoOut||!hasVisible)?'none':'';
-    if(ganttOpen[gi] && !eixoOut && hasVisible) renderGanttForEixo(gi);
-  });
+  const srMsg=document.getElementById('sr-resp-msg');
+  const srList=document.getElementById('group-list');
+  if(srMsg)srMsg.style.display=noResp?'flex':'none';
+  if(srList)srList.style.display=noResp?'none':'';
+  const noRes=document.getElementById('no-results');
+  if(noRes&&noResp)noRes.style.display='none';
+  const gMsg=document.getElementById('gantt-resp-msg');
+  const gCon=document.getElementById('gantt-container');
+  if(gMsg)gMsg.style.display=noResp?'flex':'none';
+  if(gCon)gCon.style.display=noResp?'none':'';
+  if(!noResp){
+    WBS.forEach((e,gi)=>{
+      const card=document.getElementById('gantt-card-'+gi);
+      if(!card)return;
+      const eixoOut=f.group.length>0&&!f.group.includes(e.id);
+      const hasVisible=f.status.length===0||(e.children||[]).some(g=>f.status.includes(g.status));
+      const respOut=f.resp.length>0&&!(e.children||[]).some(m=>grupoHasResp(m,f.resp));
+      card.style.display=(eixoOut||!hasVisible||respOut)?'none':'';
+      if(ganttOpen[gi]&&!eixoOut&&hasVisible&&!respOut)renderGanttForEixo(gi);
+    });
+  }
   updateFilterChip();
 }
 function updateFilterChip(){
@@ -1636,7 +1721,11 @@ function setGanttMode(mode){
 function renderGanttSection(){
   const con=document.getElementById('gantt-container');
   if(!con)return;
+  const _rpA=[...document.querySelectorAll('#ms-resp-menu input:not([id$="-chk-all"])')];
+  const _rpC=_rpA.filter(el=>el.checked).map(el=>el.value);
+  const fRespG=(_rpC.length===_rpA.length||_rpC.length===0)?[]:_rpC;
   con.innerHTML=WBS.map((eixo,gi)=>{
+    if(fRespG.length>0&&!(eixo.children||[]).some(m=>grupoHasResp(m,fRespG)))return '';
     const n=(eixo.children||[]).length;
     const col=sc(eixo.status||'Em andamento');
     return `<div class="gantt-card" id="gantt-card-${gi}">
@@ -1733,6 +1822,11 @@ function renderGanttForEixo(gi){
   const _fChk=_fAll.filter(el=>el.checked).map(el=>el.value);
   const fStatus=(_fChk.length===_fAll.length||_fChk.length===0)?[]:_fChk;
 
+  // Filtro de responsável (gantt)
+  const _rpAllG=[...document.querySelectorAll('#ms-resp-menu input:not([id$="-chk-all"])')];
+  const _rpChkG=_rpAllG.filter(el=>el.checked).map(el=>el.value);
+  const fResp=(_rpChkG.length===_rpAllG.length||_rpChkG.length===0)?[]:_rpChkG;
+
   // Build flat rows list
   const rows=[];
   allGrupos.forEach((g,ri)=>{
@@ -1740,18 +1834,21 @@ function renderGanttForEixo(gi){
     if(fStatus.length>0 && !fStatus.includes(g.status))return;
     const allMarcos = (g.tasks||[]).filter(t=>t.tipo==='marco'||(t.start||t.end));
     const datedTasks = allMarcos.filter(t=>t.start||t.end);
+    if(fResp.length>0){const hasAny=datedTasks.some(t=>(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp)));if(!hasAny)return;}
     const hasTasks=datedTasks.length>0;
     const expanded=!!ganttGroupExpanded[gi+'_'+ri];
     rows.push({type:'grupo',data:g,ri,hasTasks,expanded});
     if(expanded){
       datedTasks.filter(t=>inRange(t.start,t.end)&&(!fStatus.length||fStatus.includes(t.status))).forEach((t,ti)=>{
+        if(fResp.length>0){const mm=(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp));if(!mm)return;}
         const datedSubs=(t.subtasks||[]).filter(s=>s.start||s.end);
         const filteredSubs=datedSubs.filter(s=>inRange(s.start,s.end)&&(!fStatus.length||fStatus.includes(s.status)));
-        const hasSubs=filteredSubs.length>0;
+        const visSubs=fResp.length>0&&!(t.resp&&fResp.includes(t.resp))?filteredSubs.filter(s=>s.resp&&fResp.includes(s.resp)):filteredSubs;
+        const hasSubs=visSubs.length>0;
         const marcoExp=!!ganttMarcoExpanded[gi+'_'+ri+'_'+ti];
         rows.push({type:'task',data:t,parentRi:ri,ti,hasSubs,marcoExp});
         if(marcoExp){
-          filteredSubs.forEach(s=>{
+          visSubs.forEach(s=>{
             rows.push({type:'tarefa',data:s,parentRi:ri,parentTi:ti});
           });
         }
@@ -2021,7 +2118,8 @@ function _updateMsLabel(id){
   const checked=items.filter(i=>i.checked).map(i=>i.value);
   const lbl=document.getElementById('ms-'+id+'-label');
   if(checked.length===0||checked.length===items.length){
-    lbl.textContent=id==='status'?'Todos os status':'Todos os eixos';
+    if(id==='resp'&&checked.length===0){lbl.textContent='Nenhum selecionado';}
+    else{lbl.textContent=id==='status'?'Todos os status':id==='resp'?'Todos os responsáveis':'Todos os eixos';}
     // Sync "Todos" checkbox
     const allChk=document.getElementById('ms-'+id+'-chk-all');
     if(allChk){allChk.checked=checked.length===items.length&&items.length>0;allChk.indeterminate=false;}
@@ -2149,11 +2247,6 @@ document.addEventListener('click',function(e){
 });
 
 // ── DYNAMIC SHEETS FETCH ─────────────────────────────────────────────────────
-/*
-  ATENÇÃO DEV: Esta API Key é restrita a pmo-creator.github.io
-  Para testes locais, crie sua própria chave no Google Console.
-  Ver seção 3 do ONBOARDING.md antes de qualquer alteração.
-*/
 const SHEETS_API_KEY   = 'AIzaSyCNImX3JgwMuoetVg69-ohC_Fdz5EdHzLY';
 const CRONOGRAMA_ID    = '17nttJ_ShqWztvDWH3l59iNqboLqkviZs3_PM5J3ihdA';
 const CRONOGRAMA_SHEET = 'master data';
@@ -2284,7 +2377,7 @@ async function loadSheetsData() {
     if(weekLabel){const ws=document.querySelector('[data-semana]');if(ws)ws.setAttribute('data-semana',weekLabel);}
     // Re-renderizar tudo
     preprocessStatuses();
-    buildGroupFilter();buildLegend();renderKPIs();renderTree();
+    buildGroupFilter();buildRespFilter();buildLegend();renderKPIs();renderTree();
     buildReqFilters();renderReqKPIs();renderReqs();
     ganttOpen=new Array(WBS.length).fill(false);
     ganttGroupExpanded={};ganttMarcoExpanded={};

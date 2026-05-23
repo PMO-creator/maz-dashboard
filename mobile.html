@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -181,6 +181,12 @@
   .gantt-scroll::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
   .gantt-hint{font-size:10px;color:var(--muted);padding:6px 12px 2px;font-style:italic;text-align:center}
 
+  /* RESPONSÁVEL FILTER */
+  .resp-filter-bar{background:#2F4A18;padding:6px 10px;border-bottom:1px solid rgba(138,196,58,.2);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+  .resp-filter-bar::-webkit-scrollbar{display:none}
+  .resp-chip{font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;border:1.5px solid rgba(138,196,58,.35);background:transparent;color:rgba(255,255,255,.7);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+  .resp-chip.active{background:var(--accentD);color:#FFF;border-color:var(--accentD)}
+
   /* FOOTER */
   .footer{text-align:center;padding:14px;font-size:10px;color:var(--muted);border-top:1px solid var(--border);margin-top:4px}
   .footer a{color:var(--accent);text-decoration:none;font-weight:700}
@@ -207,6 +213,11 @@
   <div class="tab active" onclick="switchTab('gantt',this)">📊 Gantt</div>
   <div class="tab" onclick="switchTab('report',this)">📝 Status Report</div>
   <div class="tab" onclick="switchTab('reqs',this)">📦 Requisições</div>
+</div>
+
+<!-- FILTRO RESPONSÁVEL (Gantt + Status Report) -->
+<div id="resp-filter-bar" class="resp-filter-bar" style="display:none">
+  <div id="resp-chips" style="display:flex;gap:6px;align-items:center"></div>
 </div>
 
 <!-- TAB: GANTT -->
@@ -237,11 +248,6 @@
 </div>
 
 <script>
-/*
-  ATENÇÃO DEV: Esta API Key é restrita a pmo-creator.github.io
-  Para testes locais, crie sua própria chave no Google Console.
-  Ver seção 3 do ONBOARDING.md antes de qualquer alteração.
-*/
 const SHEETS_API_KEY   = 'AIzaSyCNImX3JgwMuoetVg69-ohC_Fdz5EdHzLY';
 const CRONOGRAMA_ID    = '17nttJ_ShqWztvDWH3l59iNqboLqkviZs3_PM5J3ihdA';
 const CRONOGRAMA_SHEET = 'master data';
@@ -480,8 +486,9 @@ function renderStatusReport(){
         <span class="eixo-chev" id="srec-sre${ei}">▶</span>
       </div>
       <div class="sr-eixo-body" id="sreb-sre${ei}" style="display:none">
-        ${e.children.map((g,gi)=>{
+        ${e.children.filter(g=>!activeRespFilterM.length||grupoHasRespM(g)).map((g,gi)=>{
           const gKey=`sre${ei}g${gi}`;
+          const visMarcosSR=activeRespFilterM.length?g.marcos.filter(m=>(m.resp&&activeRespFilterM.includes(m.resp))||(m.subs||[]).some(t=>t.resp&&activeRespFilterM.includes(t.resp))):g.marcos;
           return`<div class="sr-grupo-item">
             <div class="sr-grupo-header" onclick="toggleSRGrupo('${gKey}')">
               <span class="grupo-dot ${S_COLOR[g.status]||'s-iniciar'}" style="width:9px;height:9px;border-radius:50%;flex-shrink:0"></span>
@@ -490,8 +497,9 @@ function renderStatusReport(){
               <span class="grupo-chev" id="srgc-${gKey}">▶</span>
             </div>
             <div class="sr-grupo-body" id="srgb-${gKey}" style="display:none">
-              ${g.marcos.map((m,mi)=>{
+              ${visMarcosSR.map((m,mi)=>{
                 const mKey=`sre${ei}g${gi}m${mi}`;
+                const visSubsSR=activeRespFilterM.length&&!(m.resp&&activeRespFilterM.includes(m.resp))?m.subs.filter(t=>t.resp&&activeRespFilterM.includes(t.resp)):m.subs;
                 return`<div class="sr-marco">
                   <div class="sr-marco-header" onclick="toggleSRMarco('${mKey}')">
                     <span class="sr-marco-dot ${S_COLOR[m.status]||'s-iniciar'}"></span>
@@ -501,7 +509,7 @@ function renderStatusReport(){
                   </div>
                   <div class="sr-marco-body" id="srmb-${mKey}" style="display:none">
                     ${srFields(m.prog,m.enc)}
-                    ${m.subs.map(t=>`
+                    ${visSubsSR.map(t=>`
                       <div class="sr-tarefa">
                         <div class="sr-tarefa-name">${escHtml(t.tarefa)}</div>
                         ${srFields(t.prog,t.enc)}
@@ -728,8 +736,9 @@ function renderGantt(){
         <span class="eixo-chev" id="gec-${ei}">▶</span>
       </div>
       <div class="eixo-body" id="geb-${ei}" style="display:none">
-        ${e.children.map((g,gi)=>{
+        ${e.children.filter(g=>!activeRespFilterM.length||grupoHasRespM(g)).map((g,gi)=>{
           const gKey=`${ei}_${gi}`;
+          const visMarcos=activeRespFilterM.length?g.marcos.filter(m=>(m.resp&&activeRespFilterM.includes(m.resp))||(m.subs||[]).some(t=>t.resp&&activeRespFilterM.includes(t.resp))):g.marcos;
           return`<div class="grupo-item">
             <div class="grupo-header" onclick="toggleGanttGrupo('${gKey}')">
               <span class="grupo-dot ${S_COLOR[g.status]||'s-iniciar'}"></span>
@@ -741,8 +750,9 @@ function renderGantt(){
               <span class="grupo-chev" id="ggc-${gKey}">▶</span>
             </div>
             <div class="marco-body" id="ggb-${gKey}" style="display:none">
-              ${g.marcos.length?g.marcos.map((m,mi)=>{
+              ${visMarcos.length?visMarcos.map((m,mi)=>{
                 const mKey=`${gKey}_${mi}`;
+                const visSubs=activeRespFilterM.length&&!(m.resp&&activeRespFilterM.includes(m.resp))?m.subs.filter(t=>t.resp&&activeRespFilterM.includes(t.resp)):m.subs;
                 return`<div class="marco-item">
                   <div class="marco-row" onclick="toggleGanttMarco('${mKey}')">
                     <span class="marco-dot ${S_COLOR[m.status]||'s-iniciar'}"></span>
@@ -750,10 +760,10 @@ function renderGantt(){
                       <div class="marco-name">${escHtml(m.tarefa)}</div>
                       <div class="marco-meta">${ganttBar(m.start,m.end,m.status)}</div>
                     </div>
-                    ${m.subs.length?`<span class="marco-chev" id="gmc-${mKey}">▶</span>`:''}
+                    ${visSubs.length?`<span class="marco-chev" id="gmc-${mKey}">▶</span>`:''}
                   </div>
-                  ${m.subs.length?`<div class="tarefa-body" id="gmb-${mKey}" style="display:none">
-                    ${m.subs.map(t=>`<div class="tarefa-item">
+                  ${visSubs.length?`<div class="tarefa-body" id="gmb-${mKey}" style="display:none">
+                    ${visSubs.map(t=>`<div class="tarefa-item">
                       <div class="tarefa-header">
                         <span class="tarefa-chip ${S_COLOR[t.status]||'s-iniciar'}">${S_LABEL[t.status]||t.status}</span>
                         <span class="tarefa-name">${escHtml(t.tarefa)}</span>
@@ -789,12 +799,55 @@ function toggleGanttMarco(key){
   if(c)c.style.transform=o?'rotate(90deg)':'';
 }
 
+/* ── FILTRO RESPONSÁVEL ── */
+let activeRespFilterM=[];
+function grupoHasRespM(g){
+  if(!activeRespFilterM.length)return true;
+  if(g.resp&&activeRespFilterM.includes(g.resp))return true;
+  return(g.marcos||[]).some(m=>(m.resp&&activeRespFilterM.includes(m.resp))||(m.subs||[]).some(t=>t.resp&&activeRespFilterM.includes(t.resp)));
+}
+function toggleRespChip(resp,el){
+  if(resp===null){
+    activeRespFilterM=[];
+    document.querySelectorAll('.resp-chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    const idx=activeRespFilterM.indexOf(resp);
+    if(idx>=0){activeRespFilterM.splice(idx,1);el.classList.remove('active');}
+    else{activeRespFilterM.push(resp);el.classList.add('active');}
+    const allChip=document.getElementById('resp-chip-all');
+    if(allChip)allChip.classList.toggle('active',activeRespFilterM.length===0);
+  }
+  renderGantt();renderStatusReport();
+}
+function buildRespFilterMobile(){
+  const bar=document.getElementById('resp-filter-bar');
+  const chips=document.getElementById('resp-chips');
+  if(!chips)return;
+  const resps=new Set();
+  WBS.forEach(e=>e.children.forEach(g=>{
+    if(g.resp)resps.add(g.resp);
+    (g.marcos||[]).forEach(m=>{if(m.resp)resps.add(m.resp);(m.subs||[]).forEach(t=>{if(t.resp)resps.add(t.resp);});});
+  }));
+  if(!resps.size){if(bar)bar.style.display='none';return;}
+  let html=`<span id="resp-chip-all" class="resp-chip active" onclick="toggleRespChip(null,this)">Todos</span>`;
+  [...resps].sort().forEach(r=>{
+    html+=`<span class="resp-chip" onclick="toggleRespChip(${JSON.stringify(r)},this)">${escHtml(r)}</span>`;
+  });
+  chips.innerHTML=html;
+  const currentTab=document.querySelector('.tab.active');
+  const tabName=currentTab?currentTab.getAttribute('onclick'):'';
+  if(bar)bar.style.display=(tabName.includes('reqs'))?'none':'flex';
+}
+
 /* ── TAB SWITCH ── */
 function switchTab(name,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-'+name).classList.add('active');
+  const bar=document.getElementById('resp-filter-bar');
+  if(bar)bar.style.display=(name==='reqs')?'none':'flex';
 }
 
 /* ── LOAD DATA ── */
@@ -817,7 +870,7 @@ async function loadData(){
     document.getElementById('header-date').textContent=`${String(now.getDate()).padStart(2,'0')} ${MONTHS[now.getMonth()]} ${now.getFullYear()} · MAZ ELD`;
     document.getElementById('refresh-time').textContent=`${hh}:${mm}`;
     if(statusEl){statusEl.textContent=reqsOk?'🟢 Ao vivo':'🟡 Cronograma OK · REQ erro';statusEl.style.background=reqsOk?'#052e16':'#422006';statusEl.style.color=reqsOk?'#4ade80':'#fb923c';}
-    renderGantt();renderStatusReport();renderReqs();
+    buildRespFilterMobile();renderGantt();renderStatusReport();renderReqs();
   }catch(err){
     document.getElementById('gantt-list').innerHTML=`<div class="error-msg">Erro: ${escHtml(err.message)}</div>`;
     if(statusEl){statusEl.textContent='🔴 Erro — sem dados';statusEl.style.background='#450a0a';statusEl.style.color='#f87171';}
