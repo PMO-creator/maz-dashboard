@@ -17,7 +17,7 @@ let _refreshTimer = null;
 async function fetchSheet(spreadsheetId, sheetName) {
   const encodedSheet = encodeURIComponent(sheetName);
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodedSheet}!A1:AZ2000?key=${SHEETS_API_KEY}`;
-  const resp = await fetch(url);
+  const resp = await fetch(url, {referrerPolicy:'origin'});
   if (!resp.ok) throw new Error(`Sheets API: HTTP ${resp.status} — ${await resp.text()}`);
   return (await resp.json()).values || [];
 }
@@ -2258,7 +2258,7 @@ let _refreshTimer = null;
 async function fetchSheet(spreadsheetId, sheetName) {
   const encodedSheet = encodeURIComponent(sheetName);
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodedSheet}!A1:AZ2000?key=${SHEETS_API_KEY}`;
-  const resp = await fetch(url);
+  const resp = await fetch(url, {referrerPolicy:'origin'});
   if (!resp.ok) throw new Error(`Sheets API: HTTP ${resp.status} — ${await resp.text()}`);
   return (await resp.json()).values || [];
 }
