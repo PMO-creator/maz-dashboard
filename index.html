@@ -560,6 +560,7 @@ async function loadSheetsData() {
   .tc-text.empty{color:#1E293B;font-style:italic;font-weight:700}
   .tc-text.alert{color:#DC2626;font-style:italic;font-weight:700}
   .resp-required-msg{display:none;align-items:center;justify-content:center;min-height:300px;font-size:24px;font-weight:900;color:#8AB870;letter-spacing:3px;text-align:center;padding:40px 20px}
+  .date-error-msg{display:flex;align-items:center;justify-content:center;padding:60px 24px;font-size:15px;font-weight:700;color:#f87171;background:rgba(220,38,38,.08);border:2px solid rgba(220,38,38,.4);border-radius:10px;margin:24px;text-align:center;letter-spacing:.02em}
 </style>
 </head>
 <body>
@@ -623,6 +624,13 @@ async function loadSheetsData() {
 </div>
 
 <div class="container">
+<div id="date-err-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,.6);align-items:center;justify-content:center">
+  <div style="background:#fff;border:2px solid #dc2626;border-radius:14px;padding:36px 40px;max-width:460px;width:90%;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,.4)">
+    <div style="font-size:40px;margin-bottom:14px">&#9888;&#65039;</div>
+    <div style="font-size:16px;font-weight:700;color:#dc2626;line-height:1.65">ERRO DE PER&#205;ODO<br><span style="font-size:14px;font-weight:600">Verifique os campos<br><b>Data Inicial</b> e <b>Data Final</b></span></div>
+    <button onclick="hideDateError()" style="margin-top:24px;padding:10px 32px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.03em">OK, Corrigir</button>
+  </div>
+</div>
   <div id="tab-gantt" class="tab-panel">
   <!-- GANTT SECTION -->
   <div class="gantt-section">
@@ -1304,7 +1312,6 @@ function renderTree(){
           <span class="group-id" style="background:${color}">${escH(g.id)}</span>
           <span class="group-name">${gName}</span>
           <span class="group-count">${vis.length} grupos</span>
-          ${f.status.length===0?`<span class="status-chip" style="background:${color}">${sl(g.status)}</span>`:''}
         </div>
       </div>
       <div class="marco-list" id="mlist-${gi}" style="max-height:${isOpen?'none':'0'}">${mItems}</div>
@@ -1428,10 +1435,15 @@ function resetAllFilters(){
 function clearDates(){
   document.getElementById('filter-date-start').value='';
   document.getElementById('filter-date-end').value='';
+  hideDateError();
   applyFilter();
 }
+function showDateError(){const m=document.getElementById('date-err-modal');if(m)m.style.display='flex';}
+function hideDateError(){const m=document.getElementById('date-err-modal');if(m)m.style.display='none';}
 function applyFilter(){
   const f=getFilters();
+  if(f.dateStart&&f.dateEnd&&f.dateStart>f.dateEnd){showDateError();return;}
+  hideDateError();
   const _rpAllA=[...document.querySelectorAll('#ms-resp-menu input:not([id$="-chk-all"])')];
   const noResp=_rpAllA.filter(el=>el.checked).length===0;
   renderTree();
@@ -1734,7 +1746,6 @@ function renderGanttSection(){
         <span class="gantt-eixo-id" style="background:${col}">${escH(eixo.id||String(gi+1))}</span>
         <span class="gantt-eixo-name">${escH(eixo.name)}</span>
         <span class="gantt-eixo-count">${n} grupo${n!==1?'s':''}</span>
-        <span class="gantt-status-chip" style="background:${col}">${escH(sl(eixo.status||'Em andamento'))}</span>
       </div>
       <div class="gantt-body" id="gbody-${gi}" style="max-height:0">
         <div class="gantt-svg-wrap"><div id="gantt-svg-${gi}"></div></div>
@@ -1807,8 +1818,10 @@ function renderGanttForEixo(gi){
   // Date filter helpers
   const fDS=document.getElementById('filter-date-start').value;
   const fDE=document.getElementById('filter-date-end').value;
+  const _skipDate=!!(fDS&&fDE&&fDS>fDE);
+  if(_skipDate)showDateError();
   function inRange(start,end){
-    if(!fDS&&!fDE)return true;
+    if(_skipDate||(!fDS&&!fDE))return true;
     if(!start&&!end)return false;
     const s=start?new Date(start):null,e=end?new Date(end):null;
     const fs=fDS?new Date(fDS):null,fe=fDE?new Date(fDE):null;

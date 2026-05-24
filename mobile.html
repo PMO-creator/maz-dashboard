@@ -143,6 +143,9 @@
   .sr-no-update{font-size:11px;color:var(--muted);font-style:italic;padding:2px 0}
   /* tarefa inside marco */
   .sr-tarefa{padding:7px 10px 7px 16px;border-left:2px solid #E2E8F0;margin:6px 0 0 8px;background:#F8FAFC;border-radius:0 6px 6px 0}
+  .sr-date{font-size:11px;color:rgba(255,255,255,.45);white-space:nowrap;margin-left:4px;flex-shrink:0}
+  .sr-date-t{font-size:11px;color:rgba(138,196,58,.5);margin-top:1px}
+  .date-error-msg{display:flex;align-items:center;justify-content:center;padding:48px 20px;font-size:14px;font-weight:700;color:#f87171;background:rgba(220,38,38,.08);border:2px solid rgba(220,38,38,.4);border-radius:10px;margin:16px;text-align:center;letter-spacing:.02em}
   .sr-tarefa-name{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
 
   /* REQS */
@@ -181,9 +184,24 @@
   .gantt-scroll::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
   .gantt-hint{font-size:10px;color:var(--muted);padding:6px 12px 2px;font-style:italic;text-align:center}
 
-  /* RESPONSÁVEL FILTER */
-  .resp-filter-bar{background:#2F4A18;padding:8px 12px;border-bottom:1px solid rgba(138,196,58,.2)}
-  .resp-select{width:100%;background:#1B3A0A;color:#FFF;border:1.5px solid rgba(138,196,58,.4);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none}
+  /* FILTER BAR MOBILE */
+  .filter-bar-mobile{background:#2F4A18;padding:8px 12px;border-bottom:1px solid rgba(138,196,58,.2);display:flex;flex-direction:column;gap:6px}
+  .fbar-row{display:flex;gap:6px;align-items:center}
+  .m-sel{flex:1;min-width:0;background:#1B3A0A;color:#FFF;border:1.5px solid rgba(138,196,58,.4);border-radius:8px;padding:7px 8px;font-size:12px;font-weight:600;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none}
+  .m-date{flex:1;min-width:0;background:#1B3A0A;color:#FFF;border:1.5px solid rgba(138,196,58,.4);border-radius:8px;padding:6px 8px;font-size:12px;outline:none;color-scheme:dark}
+  .fbar-lbl{font-size:11px;color:rgba(255,255,255,.6);white-space:nowrap}
+  .fbar-clear{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.7);border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+  .viz-bar-mobile{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#1e3510;border-bottom:1px solid rgba(138,196,58,.15);position:sticky;top:0;z-index:40}
+  .viz-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.6);white-space:nowrap;letter-spacing:.04em}
+  .viz-collapse-btn{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.75);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+  .viz-collapse-btn:disabled{opacity:.3;cursor:not-allowed}
+  .viz-sel{flex:1;background:#1B3A0A;color:#FFF;border:1.5px solid rgba(138,196,58,.4);border-radius:8px;padding:6px 8px;font-size:12px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none}
+  .m-status-wrap{position:relative;flex:1;min-width:0}
+  .m-btn-status{width:100%;text-align:left;background:#1B3A0A;color:#FFF;border:1.5px solid rgba(138,196,58,.4);border-radius:8px;padding:7px 8px;font-size:12px;font-weight:600;cursor:pointer;outline:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .m-status-panel{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1B3A0A;border:1.5px solid rgba(138,196,58,.4);border-radius:8px;z-index:200;padding:4px 0;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+  .m-status-opt{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:13px;color:#FFF;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .m-status-opt:active{background:rgba(138,196,58,.15)}
+  .m-status-opt input[type=checkbox]{accent-color:#8AC43A;width:16px;height:16px;flex-shrink:0;cursor:pointer}
 
   /* FOOTER */
   .footer{text-align:center;padding:14px;font-size:10px;color:var(--muted);border-top:1px solid var(--border);margin-top:4px}
@@ -213,15 +231,46 @@
   <div class="tab" onclick="switchTab('reqs',this)">📦 Requisições</div>
 </div>
 
-<!-- FILTRO RESPONSÁVEL (Gantt + Status Report) -->
-<div id="resp-filter-bar" class="resp-filter-bar" style="display:none">
-  <select id="resp-select" class="resp-select" onchange="filterByResp(this.value)">
-    <option value="">&#128100; Todos os respons&#225;veis</option>
-  </select>
+<!-- FILTER BAR MOBILE -->
+<div id="filter-bar-mobile" class="filter-bar-mobile" style="display:none">
+  <div class="fbar-row">
+    <div class="m-status-wrap">
+      <button id="m-btn-status" class="m-btn-status" onclick="toggleStatusDropdown(event)">&#128276; Todos os status</button>
+      <div id="m-status-panel" class="m-status-panel" style="display:none">
+        <label class="m-status-opt"><input type="checkbox" value="Atrasado" onchange="applyMobileFilters()"> &#128308; Atrasado</label>
+        <label class="m-status-opt"><input type="checkbox" value="Risco de atraso" onchange="applyMobileFilters()"> &#128992; Risco de atraso</label>
+        <label class="m-status-opt"><input type="checkbox" value="Em andamento" onchange="applyMobileFilters()"> &#128309; Em andamento</label>
+        <label class="m-status-opt"><input type="checkbox" value="A iniciar" onchange="applyMobileFilters()"> &#9898; A iniciar</label>
+        <label class="m-status-opt"><input type="checkbox" value="Definir datas" onchange="applyMobileFilters()"> &#128993; Definir datas</label>
+        <label class="m-status-opt"><input type="checkbox" value="Feito" onchange="applyMobileFilters()"> &#128994; Feito</label>
+        <label class="m-status-opt"><input type="checkbox" value="Cancelado/Congelado" onchange="applyMobileFilters()"> &#9899; Cancelado/Congelado</label>
+      </div>
+    </div>
+    <select id="m-sel-resp" class="m-sel" onchange="applyMobileFilters()">
+      <option value="">&#128100; Todos</option>
+    </select>
+  </div>
+  <div class="fbar-row">
+    <span class="fbar-lbl">De</span>
+    <input type="date" id="m-date-start" class="m-date" onchange="applyMobileFilters()">
+    <span class="fbar-lbl">At&#233;</span>
+    <input type="date" id="m-date-end" class="m-date" onchange="applyMobileFilters()">
+    <button class="fbar-clear" onclick="clearMobileFilters()">&#10005; Limpar</button>
+  </div>
 </div>
 
 <!-- TAB: GANTT -->
 <div id="tab-gantt" class="tab-panel active">
+<div class="viz-bar-mobile">
+  <span class="viz-lbl">VISUALIZAÇÃO</span>
+  <select id="m-gantt-viz" class="viz-sel" onchange="applyMobileVizGantt()">
+    <option value="eixo">Eixo</option>
+    <option value="grupo">Grupo</option>
+    <option value="marco">Marco</option>
+    <option value="tarefa">Tarefa</option>
+  </select>
+  <button id="m-gantt-recolher" class="viz-collapse-btn" onclick="recolherGantt()" disabled>&#9650; Recolher</button>
+</div>
   <div class="eixo-section" style="padding-top:12px">
     <div class="section-title">Cronograma por Eixo</div>
     <div id="gantt-list"><div class="loading"><div class="spinner"></div><br>Carregando...</div></div>
@@ -230,6 +279,16 @@
 
 <!-- TAB: STATUS REPORT -->
 <div id="tab-report" class="tab-panel">
+<div class="viz-bar-mobile">
+  <span class="viz-lbl">VISUALIZAÇÃO</span>
+  <select id="m-sr-viz" class="viz-sel" onchange="applyMobileVizSR()">
+    <option value="eixo">Eixo</option>
+    <option value="grupo">Grupo</option>
+    <option value="marco">Marco</option>
+    <option value="tarefa">Tarefa</option>
+  </select>
+  <button id="m-sr-recolher" class="viz-collapse-btn" onclick="recolherSR()" disabled>&#9650; Recolher</button>
+</div>
   <div class="eixo-section" style="padding-top:12px">
     <div class="section-title">Progresso e Encaminhamentos</div>
     <div id="sr-list"><div class="loading"><div class="spinner"></div><br>Carregando...</div></div>
@@ -272,6 +331,12 @@ function fmtDate(d){
   if(/^\d{4}-\d{2}-\d{2}/.test(d))return d.substring(0,10);
   const m=d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
   return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:'';
+}
+const MO=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+function fmtShort(d){
+  if(!d)return'';
+  const p=d.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return p?`${parseInt(p[3],10)} ${MO[parseInt(p[2],10)-1]}`:''
 }
 function worst(arr){const v=arr.filter(s=>s in S_RANK);if(!v.length)return'A iniciar';return v.reduce((w,s)=>S_RANK[s]<S_RANK[w]?s:w,'Feito');}
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -400,7 +465,6 @@ function renderEixos(){
       <div class="eixo-header" onclick="toggleEixo('e${ei}')">
         <span class="eixo-id">${e.id}</span>
         <span class="eixo-name">${escHtml(e.name)}</span>
-        <span class="eixo-chip ${S_COLOR[e.status]||'s-iniciar'}">${S_LABEL[e.status]||e.status}</span>
         <span class="eixo-chev" id="ec-e${ei}">▶</span>
       </div>
       <div class="eixo-body" id="eb-e${ei}">
@@ -482,13 +546,17 @@ function renderStatusReport(){
       <div class="sr-eixo-header" onclick="toggleSREixo('sre${ei}')">
         <span class="eixo-id" style="font-size:13px">${e.id}</span>
         <span class="sr-eixo-name">${escHtml(e.name)}</span>
-        <span class="eixo-chip ${S_COLOR[e.status]||'s-iniciar'}">${S_LABEL[e.status]||e.status}</span>
         <span class="eixo-chev" id="srec-sre${ei}">▶</span>
       </div>
       <div class="sr-eixo-body" id="sreb-sre${ei}" style="display:none">
-        ${e.children.filter(g=>!activeRespFilterM.length||grupoHasRespM(g)).map((g,gi)=>{
+        ${e.children.filter(g=>{
+          if(mFilters.status.length&&!(g.marcos||[]).some(m=>mFilters.status.includes(m.status)||(m.subs||[]).some(t=>mFilters.status.includes(t.status))))return false;
+          if(activeRespFilterM.length&&!grupoHasRespM(g))return false;
+          if((mFilters.dateStart||mFilters.dateEnd)&&!(g.marcos||[]).some(m=>(!mFilters.dateEnd||!m.end||m.end<=mFilters.dateEnd)&&(!mFilters.dateStart||!m.end||m.end>=mFilters.dateStart)))return false;
+          return true;
+        }).map((g,gi)=>{
           const gKey=`sre${ei}g${gi}`;
-          const visMarcosSR=activeRespFilterM.length?g.marcos.filter(m=>(m.resp&&activeRespFilterM.includes(m.resp))||(m.subs||[]).some(t=>t.resp&&activeRespFilterM.includes(t.resp))):g.marcos;
+          const visMarcosSR=g.marcos.filter(m=>{if(mFilters.status.length&&!mFilters.status.includes(m.status)&&!(m.subs||[]).some(t=>mFilters.status.includes(t.status)))return false;if(activeRespFilterM.length&&!(m.resp&&activeRespFilterM.includes(m.resp))&&!(m.subs||[]).some(t=>t.resp&&activeRespFilterM.includes(t.resp)))return false;if(mFilters.dateEnd&&m.end&&m.end>mFilters.dateEnd)return false;if(mFilters.dateStart&&m.end&&m.end<mFilters.dateStart)return false;return true;});
           return`<div class="sr-grupo-item">
             <div class="sr-grupo-header" onclick="toggleSRGrupo('${gKey}')">
               <span class="grupo-dot ${S_COLOR[g.status]||'s-iniciar'}" style="width:9px;height:9px;border-radius:50%;flex-shrink:0"></span>
@@ -499,11 +567,12 @@ function renderStatusReport(){
             <div class="sr-grupo-body" id="srgb-${gKey}" style="display:none">
               ${visMarcosSR.map((m,mi)=>{
                 const mKey=`sre${ei}g${gi}m${mi}`;
-                const visSubsSR=activeRespFilterM.length&&!(m.resp&&activeRespFilterM.includes(m.resp))?m.subs.filter(t=>t.resp&&activeRespFilterM.includes(t.resp)):m.subs;
+                let visSubsSR=m.subs||[];if(mFilters.status.length)visSubsSR=visSubsSR.filter(t=>mFilters.status.includes(t.status));if(activeRespFilterM.length&&!(m.resp&&activeRespFilterM.includes(m.resp)))visSubsSR=visSubsSR.filter(t=>t.resp&&activeRespFilterM.includes(t.resp));
                 return`<div class="sr-marco">
                   <div class="sr-marco-header" onclick="toggleSRMarco('${mKey}')">
                     <span class="sr-marco-dot ${S_COLOR[m.status]||'s-iniciar'}"></span>
                     <span class="sr-marco-name">${escHtml(m.tarefa)}</span>
+                    ${m.end?`<span class="sr-date">${fmtShort(m.end)}</span>`:''}
                     <span class="sr-marco-chip ${S_COLOR[m.status]||'s-iniciar'}">${S_LABEL[m.status]||m.status}</span>
                     <span class="grupo-chev" id="srmc-${mKey}">▶</span>
                   </div>
@@ -513,6 +582,7 @@ function renderStatusReport(){
                     ${visSubsSR.map(t=>`
                       <div class="sr-tarefa">
                         <div class="sr-tarefa-name">${escHtml(t.tarefa)}</div>
+                        ${t.end?`<div class="sr-date-t">${fmtShort(t.end)}</div>`:''}
                         ${t.resp?`<span class="tarefa-resp">${escHtml(t.resp)}</span>`:''}
                         ${srFields(t.prog,t.enc)}
                       </div>`).join('')}
@@ -732,13 +802,17 @@ function renderGantt(){
       <div class="eixo-header" onclick="toggleGanttEixo(${ei})">
         <span class="eixo-id">${e.id}</span>
         <span class="eixo-name">${escHtml(e.name)}</span>
-        <span class="eixo-chip ${S_COLOR[e.status]||'s-iniciar'}">${S_LABEL[e.status]||e.status}</span>
         <span class="eixo-chev" id="gec-${ei}">▶</span>
       </div>
       <div class="eixo-body" id="geb-${ei}" style="display:none">
-        ${e.children.filter(g=>!activeRespFilterM.length||grupoHasRespM(g)).map((g,gi)=>{
+        ${e.children.filter(g=>{
+          if(mFilters.status.length&&!(g.marcos||[]).some(m=>mFilters.status.includes(m.status)||(m.subs||[]).some(t=>mFilters.status.includes(t.status))))return false;
+          if(activeRespFilterM.length&&!grupoHasRespM(g))return false;
+          if((mFilters.dateStart||mFilters.dateEnd)&&!(g.marcos||[]).some(m=>(!mFilters.dateEnd||!m.end||m.end<=mFilters.dateEnd)&&(!mFilters.dateStart||!m.end||m.end>=mFilters.dateStart)))return false;
+          return true;
+        }).map((g,gi)=>{
           const gKey=`${ei}_${gi}`;
-          const visMarcos=activeRespFilterM.length?g.marcos.filter(m=>(m.resp&&activeRespFilterM.includes(m.resp))||(m.subs||[]).some(t=>t.resp&&activeRespFilterM.includes(t.resp))):g.marcos;
+          const visMarcos=g.marcos.filter(m=>{if(mFilters.status.length&&!mFilters.status.includes(m.status)&&!(m.subs||[]).some(t=>mFilters.status.includes(t.status)))return false;if(activeRespFilterM.length&&!(m.resp&&activeRespFilterM.includes(m.resp))&&!(m.subs||[]).some(t=>t.resp&&activeRespFilterM.includes(t.resp)))return false;if(mFilters.dateEnd&&m.end&&m.end>mFilters.dateEnd)return false;if(mFilters.dateStart&&m.end&&m.end<mFilters.dateStart)return false;return true;});
           return`<div class="grupo-item">
             <div class="grupo-header" onclick="toggleGanttGrupo('${gKey}')">
               <span class="grupo-dot ${S_COLOR[g.status]||'s-iniciar'}"></span>
@@ -752,7 +826,7 @@ function renderGantt(){
             <div class="marco-body" id="ggb-${gKey}" style="display:none">
               ${visMarcos.length?visMarcos.map((m,mi)=>{
                 const mKey=`${gKey}_${mi}`;
-                const visSubs=activeRespFilterM.length&&!(m.resp&&activeRespFilterM.includes(m.resp))?m.subs.filter(t=>t.resp&&activeRespFilterM.includes(t.resp)):m.subs;
+                let visSubs=m.subs||[];if(mFilters.status.length)visSubs=visSubs.filter(t=>mFilters.status.includes(t.status));if(activeRespFilterM.length&&!(m.resp&&activeRespFilterM.includes(m.resp)))visSubs=visSubs.filter(t=>t.resp&&activeRespFilterM.includes(t.resp));
                 return`<div class="marco-item">
                   <div class="marco-row" onclick="toggleGanttMarco('${mKey}')">
                     <span class="marco-dot ${S_COLOR[m.status]||'s-iniciar'}"></span>
@@ -805,6 +879,8 @@ function toggleGanttMarco(key){
 
 /* ── FILTRO RESPONSÁVEL ── */
 let activeRespFilterM=[];
+let mFilters={status:[],dateStart:'',dateEnd:''};
+let mVizGantt='eixo',mVizSR='eixo';
 const ganttEixoOpenM=new Set();
 const srEixoOpenM=new Set();
 function grupoHasRespM(g){
@@ -812,46 +888,136 @@ function grupoHasRespM(g){
   if(g.resp&&activeRespFilterM.includes(g.resp))return true;
   return(g.marcos||[]).some(m=>(m.resp&&activeRespFilterM.includes(m.resp))||(m.subs||[]).some(t=>t.resp&&activeRespFilterM.includes(t.resp)));
 }
-function filterByResp(val){
-  activeRespFilterM=val?[val]:[];
-  renderGantt();renderStatusReport();
-  if(activeRespFilterM.length){
-    WBS.forEach((_,ei)=>{
-      const b=document.getElementById('geb-'+ei),c=document.getElementById('gec-'+ei);
-      if(b){b.style.display='block';ganttEixoOpenM.add(ei);}
-      if(c)c.style.transform='rotate(90deg)';
-    });
-    document.querySelectorAll('[id^="ggb-"]').forEach(b=>b.style.display='block');
-    document.querySelectorAll('[id^="ggc-"]').forEach(c=>c.style.transform='rotate(90deg)');
-    WBS.forEach((_,ei)=>{
-      const b=document.getElementById('sreb-sre'+ei),c=document.getElementById('srec-sre'+ei);
-      if(b){b.style.display='block';srEixoOpenM.add('sre'+ei);}
-      if(c)c.style.transform='rotate(90deg)';
-    });
-    document.querySelectorAll('[id^="srgb-"]').forEach(b=>b.style.display='block');
-    document.querySelectorAll('[id^="srgc-"]').forEach(c=>c.style.transform='rotate(90deg)');
+function updateStatusBtn(){
+  const btn=document.getElementById('m-btn-status');
+  if(!btn)return;
+  const n=mFilters.status.length;
+  btn.textContent=n===0?'\u{1F514} Todos os status':n===1?mFilters.status[0]:`\u2713 ${n} status`;
+}
+function toggleStatusDropdown(e){
+  e.stopPropagation();
+  const p=document.getElementById('m-status-panel');
+  if(!p)return;
+  const isOpen=p.style.display!=='none';
+  p.style.display=isOpen?'none':'block';
+  if(!isOpen){
+    const close=function(ev){
+      if(!p.contains(ev.target)&&ev.target.id!=='m-btn-status'){
+        p.style.display='none';
+        document.removeEventListener('click',close);
+      }
+    };
+    setTimeout(()=>document.addEventListener('click',close),0);
   }
 }
-function buildRespFilterMobile(){
-  const bar=document.getElementById('resp-filter-bar');
-  const sel=document.getElementById('resp-select');
-  if(!sel)return;
-  const resps=new Set();
-  WBS.forEach(e=>e.children.forEach(g=>{
-    if(g.resp)resps.add(g.resp);
-    (g.marcos||[]).forEach(m=>{if(m.resp)resps.add(m.resp);(m.subs||[]).forEach(t=>{if(t.resp)resps.add(t.resp);});});
-  }));
-  if(!resps.size){if(bar)bar.style.display='none';return;}
-  const current=activeRespFilterM[0]||'';
-  if(current&&!resps.has(current))activeRespFilterM=[];
-  let html='<option value="">&#128100; Todos os respons&#225;veis</option>';
-  [...resps].sort().forEach(r=>{
-    html+=`<option value="${escHtml(r)}"${r===current?' selected':''}>${escHtml(r)}</option>`;
+function applyMobileFilters(){
+  const _ds=document.getElementById('m-date-start').value,_de=document.getElementById('m-date-end').value;
+  if(_ds&&_de&&_ds>_de){
+    const e='<div class="date-error-msg">&#9888; ERRO DE PERÍODO, VERIFIQUE O CAMPO: DATA INICIAL E DATA FINAL</div>';
+    const gl=document.getElementById('gantt-list'),sl=document.getElementById('sr-list');
+    if(gl)gl.innerHTML=e;
+    if(sl)sl.innerHTML=e;
+    return;
+  }
+  mFilters.status=[...document.querySelectorAll('#m-status-panel input:checked')].map(cb=>cb.value);
+  updateStatusBtn();
+  mFilters.dateStart=document.getElementById('m-date-start').value;
+  mFilters.dateEnd=document.getElementById('m-date-end').value;
+  const resp=document.getElementById('m-sel-resp').value;
+  activeRespFilterM=resp?[resp]:[];
+  renderGantt();renderStatusReport();
+  applyMobileVizGantt();applyMobileVizSR();
+}
+function clearMobileFilters(){
+  mFilters={status:[],dateStart:'',dateEnd:''};
+  activeRespFilterM=[];
+  document.querySelectorAll('#m-status-panel input').forEach(cb=>cb.checked=false);
+  updateStatusBtn();
+  const rs=document.getElementById('m-sel-resp');
+  const ds=document.getElementById('m-date-start'),de=document.getElementById('m-date-end');
+  if(rs)rs.value='';
+  if(ds)ds.value='';if(de)de.value='';
+  renderGantt();renderStatusReport();
+  applyMobileVizGantt();applyMobileVizSR();
+}
+function recolherGantt(){
+  const up={tarefa:'marco',marco:'grupo',grupo:'eixo',eixo:'eixo'};
+  mVizGantt=up[mVizGantt]||'eixo';
+  const sel=document.getElementById('m-gantt-viz');
+  if(sel)sel.value=mVizGantt;
+  applyMobileVizGantt();
+}
+function recolherSR(){
+  const up={tarefa:'marco',marco:'grupo',grupo:'eixo',eixo:'eixo'};
+  mVizSR=up[mVizSR]||'eixo';
+  const sel=document.getElementById('m-sr-viz');
+  if(sel)sel.value=mVizSR;
+  applyMobileVizSR();
+}
+function updateVizBtnState(){
+  const bg=document.getElementById('m-gantt-recolher');
+  const bs=document.getElementById('m-sr-recolher');
+  if(bg)bg.disabled=(mVizGantt==='eixo');
+  if(bs)bs.disabled=(mVizSR==='eixo');
+}
+
+function applyMobileVizGantt(){
+  const level=(document.getElementById('m-gantt-viz')||{}).value||mVizGantt;
+  mVizGantt=level;
+  const openEixo=level!=='eixo';
+  WBS.forEach((_,ei)=>{
+    const b=document.getElementById('geb-'+ei),cv=document.getElementById('gec-'+ei);
+    if(b)b.style.display=openEixo?'block':'none';
+    if(cv)cv.style.transform=openEixo?'rotate(90deg)':'';
+    if(openEixo)ganttEixoOpenM.add(ei);else ganttEixoOpenM.delete(ei);
   });
-  sel.innerHTML=html;
+  const openGrupo=level==='marco'||level==='tarefa';
+  document.querySelectorAll('[id^="ggb-"]').forEach(b=>b.style.display=openGrupo?'block':'none');
+  document.querySelectorAll('[id^="ggc-"]').forEach(cv=>cv.style.transform=openGrupo?'rotate(90deg)':'');
+  const openTarefa=level==='tarefa';
+  document.querySelectorAll('[id^="gmb-"]').forEach(b=>b.style.display=openTarefa?'block':'none');
+  document.querySelectorAll('[id^="gmc-"]').forEach(cv=>cv.style.transform=openTarefa?'rotate(90deg)':'');
+  updateVizBtnState();
+}
+function applyMobileVizSR(){
+  const level=(document.getElementById('m-sr-viz')||{}).value||mVizSR;
+  mVizSR=level;
+  const openEixo=level!=='eixo';
+  WBS.forEach((_,ei)=>{
+    const b=document.getElementById('sreb-sre'+ei),cv=document.getElementById('srec-sre'+ei);
+    if(b)b.style.display=openEixo?'block':'none';
+    if(cv)cv.style.transform=openEixo?'rotate(90deg)':'';
+    if(openEixo)srEixoOpenM.add('sre'+ei);else srEixoOpenM.delete('sre'+ei);
+  });
+  const openGrupo=level==='marco'||level==='tarefa';
+  document.querySelectorAll('[id^="srgb-"]').forEach(b=>b.style.display=openGrupo?'block':'none');
+  document.querySelectorAll('[id^="srgc-"]').forEach(cv=>cv.style.transform=openGrupo?'rotate(90deg)':'');
+  const openMarco=level==='tarefa';
+  document.querySelectorAll('[id^="srmb-"]').forEach(b=>b.style.display=openMarco?'block':'none');
+  document.querySelectorAll('[id^="srmc-"]').forEach(cv=>cv.style.transform=openMarco?'rotate(90deg)':'');
+  updateVizBtnState();
+}
+function buildMobileFilters(){
+  const bar=document.getElementById('filter-bar-mobile');
+  if(!bar)return;
+  const resps=new Set();
+  WBS.forEach(e=>{
+    e.children.forEach(g=>{
+      if(g.resp)resps.add(g.resp);
+      (g.marcos||[]).forEach(m=>{if(m.resp)resps.add(m.resp);(m.subs||[]).forEach(t=>{if(t.resp)resps.add(t.resp);});});
+    });
+  });
+  const curResp=activeRespFilterM[0]||'';
+  if(curResp&&!resps.has(curResp))activeRespFilterM=[];
+  let respHtml='<option value="">&#128100; Todos</option>';
+  [...resps].sort().forEach(r=>{respHtml+=`<option value="${escHtml(r)}"${r===curResp?' selected':''}>${escHtml(r)}</option>`;});
+  const respSel=document.getElementById('m-sel-resp');
+  if(respSel)respSel.innerHTML=respHtml;
+  if(mFilters.status.length){document.querySelectorAll('#m-status-panel input').forEach(cb=>{cb.checked=mFilters.status.includes(cb.value);});}
+  updateStatusBtn();
   const currentTab=document.querySelector('.tab.active');
   const tabName=currentTab?currentTab.getAttribute('onclick'):'';
-  if(bar)bar.style.display=(tabName.includes('reqs'))?'none':'flex';
+  bar.style.display=(tabName.includes('reqs'))?'none':'flex';
 }
 
 /* ── TAB SWITCH ── */
@@ -860,7 +1026,7 @@ function switchTab(name,el){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-'+name).classList.add('active');
-  const bar=document.getElementById('resp-filter-bar');
+  const bar=document.getElementById('filter-bar-mobile');
   if(bar)bar.style.display=(name==='reqs')?'none':'flex';
 }
 
@@ -884,7 +1050,7 @@ async function loadData(){
     document.getElementById('header-date').textContent=`${String(now.getDate()).padStart(2,'0')} ${MONTHS[now.getMonth()]} ${now.getFullYear()} · MAZ ELD`;
     document.getElementById('refresh-time').textContent=`${hh}:${mm}`;
     if(statusEl){statusEl.textContent=reqsOk?'🟢 Ao vivo':'🟡 Cronograma OK · REQ erro';statusEl.style.background=reqsOk?'#052e16':'#422006';statusEl.style.color=reqsOk?'#4ade80':'#fb923c';}
-    buildRespFilterMobile();renderGantt();renderStatusReport();renderReqs();
+    buildMobileFilters();renderGantt();renderStatusReport();renderReqs();
   }catch(err){
     if(!WBS.length)document.getElementById('gantt-list').innerHTML=`<div class="error-msg">Erro: ${escHtml(err.message)}</div>`;
     if(statusEl){statusEl.textContent=WBS.length?'🟡 Offline — dados anteriores':'🔴 Erro — sem dados';statusEl.style.background=WBS.length?'#422006':'#450a0a';statusEl.style.color=WBS.length?'#fb923c':'#f87171';}
@@ -892,7 +1058,7 @@ async function loadData(){
   btn.disabled=false;btn.textContent='⟳ Atualizar';
 }
 
-buildRespFilterMobile();renderGantt();renderStatusReport();renderReqs();
+buildMobileFilters();renderGantt();renderStatusReport();renderReqs();
 loadData();
 setInterval(loadData,15*60*1000);
 </script>
