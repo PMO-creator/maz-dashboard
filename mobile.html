@@ -463,7 +463,7 @@ function renderEixos(){
   el.innerHTML=data.map((e,ei)=>`
     <div class="eixo-card">
       <div class="eixo-header" onclick="toggleEixo('e${ei}')">
-        <span class="eixo-id">${e.id}</span>
+        <span class="eixo-id ${S_COLOR[e.status]||'s-iniciar'}">${e.id}</span>
         <span class="eixo-name">${escHtml(e.name)}</span>
         <span class="eixo-chev" id="ec-e${ei}">▶</span>
       </div>
@@ -544,7 +544,7 @@ function renderStatusReport(){
   el.innerHTML=WBS.map((e,ei)=>{if(activeRespFilterM.length&&!(e.children||[]).some(g=>grupoHasRespM(g)))return'';return`
     <div class="sr-card">
       <div class="sr-eixo-header" onclick="toggleSREixo('sre${ei}')">
-        <span class="eixo-id" style="font-size:13px">${e.id}</span>
+        <span class="eixo-id ${S_COLOR[e.status]||'s-iniciar'}" style="font-size:13px">${e.id}</span>
         <span class="sr-eixo-name">${escHtml(e.name)}</span>
         <span class="eixo-chev" id="srec-sre${ei}">▶</span>
       </div>
@@ -800,7 +800,7 @@ function renderGantt(){
   el.innerHTML=WBS.map((e,ei)=>{if(activeRespFilterM.length&&!(e.children||[]).some(g=>grupoHasRespM(g)))return'';return`
     <div class="eixo-card">
       <div class="eixo-header" onclick="toggleGanttEixo(${ei})">
-        <span class="eixo-id">${e.id}</span>
+        <span class="eixo-id ${S_COLOR[e.status]||'s-iniciar'}">${e.id}</span>
         <span class="eixo-name">${escHtml(e.name)}</span>
         <span class="eixo-chev" id="gec-${ei}">▶</span>
       </div>
