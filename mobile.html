@@ -402,7 +402,7 @@ function parseWBS(rows){
     const children=em.groupOrder.map(gName=>{
       const gm=em.groups[gName],s=gm.summary,marcos=gm.marcos;
       marcos.forEach(m=>{if(m.subs&&m.subs.length){const allDone=m.subs.every(s=>s.status==='Feito'||s.status==='Cancelado/Congelado'||s.status==='Cancelado');if(m.status!=='Cancelado/Congelado'&&m.status!=='Cancelado')m.status=allDone?'Feito':worst(m.subs.map(s=>s.status));}});
-      const status=s?s.status:worst(marcos.map(m=>m.status));
+      const marcoStatuses=marcos.map(m=>m.status);const status=marcoStatuses.length?worst(marcoStatuses):(s?s.status:"A iniciar");
       const resp=s?s.resp:(marcos[0]?.resp||'');
       const prog=s?s.prog:'';const enc=s?s.enc:'';
       const start=s?s.start:(marcos.map(m=>m.start).filter(Boolean).sort()[0]||'');
