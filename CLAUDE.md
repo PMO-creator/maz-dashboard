@@ -89,10 +89,6 @@ Linhas 0 e 1 = cabeçalhos; dados a partir da linha 2.
 EIXO → GRUPO → MARCO → TAREFA
 ```
 
-> ⚠️ **Deduplicação PER EIXO** — mesmo nome de grupo em eixos diferentes = entradas separadas. NUNCA deduplicar globalmente.  
-> ⚠️ **Linha-resumo do grupo** — linha onde `Tarefa == Grupo` é o summary row; não é uma tarefa normal.  
-> ⚠️ **Comentários da planilha** — NUNCA resumir ou parafrasear; sempre exibir texto bruto.
-
 ## Mapeamento CSS → Hierarquia (CRÍTICO)
 
 | Nome | Classe CSS |
@@ -102,21 +98,9 @@ EIXO → GRUPO → MARCO → TAREFA
 | MARCO | `.marco-name` |
 | TAREFA | `.tarefa-name` |
 
-## Status válidos e cores CSS
+## Status válidos
 
-| Status | CSS var | Hex | Nota |
-|---|---|---|---|
-| Atrasado | `--atraso` | `#FF2525` | |
-| Risco de atraso | `--risco` | `#FF6B00` | |
-| Em andamento | `--andam` | `#1A56FF` | |
-| A iniciar | `--iniciar` | `#5A6E85` | |
-| Definir datas | `--definir` | `#92400E` | ⚠️ MARROM — não roxo |
-| Feito | `--feito` | `#05C46B` | |
-| Cancelado/Congelado | `--cancel` | `#374151` | |
-
-**Paleta de destaque:** `--accent:#8AC43A` (verde) · `--accentD:#6BA030` (hover) · `--bg:#1E2E0D` (header escuro)
-
-**Rollup (pior ganha):** Atrasado(0) > Risco(1) > Em andamento(2) > A iniciar(3) > Definir datas(4) > Feito(5) > Cancelado(6)
+`Atrasado` · `Risco de atraso` · `Em andamento` · `A iniciar` · `Definir datas` · `Feito` · `Cancelado/Congelado`
 
 ## Google Sheets
 
@@ -134,7 +118,7 @@ EIXO → GRUPO → MARCO → TAREFA
 
 1. **Dashboard branco sem erro** → checar: null bytes, `function` ausente, JS truncado, template literals aninhados
 2. **Template literals aninhados** → nunca backtick dentro de `${}` dentro de outro backtick
-3. **Prioridade REQS** → APENAS col E (índice 4) — col B gera falsos positivos
+3. **Prioridade REQS** → col D (índice 3) — mapeamento confirmado contra sheet real em mai/2026
 4. **`node --check` Node v22** → não aceita `.html` — extrair para `.js` temporário
 5. **Edit tool com backticks** → falha ao fazer match — usar PowerShell `[System.IO.File]` para substituições
 6. **CRLF** → normalizar com `.Replace("\`r\`n", "\`n")` antes de substituições PowerShell
@@ -166,32 +150,3 @@ copy mobile.html "..\maz-dashboard\mobile.html"
 ```
 
 9. **Arquivos temporários** → permitido criar `_fix_*.py`, `_tmp_*.py` ou qualquer script auxiliar durante a sessão. **Obrigatório deletar com `Remove-Item` imediatamente após uso.** A pasta deve conter apenas: `index.html`, `mobile.html`, `SERVE_DASHBOARD.bat`, `CLAUDE.md`, `ONBOARDING.md`, `01. Manuais\`.
-10. **`_forceCollapseEAP`** → além de resetar state, deve fechar no DOM: `.subtask-container` com `maxHeight='0'` e `[id^="mchev-"]` com `transform='rotate(-90deg)'`. Sem isso, trocar de visualização não fecha subtasks abertas.
-11. **Header z-index** → manter `z-index:1000`. Se baixar, search-zone (`z-index:100`) fica por cima dos dropdowns do header.
-
----
-
-## Skill doc-sync (sincronização automática de documentação)
-
-Os arquivos da skill vivem em `.claude\doc_sync\` neste repo.
-
-- **Invocar manualmente:** Abrir Claude Cowork e digitar `"doc-sync"` ou `"atualizar docs"`
-- **Scheduled task:** Configurado para rodar automaticamente às 08:00 todos os dias
-- **O que faz:** Compara `index.html` com o snapshot anterior (`.claude\doc_sync\_snapshot_index.html`), classifica mudanças como RELEVANTE ou IGNORAR, apresenta em linguagem de leigo, e atualiza os manuais após aprovação
-
-**Para configurar o scheduled task em nova instalação:**
-1. Abrir Claude Cowork
-2. Digitar: `"Configurar doc-sync para rodar todo dia às 08:00"`
-
-**Documentação completa:** `Guia de Onboarding_Manutençao Dashboard_MAZ_2026_v10.docx §10`
-
-**Documentos mantidos pela skill:**
-
-| Documento | Versão | Público-alvo |
-|---|---|---|
-| Manual de Uso e Manutenção Dashboard | v6 | Gestores, equipe IDG (não-técnico) |
-| Guia de Onboarding — Manutenção | v10 | Dev que vai manter o código |
-| Ficha Técnica Dashboard | v3 | Stakeholders, TI |
-| Guia do Usuário Final | v2 | Equipe da exposição (leigo total) |
-
-Pasta dos documentos: `C:\Users\gagui\OneDrive\Documentos\Claude\Projects\IDG - Relatórios de Análise\Manual\`

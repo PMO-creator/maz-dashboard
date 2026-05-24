@@ -105,9 +105,9 @@ function _parseREQS(rows) {
     let req=(r[0]||'').toString().trim();
     if(!req||_REQS_HDR.has(req)) return null;
     if(/^\d+\.0$/.test(req)) req=req.slice(0,-2);
-    let prio=(r[4]||'').toString().trim();
+    let prio=(r[3]||'').toString().trim();
     if(/^\d+\.0$/.test(prio)) prio=prio.slice(0,-2);
-    return{req,prio,comp:(r[2]||'').toString().trim(),desc:(r[5]||'').toString().trim(),status:(r[6]||'').toString().trim(),forn:(r[7]||'').toString().trim(),fin:_fmtDate((r[12]||'').toString().trim())};
+    return{req,prio,comp:(r[1]||'').toString().trim(),desc:(r[4]||'').toString().trim(),status:(r[5]||'').toString().trim(),forn:(r[6]||'').toString().trim(),fin:_fmtDate((r[12]||'').toString().trim())};
   }).filter(Boolean);
 }
 
@@ -2313,9 +2313,9 @@ function _parseREQS(rows) {
     let req=(r[0]||'').toString().trim();
     if(!req||_REQS_HDR.has(req)) return null;
     if(/^\d+\.0$/.test(req)) req=req.slice(0,-2);
-    let prio=(r[4]||'').toString().trim();
+    let prio=(r[3]||'').toString().trim();
     if(/^\d+\.0$/.test(prio)) prio=prio.slice(0,-2);
-    return{req,prio,comp:(r[2]||'').toString().trim(),desc:(r[5]||'').toString().trim(),status:(r[6]||'').toString().trim(),forn:(r[7]||'').toString().trim(),fin:_fmtDate((r[12]||'').toString().trim())};
+    return{req,prio,comp:(r[1]||'').toString().trim(),desc:(r[4]||'').toString().trim(),status:(r[5]||'').toString().trim(),forn:(r[6]||'').toString().trim(),fin:_fmtDate((r[12]||'').toString().trim())};
   }).filter(Boolean);
 }
 
