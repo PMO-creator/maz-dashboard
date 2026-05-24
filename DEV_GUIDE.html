@@ -181,6 +181,10 @@ tr:hover td{background:rgba(138,196,58,.04)}
     <div class="hdr-title">Dashboard MAZ 2026 — Guia de Referência</div>
     <div class="hdr-sub">Para o PMO que vai manter e evoluir o dashboard com Claude</div>
   </div>
+  <div style="display:flex;gap:8px;margin-left:auto;align-items:center">
+    <button id="editBtn" onclick="toggleEditMode()" style="background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s">✏️ Editar</button>
+    <button id="saveBtn" onclick="saveFile()" style="display:none;background:var(--accent);border:none;color:var(--bg);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700">💾 Baixar arquivo</button>
+  </div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
     <input class="search-inp" id="searchInp" placeholder="Buscar conceito..." oninput="doSearch(this.value)" onblur="setTimeout(()=>{document.getElementById('searchResults').style.display='none'},200)">
@@ -754,6 +758,7 @@ tr:hover td{background:rgba(138,196,58,.04)}
 
 <!-- MODAL DATA & LOGIC -->
 <script>
+// __MODALS_START__
 const MODALS = {
   planilha:{title:'📊 Planilha do Projeto',rows:[
     {i:'🎯',l:'O que é',v:'O Google Sheets onde o cronograma e as requisições do projeto são preenchidos pela equipe.'},
@@ -943,6 +948,7 @@ const SEARCH_INDEX = [
   {tab:'socorro',text:'Deu errado branco erro dados desatualizado push publicar GitHub Desktop doc-sync status errado lento travando 404 não abre Claude quebrou reverter problema'}
 ];
 
+// __MODALS_END__
 const TAB_LABELS = {como:'Como funciona',onboarding:'Primeiros passos',mudancas:'Fazer mudanças',docsync:'Atualizar docs',status:'Status e cores',docs:'Documentos',socorro:'Deu errado?'};
 
 function showTab(id, btn) {
@@ -952,20 +958,52 @@ function showTab(id, btn) {
   if(btn) btn.classList.add('active');
 }
 
+let currentModalKey = null;
+
 function openModal(key) {
+  currentModalKey = key;
   const d = MODALS[key]; if(!d) return;
-  let html = `<div class="modal-title">${d.title}</div>`;
-  d.rows.forEach(r=>{
-    html += `<div class="tiprow"><span class="tiprow-icon">${r.i}</span><span class="tiprow-label">${r.l}</span><span class="tiprow-val">${r.v.replace(/\n/g,'<br>')}</span></div>`;
+  const ed = editMode;
+  const edAttr = ed ? 'contenteditable="true" style="outline:1px dashed var(--accent);border-radius:4px;padding:2px 5px;min-width:20px;cursor:text"' : '';
+  const titleAttr = ed ? 'contenteditable="true" style="outline:1px dashed var(--accent);border-radius:4px;padding:2px 5px;cursor:text"' : '';
+
+  let html = `<div class="modal-title" id="modal-title-el" ${titleAttr}>${d.title}</div>`;
+  if(ed) html += `<div style="font-size:11px;color:var(--accent);margin-bottom:10px">✏️ Modo edição ativo — clique em qualquer texto para editar</div>`;
+  d.rows.forEach((r, i) => {
+    html += `<div class="tiprow" data-idx="${i}">
+      <span class="tiprow-icon">${r.i}</span>
+      <span class="tiprow-label">${r.l}</span>
+      <span class="tiprow-val" data-val="${i}" ${edAttr}>${r.v.replace(/\n/g,'<br>')}</span>
+    </div>`;
   });
   if(d.tech) {
-    html += `<div class="tip-tech"><div class="tip-tech-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">🔧 ver detalhes técnicos ▾</div><div class="tip-tech-body">${d.tech}</div></div>`;
+    html += `<div class="tip-tech"><div class="tip-tech-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">🔧 ver detalhes técnicos ▾</div><div class="tip-tech-body" ${edAttr}>${d.tech}</div></div>`;
   }
   document.getElementById('modal-content').innerHTML = html;
   document.getElementById('modal').classList.add('open');
 }
 
-function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function closeModal() {
+  // Se em modo edição, salvar alterações de volta no MODALS
+  if(editMode && currentModalKey && MODALS[currentModalKey]) {
+    const titleEl = document.getElementById('modal-title-el');
+    if(titleEl) MODALS[currentModalKey].title = titleEl.textContent.trim();
+
+    document.querySelectorAll('[data-val]').forEach(el => {
+      const i = parseInt(el.dataset.val);
+      if(!isNaN(i) && MODALS[currentModalKey].rows[i]) {
+        MODALS[currentModalKey].rows[i].v = el.innerHTML.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').trim();
+      }
+    });
+
+    const techEl = document.querySelector('.tip-tech-body');
+    if(techEl && MODALS[currentModalKey].tech !== undefined) {
+      MODALS[currentModalKey].tech = techEl.innerText.trim();
+    }
+  }
+  document.getElementById('modal').classList.remove('open');
+  currentModalKey = null;
+}
 
 // CHECKLIST
 let checks = JSON.parse(localStorage.getItem('maz_checks')||'[false,false,false,false,false,false]');
@@ -1007,6 +1045,109 @@ function doSearch(q) {
 }
 
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+// ── EDIT MODE ──────────────────────────────────────────
+const EDITABLE_SELECTORS = [
+  '.sec-title','.sec-sub','.card-label',
+  '.cl-title','.cl-desc','.cl-when',
+  '.ds-title','.ds-desc',
+  '.arch-name','.arch-sub',
+  '.doc-title','.doc-who','.doc-when',
+  '.status-name','.status-meaning',
+  '.alert div',
+  '.step-title','.step-desc',
+  'h3','h4'
+].join(',');
+
+let editMode = false;
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn = document.getElementById('editBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const els = document.querySelectorAll(EDITABLE_SELECTORS);
+
+  if (editMode) {
+    els.forEach(el => {
+      el.contentEditable = 'true';
+      el.style.outline = '1px dashed var(--accent)';
+      el.style.borderRadius = '4px';
+      el.style.minWidth = '20px';
+      el.style.cursor = 'text';
+    });
+    btn.textContent = '✅ Sair da edição';
+    btn.style.background = 'var(--bg3)';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = 'var(--accent)';
+    saveBtn.style.display = 'block';
+    // impedir que cliques em elementos editáveis abram modais
+    document.querySelectorAll('[onclick]').forEach(el => {
+      if (el.closest(EDITABLE_SELECTORS) || el.matches(EDITABLE_SELECTORS)) {
+        el.dataset.savedOnclick = el.getAttribute('onclick');
+        el.removeAttribute('onclick');
+      }
+    });
+  } else {
+    els.forEach(el => {
+      el.contentEditable = 'false';
+      el.style.outline = '';
+      el.style.borderRadius = '';
+      el.style.cursor = '';
+    });
+    btn.textContent = '✏️ Editar';
+    btn.style.background = '';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    saveBtn.style.display = 'none';
+  }
+}
+
+function saveFile() {
+  // Serializar MODALS atualizado de volta para o script tag antes de capturar o HTML
+  document.querySelectorAll('script').forEach(script => {
+    if (script.textContent.includes('__MODALS_START__')) {
+      const newModalsBlock = '// __MODALS_START__\n      const MODALS = ' + JSON.stringify(MODALS, null, 6) + ';\n      // __MODALS_END__';
+      script.textContent = script.textContent.replace(
+        /\/\/ __MODALS_START__[\s\S]*?\/\/ __MODALS_END__/,
+        newModalsBlock
+      );
+    }
+  });
+
+  // Desativar edit mode antes de salvar para limpar os outlines
+  const els = document.querySelectorAll(EDITABLE_SELECTORS);
+  els.forEach(el => {
+    el.contentEditable = 'false';
+    el.style.outline = '';
+    el.style.cursor = '';
+  });
+
+  const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'DEV_GUIDE.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+
+  // Restaurar estado visual
+  document.getElementById('editBtn').textContent = '✏️ Editar';
+  document.getElementById('editBtn').style.background = '';
+  document.getElementById('editBtn').style.color = '';
+  document.getElementById('saveBtn').style.display = 'none';
+  editMode = false;
+
+  // Aviso
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.style.display = 'block';
+  saveBtn.textContent = '✅ Baixado!';
+  saveBtn.style.background = 'var(--feito)';
+  setTimeout(() => {
+    saveBtn.style.display = 'none';
+    saveBtn.textContent = '💾 Baixar arquivo';
+    saveBtn.style.background = '';
+  }, 3000);
+}
 </script>
 </body>
 </html>
