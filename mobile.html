@@ -1047,6 +1047,38 @@ function hideConnErr(){const b=document.getElementById('conn-err-banner');if(b)b
 function retrySheets(){hideConnErr();showLoading();_isInitialLoad=true;loadData();}
 
 /* ── LOAD DATA ── */
+function preprocessStatuses(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const d7=new Date(today);d7.setDate(d7.getDate()+7);
+  const fixLeaf=function(item){
+    if(!item.status){item.status='A iniciar';return;}
+    if(item.status==='Feito'||item.status==='Cancelado/Congelado'||item.status==='Cancelado')return;
+    if(item.status==='A iniciar'){
+      if(!item.start||item.start.length<10)return;
+      if(new Date(item.start)<today){item.status='Risco de atraso';}
+      return;
+    }
+    if(!item.end||item.end.length<10)return;
+    const end=new Date(item.end);
+    if(end<today){item.status='Atrasado';return;}
+    if(end<=d7){item.status='Risco de atraso';}
+  };
+  WBS.forEach(eixo=>{
+    eixo.children.forEach(grupo=>{
+      grupo.marcos.forEach(m=>{
+        if(m.subs&&m.subs.length){
+          m.subs.forEach(s=>fixLeaf(s));
+          const allDone=m.subs.every(s=>s.status==='Feito'||s.status==='Cancelado/Congelado'||s.status==='Cancelado');
+          if(m.status!=='Cancelado/Congelado'&&m.status!=='Cancelado')
+            m.status=allDone?'Feito':worst(m.subs.map(s=>s.status||''));
+        }else{fixLeaf(m);}
+      });
+      if(grupo.status!=='Cancelado/Congelado'&&grupo.status!=='Cancelado')
+        grupo.status=grupo.marcos.length?worst(grupo.marcos.map(m=>m.status||'')):(grupo.status||'A iniciar');
+    });
+    eixo.status=worst(eixo.children.map(c=>c.status||''));
+  });
+}
 async function loadData(){
   const btn=document.getElementById('btn-refresh');
   btn.disabled=true;btn.textContent='\u2026';
@@ -1071,7 +1103,7 @@ async function loadData(){
     document.getElementById('header-date').textContent=`${String(now.getDate()).padStart(2,'0')} ${MONTHS[now.getMonth()]} ${now.getFullYear()} \u00b7 MAZ ELD`;
     document.getElementById('refresh-time').textContent=`${hh}:${mm}`;
     if(statusEl){statusEl.textContent=reqsOk?'🟢 Ao vivo':'🟡 Cronograma OK \u00b7 REQ erro';statusEl.style.background=reqsOk?'#052e16':'#422006';statusEl.style.color=reqsOk?'#4ade80':'#fb923c';}
-    buildMobileFilters();renderGantt();renderStatusReport();renderReqs();
+    preprocessStatuses();buildMobileFilters();renderGantt();renderStatusReport();renderReqs();
     if(_isInitialLoad){hideLoading();_isInitialLoad=false;}
     hideConnErr();
   }catch(err){
