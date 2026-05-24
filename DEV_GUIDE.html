@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia MAZ 2026 — Para o próximo PMO</title>
+<style>
+:root {
+  --accent:#8AC43A; --accentD:#6BA030; --bg:#1E2E0D; --bg2:#2F4A18; --bg3:#3D5C20;
+  --text:#F0F4E8; --muted:#A8BF8A; --card:#1C2B0B; --border:#3D5C20;
+  --feito:#05C46B; --andam:#1A56FF; --risco:#FF6B00; --atraso:#FF2525;
+  --warn:#FF6B00; --info:#1A56FF;
+  --tooltip-bg:#0D1C05; --tooltip-border:#5A8A20;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111A06;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;line-height:1.65}
+
+/* HEADER */
+.hdr{background:var(--bg);border-bottom:2px solid var(--accent);padding:18px 28px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:200}
+.hdr-logo{width:40px;height:40px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--bg);font-size:18px;flex-shrink:0}
+.hdr-title{font-size:17px;font-weight:700}
+.hdr-sub{font-size:12px;color:var(--muted)}
+.search-wrap{margin-left:auto;position:relative}
+.search-inp{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 14px 8px 36px;color:var(--text);font-size:13px;width:220px;outline:none}
+.search-inp::placeholder{color:var(--muted)}
+.search-inp:focus{border-color:var(--accent)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px}
+.search-results{display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--tooltip-bg);border:1px solid var(--tooltip-border);border-radius:10px;width:320px;max-height:300px;overflow-y:auto;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.sr-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)}
+.sr-item:hover{background:var(--bg2)}
+.sr-item-tab{font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase}
+.sr-item-text{font-size:13px;color:var(--text)}
+
+/* NAV */
+.nav{background:var(--bg);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:2px;overflow-x:auto}
+.nb{background:none;border:none;color:var(--muted);padding:13px 18px;cursor:pointer;font-size:13px;font-weight:600;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.nb:hover{color:var(--text)}
+.nb.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* LAYOUT */
+.content{max-width:1060px;margin:0 auto;padding:32px 24px}
+.section{display:none}.section.active{display:block}
+.sec-title{font-size:21px;font-weight:700;color:var(--accent);margin-bottom:6px}
+.sec-sub{color:var(--muted);font-size:13px;max-width:680px;margin-bottom:28px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px}
+.card-label{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:700px){.g2,.g3{grid-template-columns:1fr}}
+
+/* TOOLTIP SYSTEM */
+.tip-anchor{display:inline-flex;align-items:center;gap:5px;cursor:pointer;border-bottom:1px dashed var(--accent);color:inherit;position:relative}
+.tip-anchor .tip-icon{width:16px;height:16px;background:var(--accent);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--bg);flex-shrink:0}
+.tipcard{display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:500;background:var(--tooltip-bg);border:1px solid var(--tooltip-border);border-radius:12px;width:320px;box-shadow:0 12px 32px rgba(0,0,0,.7);padding:16px}
+.tip-anchor:hover .tipcard,.tip-anchor.open .tipcard{display:block}
+.tipcard-title{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px}
+.tiprow{display:flex;gap:8px;margin-bottom:8px;font-size:12px}
+.tiprow-icon{font-size:14px;flex-shrink:0;width:20px}
+.tiprow-label{font-weight:700;color:var(--muted);min-width:80px;flex-shrink:0}
+.tiprow-val{color:var(--text);line-height:1.5}
+.tip-tech{margin-top:10px;border-top:1px solid var(--border);padding-top:10px}
+.tip-tech-toggle{font-size:11px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px}
+.tip-tech-toggle:hover{color:var(--accent)}
+.tip-tech-body{display:none;margin-top:8px;font-family:monospace;font-size:11px;color:#8AAA55;background:#0A1204;border-radius:6px;padding:8px}
+
+/* ARCH BOXES */
+.arch-flow{display:flex;align-items:stretch;gap:0;margin:20px 0;flex-wrap:wrap}
+.arch-box{flex:1;min-width:140px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color .15s;position:relative}
+.arch-box:hover{border-color:var(--accent)}
+.arch-box.hl{border-color:var(--accent);background:var(--bg3)}
+.arch-icon{font-size:24px;margin-bottom:8px}
+.arch-name{font-weight:700;font-size:14px;color:var(--text)}
+.arch-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.arch-sep{display:flex;align-items:center;padding:0 8px;color:var(--border);font-size:22px;flex-shrink:0}
+.arch-badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;margin-top:6px}
+.arch-badge.auto{background:#001F0E;color:var(--feito);border:1px solid var(--feito)}
+.arch-badge.manual{background:#001428;color:#5A9FFF;border:1px solid var(--andam)}
+
+/* CHECKLIST */
+.checklist{display:flex;flex-direction:column;gap:0}
+.cl-step{display:flex;gap:16px;position:relative}
+.cl-step:not(:last-child)::after{content:'';position:absolute;left:19px;top:44px;bottom:-4px;width:2px;background:var(--border)}
+.cl-check{width:38px;height:38px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .2s;z-index:1;background:var(--card)}
+.cl-check:hover{border-color:var(--accent)}
+.cl-check.done{background:var(--accent);border-color:var(--accent);color:var(--bg);font-size:18px}
+.cl-check.active{border-color:var(--accent);background:var(--bg2)}
+.cl-body{padding:8px 0 24px;flex:1}
+.cl-num{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.cl-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+.cl-desc{font-size:13px;color:var(--muted);margin-bottom:10px}
+.cl-when{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:8px}
+
+/* CODE BLOCKS */
+.cmd{position:relative;background:#0A1204;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin:8px 0}
+.cmd-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;letter-spacing:.05em}
+.cmd-text{font-family:'Consolas',monospace;font-size:12px;color:#B8D87A;white-space:pre-wrap;word-break:break-all}
+.cmd-copy{position:absolute;top:10px;right:10px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s}
+.cmd-copy:hover{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.cmd-copy.copied{background:var(--feito);color:white;border-color:var(--feito)}
+
+/* ALERTS */
+.alert{border-radius:8px;padding:12px 14px;font-size:13px;margin:8px 0;display:flex;gap:10px}
+.alert.warn{background:#1F0D00;border:1px solid var(--risco);color:#FFAA55}
+.alert.danger{background:#1A0000;border:1px solid var(--atraso);color:#FF8080}
+.alert.ok{background:#001810;border:1px solid var(--feito);color:#55DDAA}
+.alert.info{background:#00102A;border:1px solid var(--andam);color:#80AAFF}
+.alert-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+
+/* FLOW DOCSYNC */
+.ds-step{display:flex;gap:14px;margin-bottom:4px;position:relative}
+.ds-step:not(:last-child)::after{content:'';position:absolute;left:18px;top:38px;bottom:-4px;width:2px;background:var(--border)}
+.ds-num{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;z-index:1}
+.ds-body{padding:6px 0 20px;flex:1}
+.ds-title{font-weight:700;font-size:14px;color:var(--text);margin-bottom:3px}
+.ds-desc{font-size:13px;color:var(--muted)}
+.ds-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.tag.auto{background:#001F0E;color:var(--feito);border:1px solid var(--feito)}
+.tag.manual{background:#001428;color:#80AAFF;border:1px solid var(--andam)}
+.tag.pause{background:#1F0D00;color:var(--warn);border:1px solid var(--warn)}
+.tag.pmo{background:#1A0A2E;color:#C084FC;border:1px solid #7C3AED}
+
+/* STATUS PILLS */
+.status-grid{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.status-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:border-color .15s}
+.status-row:hover{border-color:var(--accent)}
+.status-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.status-name{font-weight:600;font-size:14px;flex:1}
+.status-meaning{font-size:12px;color:var(--muted);flex:2}
+.status-rank{font-size:11px;color:var(--muted);margin-left:auto}
+
+/* DOC CARDS */
+.doc-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:default;transition:border-color .15s}
+.doc-card:hover{border-color:var(--accent)}
+.doc-version{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px}
+.doc-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
+.doc-who{font-size:12px;color:var(--muted);margin-bottom:8px}
+.doc-when{font-size:12px;color:var(--muted);padding:8px 10px;background:var(--card);border-radius:6px}
+
+/* PROGRESS BAR */
+.progress-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:16px}
+.progress-bar-bg{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .4s}
+.progress-label{font-size:13px;color:var(--muted);white-space:nowrap}
+.progress-reset{font-size:11px;color:var(--muted);cursor:pointer;margin-left:8px;text-decoration:underline}
+.progress-reset:hover{color:var(--accent)}
+
+/* MATRIX TABLE */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--bg2);color:var(--accent);text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:rgba(138,196,58,.04)}
+.yes{color:var(--feito);font-weight:700}
+.no{color:var(--border)}
+
+/* MODAL OVERLAY */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--tooltip-bg);border:1px solid var(--tooltip-border);border-radius:16px;width:90%;max-width:480px;padding:28px;position:relative}
+.modal-close{position:absolute;top:14px;right:14px;background:var(--bg2);border:none;color:var(--muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--accent);color:var(--bg)}
+.modal-title{font-size:17px;font-weight:700;color:var(--accent);margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">M</div>
+  <div>
+    <div class="hdr-title">Dashboard MAZ 2026 — Guia de Referência</div>
+    <div class="hdr-sub">Para o PMO que vai manter e evoluir o dashboard com Claude</div>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-inp" id="searchInp" placeholder="Buscar conceito..." oninput="doSearch(this.value)" onblur="setTimeout(()=>{document.getElementById('searchResults').style.display='none'},200)">
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nb active" onclick="showTab('como',this)">🏠 Como funciona</button>
+  <button class="nb" onclick="showTab('onboarding',this)">🚀 Primeiros passos</button>
+  <button class="nb" onclick="showTab('mudancas',this)">✏️ Fazer mudanças</button>
+  <button class="nb" onclick="showTab('docsync',this)">🔄 Atualizar docs</button>
+  <button class="nb" onclick="showTab('status',this)">🟢 Status e cores</button>
+  <button class="nb" onclick="showTab('docs',this)">📚 Documentos</button>
+  <button class="nb" onclick="showTab('socorro',this)">🆘 Deu errado?</button>
+</div>
+
+<div class="content">
+
+<!-- ═══════════ ABA: COMO FUNCIONA ═══════════ -->
+<div class="section active" id="sec-como">
+  <div class="sec-title">Como o dashboard funciona</div>
+  <div class="sec-sub">Uma visão geral de onde vivem os dados, como chegam até o usuário e o que acontece nos bastidores.</div>
+
+  <div class="card">
+    <div class="card-label">O que acontece quando alguém abre o dashboard</div>
+    <div class="arch-flow">
+      <div class="arch-box hl" onclick="openModal('planilha')">
+        <div class="arch-icon">📊</div>
+        <div class="arch-name">Planilha do projeto</div>
+        <div class="arch-sub">Dados do cronograma e requisições ficam aqui</div>
+        <div class="arch-badge auto">fonte de verdade</div>
+      </div>
+      <div class="arch-sep">→</div>
+      <div class="arch-box" onclick="openModal('conexao')">
+        <div class="arch-icon">🔌</div>
+        <div class="arch-name">Conexão automática</div>
+        <div class="arch-sub">Busca os dados sem login, em tempo real</div>
+        <div class="arch-badge auto">automático</div>
+      </div>
+      <div class="arch-sep">→</div>
+      <div class="arch-box" onclick="openModal('servidor')">
+        <div class="arch-icon">🌐</div>
+        <div class="arch-name">Servidor gratuito</div>
+        <div class="arch-sub">Publica o dashboard na internet</div>
+        <div class="arch-badge auto">GitHub Pages</div>
+      </div>
+      <div class="arch-sep">→</div>
+      <div class="arch-box" onclick="openModal('usuario')">
+        <div class="arch-icon">👤</div>
+        <div class="arch-name">Usuário final</div>
+        <div class="arch-sub">Abre no navegador, sem instalar nada</div>
+        <div class="arch-badge manual">abre o link</div>
+      </div>
+    </div>
+    <div class="alert info">
+      <div class="alert-icon">💡</div>
+      <div>Clique em qualquer caixa acima para entender o que ela faz, quem cuida dela e o que pode dar errado.</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card" onclick="openModal('versoes')" style="cursor:pointer">
+      <div class="card-label">Duas versões do dashboard</div>
+      <div style="display:flex;gap:16px;margin-top:4px">
+        <div style="flex:1;text-align:center;background:var(--bg2);border-radius:8px;padding:14px">
+          <div style="font-size:28px;margin-bottom:6px">🖥️</div>
+          <div style="font-weight:700;font-size:14px">Computador</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">3 abas: Gantt, Status Report, Requisições</div>
+        </div>
+        <div style="flex:1;text-align:center;background:var(--bg2);border-radius:8px;padding:14px">
+          <div style="font-size:28px;margin-bottom:6px">📱</div>
+          <div style="font-weight:700;font-size:14px">Celular</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Redireciona automaticamente ao abrir no celular</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" onclick="openModal('atualizacao')" style="cursor:pointer">
+      <div class="card-label">Atualização automática dos dados</div>
+      <div style="text-align:center;padding:16px 0">
+        <div style="font-size:36px;margin-bottom:8px">⏱️</div>
+        <div style="font-weight:700;font-size:16px">A cada 15 minutos</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:6px">O dashboard busca dados frescos da planilha sozinho — sem precisar recarregar a página</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Estrutura dos dados — como o projeto está organizado</div>
+    <div style="padding:16px 0;font-size:14px;line-height:2.2">
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--bg2);border-radius:8px;margin-bottom:6px;cursor:pointer" onclick="openModal('eixo')">
+        <span style="font-size:20px">🗂️</span>
+        <div><strong>Eixo</strong> <span style="color:var(--muted);font-size:12px">— Grande área temática do projeto (ex: Comunicação, Tecnologia...)</span></div>
+        <span style="margin-left:auto;color:var(--muted);font-size:12px">9 eixos</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--bg2);border-radius:8px;margin-bottom:6px;margin-left:24px;cursor:pointer" onclick="openModal('grupo')">
+        <span style="font-size:20px">📁</span>
+        <div><strong>Grupo</strong> <span style="color:var(--muted);font-size:12px">— Subárea dentro do eixo</span></div>
+        <span style="margin-left:auto;color:var(--muted);font-size:12px">48 grupos</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--bg2);border-radius:8px;margin-bottom:6px;margin-left:48px;cursor:pointer" onclick="openModal('marco')">
+        <span style="font-size:20px">🎯</span>
+        <div><strong>Marco</strong> <span style="color:var(--muted);font-size:12px">— Entrega importante dentro do grupo</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--bg2);border-radius:8px;margin-left:72px;cursor:pointer" onclick="openModal('tarefa')">
+        <span style="font-size:20px">✅</span>
+        <div><strong>Tarefa</strong> <span style="color:var(--muted);font-size:12px">— Ação específica para atingir o marco</span></div>
+      </div>
+    </div>
+    <div class="alert warn">
+      <div class="alert-icon">⚠️</div>
+      <div>O mesmo nome de grupo pode aparecer em eixos diferentes — e são entradas completamente separadas. O dashboard trata cada um de forma independente.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ABA: PRIMEIROS PASSOS ═══════════ -->
+<div class="section" id="sec-onboarding">
+  <div class="sec-title">Primeiros passos</div>
+  <div class="sec-sub">Tudo que você precisa fazer uma única vez para estar pronto para trabalhar. Marque cada passo ao concluir.</div>
+
+  <div class="progress-wrap">
+    <div style="font-size:13px;font-weight:600;color:var(--text)">Seu progresso</div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-label" id="progressLabel">0 de 6 concluídos</div>
+    <div class="progress-reset" onclick="resetChecklist()">resetar</div>
+  </div>
+
+  <div class="card">
+    <div class="checklist" id="checklist">
+
+      <div class="cl-step">
+        <div class="cl-check" id="ck0" onclick="toggleCheck(0)"></div>
+        <div class="cl-body">
+          <div class="cl-num">Passo 1 de 6</div>
+          <div class="cl-title">Pedir acesso ao repositório do projeto</div>
+          <div class="cl-desc">O código do dashboard fica num repositório privado no GitHub. Você precisa de acesso para baixar e publicar alterações.</div>
+          <div class="alert info"><div class="alert-icon">💬</div><div>Peça ao responsável técnico do IDG acesso ao repositório <strong>PMO-creator/maz-dashboard</strong> no GitHub.</div></div>
+        </div>
+      </div>
+
+      <div class="cl-step">
+        <div class="cl-check" id="ck1" onclick="toggleCheck(1)"></div>
+        <div class="cl-body">
+          <div class="cl-num">Passo 2 de 6</div>
+          <div class="cl-title">Instalar o GitHub Desktop</div>
+          <div class="cl-desc">Programa visual que te deixa baixar o código, salvar alterações e publicar — sem precisar de terminal.</div>
+          <div class="cmd">
+            <div class="cmd-label">Baixar em</div>
+            <div class="cmd-text">https://desktop.github.com</div>
+            <button class="cmd-copy" onclick="copyCmd(this,'https://desktop.github.com')">copiar</button>
+          </div>
+          <div class="alert ok"><div class="alert-icon">✅</div><div>Após instalar, faça login com a conta do GitHub que tem acesso ao repositório.</div></div>
+        </div>
+      </div>
+
+      <div class="cl-step">
+        <div class="cl-check" id="ck2" onclick="toggleCheck(2)"></div>
+        <div class="cl-body">
+          <div class="cl-num">Passo 3 de 6</div>
+          <div class="cl-title">Baixar o código do projeto (clonar)</div>
+          <div class="cl-desc">Faz uma cópia do projeto no seu computador para você editar.</div>
+          <div class="alert info"><div class="alert-icon">💡</div><div>No GitHub Desktop: <strong>File → Clone Repository → PMO-creator/maz-dashboard</strong>. Escolha onde salvar no seu computador.</div></div>
+        </div>
+      </div>
+
+      <div class="cl-step">
+        <div class="cl-check" id="ck3" onclick="toggleCheck(3)"></div>
+        <div class="cl-body">
+          <div class="cl-num">Passo 4 de 6</div>
+          <div class="cl-title">Testar o dashboard localmente</div>
+          <div class="cl-desc">Antes de publicar qualquer alteração, você precisa ver como ela fica no seu computador. Para isso, use o arquivo de atalho que já está no projeto.</div>
+          <div class="alert info"><div class="alert-icon">💡</div><div>Dentro da pasta do projeto, clique duas vezes em <strong>SERVE_DASHBOARD.bat</strong>. Depois abra o navegador em <strong>http://localhost:8765</strong></div></div>
+          <div class="alert warn"><div class="alert-icon">⚠️</div><div>Os dados da planilha não aparecem nesse modo local — é esperado. O dashboard mostra os dados salvos anteriormente, que é suficiente para testar o visual.</div></div>
+        </div>
+      </div>
+
+      <div class="cl-step">
+        <div class="cl-check" id="ck4" onclick="toggleCheck(4)"></div>
+        <div class="cl-body">
+          <div class="cl-num">Passo 5 de 6</div>
+          <div class="cl-title">Conectar as pastas do projeto no Claude Cowork</div>
+          <div class="cl-desc">Para o Claude conseguir editar os documentos e o código, ele precisa de acesso às pastas certas.</div>
+          <div class="alert info">
+            <div class="alert-icon">💡</div>
+            <div>No Claude Cowork, conecte estas duas pastas:<br><br>
+            📁 <strong>maz-dashboard\</strong> — onde fica o código<br>
+            📁 <strong>IDG - Relatórios de Análise\Manual\</strong> — onde ficam os manuais</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cl-step">
+        <div class="cl-check" id="ck5" onclick="toggleCheck(5)"></div>
+        <div class="cl-body">
+          <div class="cl-num">Passo 6 de 6</div>
+          <div class="cl-title">Ativar a atualização automática de documentos</div>
+          <div class="cl-desc">Uma vez configurado, o Claude verifica todo dia às 08:00 se houve mudanças no dashboard que precisam ser documentadas — e faz isso sozinho, pedindo só sua aprovação no final.</div>
+          <div class="cmd">
+            <div class="cmd-label">Digitar no Claude Cowork</div>
+            <div class="cmd-text">Configurar doc-sync para rodar todo dia às 08:00</div>
+            <button class="cmd-copy" onclick="copyCmd(this,'Configurar doc-sync para rodar todo dia às 08:00')">copiar</button>
+          </div>
+          <div class="alert ok"><div class="alert-icon">✅</div><div>Após confirmar, a tarefa fica agendada e roda automaticamente. Você recebe um aviso quando há algo para aprovar.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ABA: FAZER MUDANÇAS ═══════════ -->
+<div class="section" id="sec-mudancas">
+  <div class="sec-title">Fazer mudanças no dashboard</div>
+  <div class="sec-sub">O fluxo completo — do pedido de alteração até o dashboard atualizado no ar para todo mundo.</div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-label">Visão geral do processo</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;padding:8px 0">
+      <div style="text-align:center;cursor:pointer" onclick="openModal('passo_pedir')">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;min-width:110px">
+          <div style="font-size:22px;margin-bottom:4px">💬</div>
+          <div style="font-size:12px;font-weight:700">1. Pedir ao Claude</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Descrever o que quer mudar</div>
+        </div>
+      </div>
+      <div style="color:var(--border);font-size:20px">→</div>
+      <div style="text-align:center;cursor:pointer" onclick="openModal('passo_claude')">
+        <div style="background:var(--bg3);border:1px solid var(--accent);border-radius:10px;padding:12px 16px;min-width:110px">
+          <div style="font-size:22px;margin-bottom:4px">🤖</div>
+          <div style="font-size:12px;font-weight:700;color:var(--accent)">2. Claude edita</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Faz a alteração no código</div>
+        </div>
+      </div>
+      <div style="color:var(--border);font-size:20px">→</div>
+      <div style="text-align:center;cursor:pointer" onclick="openModal('passo_testar')">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;min-width:110px">
+          <div style="font-size:22px;margin-bottom:4px">👁️</div>
+          <div style="font-size:12px;font-weight:700">3. Você testa</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Ver no seu computador</div>
+        </div>
+      </div>
+      <div style="color:var(--border);font-size:20px">→</div>
+      <div style="text-align:center;cursor:pointer" onclick="openModal('passo_publicar')">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;min-width:110px">
+          <div style="font-size:22px;margin-bottom:4px">🚀</div>
+          <div style="font-size:12px;font-weight:700">4. Publicar</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Via GitHub Desktop</div>
+        </div>
+      </div>
+      <div style="color:var(--border);font-size:20px">→</div>
+      <div style="text-align:center">
+        <div style="background:#001F0E;border:1px solid var(--feito);border-radius:10px;padding:12px 16px;min-width:110px">
+          <div style="font-size:22px;margin-bottom:4px">✅</div>
+          <div style="font-size:12px;font-weight:700;color:var(--feito)">5. No ar</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Em 1-2 minutos</div>
+        </div>
+      </div>
+    </div>
+    <div class="alert info" style="margin-top:12px"><div class="alert-icon">💡</div><div>Clique em cada etapa para ver detalhes e dicas.</div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-label">✅ Boas práticas</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:var(--feito)">✓</span><span>Sempre testar no computador <strong>antes</strong> de publicar</span></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:var(--feito)">✓</span><span>Usar Ctrl+Shift+R ao testar (forçar recarregamento completo)</span></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:var(--feito)">✓</span><span>Descrever a mudança com clareza ao pedir ao Claude</span></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:var(--feito)">✓</span><span>Verificar no celular também após publicar</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">❌ O que nunca fazer</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:var(--atraso)">✗</span><span>Editar o código diretamente no site do GitHub — vai para produção sem teste</span></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:var(--atraso)">✗</span><span>Publicar sem testar no computador primeiro</span></div>
+        <div style="display:flex;gap:10px;font-size:13px"><span style="color:var(--atraso)">✗</span><span>Alterar mais de uma coisa ao mesmo tempo sem testar cada uma</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Se o dashboard abrir em branco após uma mudança</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Não entre em pânico. Peça ao Claude para investigar. As causas mais comuns são:</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="background:#1A0A00;border:1px solid var(--risco);border-radius:8px;padding:12px 14px">
+        <div style="font-weight:700;color:var(--warn);margin-bottom:4px">O código ficou incompleto ao ser editado</div>
+        <div style="font-size:12px;color:var(--muted)">Diga ao Claude: <em>"O dashboard abriu em branco, pode verificar se o arquivo de código está completo e sem erros?"</em></div>
+      </div>
+      <div style="background:#1A0A00;border:1px solid var(--risco);border-radius:8px;padding:12px 14px">
+        <div style="font-weight:700;color:var(--warn);margin-bottom:4px">Erro de digitação no código</div>
+        <div style="font-size:12px;color:var(--muted)">Diga ao Claude: <em>"O dashboard ficou em branco após a última alteração, pode revisar o que foi mudado?"</em></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ABA: DOC-SYNC ═══════════ -->
+<div class="section" id="sec-docsync">
+  <div class="sec-title">Atualizar documentos (doc-sync)</div>
+  <div class="sec-sub">Toda vez que o dashboard muda, os manuais precisam ser atualizados. A skill doc-sync faz isso sozinha — você só precisa aprovar.</div>
+
+  <div class="g2" style="margin-bottom:16px">
+    <div class="card" style="text-align:center;cursor:pointer" onclick="openModal('ds_auto')">
+      <div style="font-size:36px;margin-bottom:10px">⏰</div>
+      <div style="font-weight:700;font-size:16px">Automático</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Roda todo dia às 08:00 sem você pedir. Avisa só quando tem algo para aprovar.</div>
+      <div class="alert ok" style="margin-top:14px;text-align:left"><div class="alert-icon">✅</div><div>Nenhuma ação necessária da sua parte</div></div>
+    </div>
+    <div class="card" style="text-align:center;cursor:pointer" onclick="openModal('ds_manual')">
+      <div style="font-size:36px;margin-bottom:10px">💬</div>
+      <div style="font-weight:700;font-size:16px">Manual</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Você quer atualizar agora, sem esperar as 08:00.</div>
+      <div class="cmd" style="text-align:left;margin-top:14px">
+        <div class="cmd-label">Digitar no Cowork</div>
+        <div class="cmd-text">doc-sync</div>
+        <button class="cmd-copy" onclick="copyCmd(this,'doc-sync')">copiar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">O que acontece quando o doc-sync roda</div>
+    <div class="ds-step">
+      <div class="ds-num" style="background:#001428;border:1px solid var(--andam);color:#80AAFF">1</div>
+      <div class="ds-body">
+        <div class="ds-title">Compara o código atual com a última versão conhecida</div>
+        <div class="ds-desc">Como tirar duas fotos do mesmo lugar em momentos diferentes e ver o que mudou.</div>
+        <div class="ds-tags"><span class="tag auto">automático</span></div>
+      </div>
+    </div>
+    <div class="ds-step">
+      <div class="ds-num" style="background:#001428;border:1px solid var(--andam);color:#80AAFF">2</div>
+      <div class="ds-body">
+        <div class="ds-title">Decide o que é relevante para documentar</div>
+        <div class="ds-desc">Ignora ajustes internos que ninguém precisa saber. Só registra o que afeta quem usa ou quem mantém o dashboard.</div>
+        <div class="ds-tags"><span class="tag auto">automático</span></div>
+      </div>
+    </div>
+    <div class="ds-step">
+      <div class="ds-num" style="background:#1F0D00;border:1px solid var(--warn);color:var(--warn)">3</div>
+      <div class="ds-body">
+        <div class="ds-title">⏸ Te mostra o que vai mudar — e pede sua aprovação</div>
+        <div class="ds-desc">Explica em linguagem simples o que mudou no dashboard e o que vai atualizar em cada manual. Você aprova ou recusa cada item.</div>
+        <div class="ds-tags"><span class="tag pmo">sua ação aqui</span><span class="tag pause">aguarda aprovação</span></div>
+        <div class="alert warn" style="margin-top:8px"><div class="alert-icon">⚠️</div><div>Nenhum arquivo é alterado antes da sua confirmação.</div></div>
+      </div>
+    </div>
+    <div class="ds-step">
+      <div class="ds-num" style="background:#001428;border:1px solid var(--andam);color:#80AAFF">4</div>
+      <div class="ds-body">
+        <div class="ds-title">Atualiza os manuais aprovados</div>
+        <div class="ds-desc">Edita apenas as seções afetadas — sem reescrever o documento inteiro. Incrementa a versão automaticamente.</div>
+        <div class="ds-tags"><span class="tag auto">automático</span></div>
+      </div>
+    </div>
+    <div class="ds-step">
+      <div class="ds-num" style="background:#001F0E;border:1px solid var(--feito);color:var(--feito)">5</div>
+      <div class="ds-body">
+        <div class="ds-title">Gera os PDFs e guarda o novo ponto de referência</div>
+        <div class="ds-desc">Os documentos ficam disponíveis na pasta Manual/ e o ciclo se reinicia para a próxima verificação.</div>
+        <div class="ds-tags"><span class="tag auto">automático</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ABA: STATUS ═══════════ -->
+<div class="section" id="sec-status">
+  <div class="sec-title">Status e cores</div>
+  <div class="sec-sub">O que significa cada cor no dashboard. Clique em qualquer status para ver detalhes.</div>
+
+  <div class="card">
+    <div class="card-label">Legenda de status</div>
+    <div class="status-grid">
+      <div class="status-row" onclick="openModal('st_feito')"><div class="status-dot" style="background:#05C46B"></div><div class="status-name">Feito</div><div class="status-meaning">Entregue e concluído</div><div class="status-rank">melhor</div></div>
+      <div class="status-row" onclick="openModal('st_andam')"><div class="status-dot" style="background:#1A56FF"></div><div class="status-name">Em andamento</div><div class="status-meaning">Trabalho em progresso, no prazo</div><div class="status-rank"></div></div>
+      <div class="status-row" onclick="openModal('st_iniciar')"><div class="status-dot" style="background:#5A6E85"></div><div class="status-name">A iniciar</div><div class="status-meaning">Ainda não começou, mas tem data definida</div><div class="status-rank"></div></div>
+      <div class="status-row" onclick="openModal('st_definir')"><div class="status-dot" style="background:#92400E"></div><div class="status-name">Definir datas</div><div class="status-meaning">Sem data ainda — precisa de decisão</div><div class="status-rank"></div></div>
+      <div class="status-row" onclick="openModal('st_risco')"><div class="status-dot" style="background:#FF6B00"></div><div class="status-name">Risco de atraso</div><div class="status-meaning">Prazo em 7 dias ou menos — atenção necessária</div><div class="status-rank">⚠️</div></div>
+      <div class="status-row" onclick="openModal('st_atraso')"><div class="status-dot" style="background:#FF2525"></div><div class="status-name">Atrasado</div><div class="status-meaning">Prazo já passou sem conclusão</div><div class="status-rank">🚨 pior</div></div>
+      <div class="status-row" onclick="openModal('st_cancel')"><div class="status-dot" style="background:#374151"></div><div class="status-name">Cancelado / Congelado</div><div class="status-meaning">Descontinuado ou pausado sem previsão</div><div class="status-rank"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Como o dashboard calcula o status de cada nível</div>
+    <div class="alert info" style="margin-bottom:12px"><div class="alert-icon">💡</div><div>O status de um Marco, Grupo ou Eixo é calculado automaticamente com base nas suas tarefas — sempre usando o pior status encontrado.</div></div>
+    <div style="font-size:13px;color:var(--muted);line-height:2">
+      <div>📊 <strong style="color:var(--text)">Eixo</strong> herda o pior status dos seus Grupos</div>
+      <div>📁 <strong style="color:var(--text)">Grupo</strong> herda o pior status dos seus Marcos</div>
+      <div>🎯 <strong style="color:var(--text)">Marco</strong> herda o pior status das suas Tarefas</div>
+      <div style="margin-top:8px;color:var(--muted);font-size:12px">Exemplo: se um grupo tem 10 tarefas "Feitas" e 1 "Atrasada" → o grupo aparece como <strong style="color:#FF2525">Atrasado</strong>.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ABA: DOCUMENTOS ═══════════ -->
+<div class="section" id="sec-docs">
+  <div class="sec-title">Documentos do projeto</div>
+  <div class="sec-sub">Todos os manuais, quem deve ler cada um e quando são atualizados. Ficam em <strong>IDG - Relatórios de Análise\Manual\</strong></div>
+
+  <div class="g2" style="margin-bottom:16px">
+    <div class="doc-card" onclick="openModal('doc_manual')">
+      <div class="doc-version">v6 — atualizado Mai/2026</div>
+      <div class="doc-title">📘 Manual de Uso e Manutenção</div>
+      <div class="doc-who">👥 Para: gestores e equipe IDG que usam o dashboard no dia a dia</div>
+      <div class="doc-when">Atualizado quando: algo muda na tela — novo filtro, nova aba, nova cor, novo botão</div>
+    </div>
+    <div class="doc-card" onclick="openModal('doc_onboarding')">
+      <div class="doc-version">v10 — atualizado Mai/2026</div>
+      <div class="doc-title">🛠️ Guia de Onboarding — Manutenção</div>
+      <div class="doc-who">👨‍💻 Para: o PMO que vai manter o código com Claude</div>
+      <div class="doc-when">Atualizado quando: algum processo técnico muda, nova armadilha descoberta, novos passos de configuração</div>
+    </div>
+    <div class="doc-card" onclick="openModal('doc_ficha')">
+      <div class="doc-version">v3 — Mai/2026</div>
+      <div class="doc-title">📋 Ficha Técnica</div>
+      <div class="doc-who">📊 Para: gestores seniores, TI, stakeholders que precisam de uma visão rápida do sistema</div>
+      <div class="doc-when">Atualizado quando: endereço do dashboard muda, planilha muda, sistema muda</div>
+    </div>
+    <div class="doc-card" onclick="openModal('doc_usuario')">
+      <div class="doc-version">v2 — Mai/2026</div>
+      <div class="doc-title">🎯 Guia do Usuário Final</div>
+      <div class="doc-who">🙋 Para: equipe da exposição e parceiros que nunca viram o dashboard</div>
+      <div class="doc-when">Atualizado quando: algo visível na tela muda de lugar ou de funcionamento</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Quem atualiza o quê — quando uma mudança acontece</div>
+    <table>
+      <tr><th>Tipo de mudança</th><th>Manual</th><th>Onboarding</th><th>Ficha Técnica</th><th>Guia Usuário</th></tr>
+      <tr><td>Novo filtro ou botão visível</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓</td></tr>
+      <tr><td>Nova aba no dashboard</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓</td></tr>
+      <tr><td>Novo status ou cor de status</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓</td></tr>
+      <tr><td>Endereço do dashboard muda</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>Planilha do projeto muda</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td></tr>
+      <tr><td>Nova armadilha técnica descoberta</td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+    </table>
+    <div class="alert ok" style="margin-top:14px"><div class="alert-icon">🔄</div><div>Esta tabela é executada automaticamente pelo <strong>doc-sync</strong> — você não precisa decidir manualmente.</div></div>
+  </div>
+</div>
+
+<!-- ═══════════ ABA: DEU ERRADO? ═══════════ -->
+<div class="section" id="sec-socorro">
+  <div class="sec-title">🆘 Deu errado?</div>
+  <div class="sec-sub">Os problemas mais comuns, em linguagem simples. Para cada um: o que está acontecendo, o que falar pro Claude e quando escalar.</div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+
+    <!-- 1 -->
+    <div class="card" style="border-left:4px solid var(--atraso);cursor:pointer" onclick="openModal('err_branco')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:32px">⬜</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px;color:var(--text)">O dashboard abriu em branco</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:3px">A tela carrega mas não aparece nada — sem dados, sem layout, só fundo escuro.</div>
+        </div>
+        <div style="color:var(--muted);font-size:13px">clique para ver o que fazer →</div>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="card" style="border-left:4px solid var(--risco);cursor:pointer" onclick="openModal('err_dados')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:32px">📊</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px;color:var(--text)">Os dados da planilha não aparecem / estão desatualizados</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:3px">A equipe atualizou a planilha mas o dashboard ainda mostra informações antigas.</div>
+        </div>
+        <div style="color:var(--muted);font-size:13px">clique para ver o que fazer →</div>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="card" style="border-left:4px solid var(--risco);cursor:pointer" onclick="openModal('err_push')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:32px">🚀</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px;color:var(--text)">Publiquei a mudança mas não apareceu no site</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:3px">Fiz o commit e push, mas ao abrir o endereço público nada mudou.</div>
+        </div>
+        <div style="color:var(--muted);font-size:13px">clique para ver o que fazer →</div>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="card" style="border-left:4px solid var(--atraso);cursor:pointer" onclick="openModal('err_github')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:32px">❌</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px;color:var(--text)">O GitHub Desktop mostrou erro ao tentar publicar</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:3px">Apareceu uma mensagem de erro em vermelho no GitHub Desktop ao fazer Push.</div>
+        </div>
+        <div style="color:var(--muted);font-size:13px">clique para ver o que fazer →</div>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="card" style="border-left:4px solid var(--risco);cursor:pointer" onclick="openModal('err_docsync')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:32px">🔄</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px;color:var(--text)">O doc-sync não rodou / não recebi nenhum aviso</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:3px">Esperava que o doc-sync verificasse as mudanças mas não aconteceu nada.</div>
+        </div>
+        <div style="color:var(--muted);font-size:13px">clique para ver o que fazer →</div>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="card" style="border-left:4px solid var(--iniciar);cursor:pointer" onclick="openModal('err_status')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:32px">🟠</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px;color:var(--text)">O status de uma tarefa está errado no dashboard</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:3px">A planilha mostra "Feito" mas o dashboard mostra "Atrasado" (ou vice-versa).</div>
+        </div>
+        <div style="color:var(--muted);font-size:13px">clique para ver o que fazer →</div>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="card" style="border-left:4px solid var(--iniciar);cursor:pointer" onclick="openModal('err_lento')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:32px">🐢</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px;color:var(--text)">O dashboard está lento ou travando</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:3px">Demora muito para carregar ou trava ao clicar nas abas.</div>
+        </div>
+        <div style="color:var(--muted);font-size:13px">clique para ver o que fazer →</div>
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="card" style="border-left:4px solid var(--atraso);cursor:pointer" onclick="openModal('err_acesso')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:32px">🔒</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px;color:var(--text)">O link do dashboard não abre / dá erro 404</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:3px">Alguém tentou acessar o dashboard mas o navegador mostra página não encontrada.</div>
+        </div>
+        <div style="color:var(--muted);font-size:13px">clique para ver o que fazer →</div>
+      </div>
+    </div>
+
+    <!-- 9 -->
+    <div class="card" style="border-left:4px solid var(--definir);cursor:pointer" onclick="openModal('err_claude')">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:32px">🤖</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px;color:var(--text)">O Claude fez uma mudança e agora algo que funcionava parou</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:3px">Após pedir uma alteração ao Claude, uma outra parte do dashboard parou de funcionar.</div>
+        </div>
+        <div style="color:var(--muted);font-size:13px">clique para ver o que fazer →</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="alert info" style="margin-top:20px">
+    <div class="alert-icon">💡</div>
+    <div><strong>Dica geral:</strong> se travar em algo que não está aqui, abra o Claude Cowork e descreva o problema em linguagem natural. Exemplo: <em>"O dashboard abriu sem mostrar o Gantt depois que pedi uma mudança nos filtros. O que pode ser?"</em></div>
+  </div>
+
+</div>
+</div><!-- /content -->
+
+<!-- MODAL DATA & LOGIC -->
+<script>
+const MODALS = {
+  planilha:{title:'📊 Planilha do Projeto',rows:[
+    {i:'🎯',l:'O que é',v:'O Google Sheets onde o cronograma e as requisições do projeto são preenchidos pela equipe.'},
+    {i:'✅',l:'Para que serve',v:'É a fonte de verdade — tudo que aparece no dashboard vem daqui.'},
+    {i:'👤',l:'Quem cuida',v:'A equipe do projeto atualiza a planilha. O dashboard lê automaticamente.'},
+    {i:'⚠️',l:'Atenção',v:'Nunca edite o formato das colunas da planilha sem avisar o responsável técnico — isso pode quebrar o dashboard.'}
+  ],tech:'ID da planilha de cronograma: 17nttJ_ShqWztvDWH3l59iNqboLqkviZs3_PM5J3ihdA\nAba: "master data"'},
+  conexao:{title:'🔌 Conexão automática com a planilha',rows:[
+    {i:'🎯',l:'O que é',v:'Um canal seguro que o dashboard usa para buscar os dados da planilha sem precisar de login.'},
+    {i:'✅',l:'Para que serve',v:'Garante que os dados estejam sempre frescos, a cada 15 minutos.'},
+    {i:'⚠️',l:'Atenção',v:'Funciona apenas quando o dashboard está publicado no endereço oficial. Em teste local, os dados não atualizam — comportamento esperado.'}
+  ],tech:'Google Sheets API v4 — chave pública restrita a pmo-creator.github.io/*'},
+  servidor:{title:'🌐 Servidor que publica o dashboard',rows:[
+    {i:'🎯',l:'O que é',v:'Um serviço gratuito do GitHub que pega o código do repositório e transforma em site público.'},
+    {i:'✅',l:'Para que serve',v:'Toda vez que você faz um commit e push, o site atualiza automaticamente em 1-2 minutos.'},
+    {i:'👤',l:'Quem cuida',v:'Automático — não precisa configurar nada além do repositório.'},
+    {i:'⚠️',l:'Atenção',v:'Não tem servidor backend — tudo é estático. Isso é uma vantagem: sem custos, sem manutenção de servidor.'}
+  ],tech:'GitHub Pages — branch: main\nURL: https://pmo-creator.github.io/maz-dashboard/'},
+  usuario:{title:'👤 Usuário final',rows:[
+    {i:'🎯',l:'O que é',v:'Qualquer pessoa que abre o link do dashboard no navegador.'},
+    {i:'✅',l:'Para que serve',v:'Ver o cronograma, status das tarefas, Gantt e requisições em tempo real.'},
+    {i:'⚠️',l:'Atenção',v:'O dashboard detecta automaticamente se é celular ou computador e redireciona para a versão certa.'}
+  ]},
+  versoes:{title:'🖥️📱 Duas versões do dashboard',rows:[
+    {i:'🖥️',l:'Desktop',v:'Arquivo index.html — 3 abas: Gantt, Status Report (EAP), Requisições.'},
+    {i:'📱',l:'Mobile',v:'Arquivo mobile.html — versão simplificada para celular.'},
+    {i:'🔄',l:'Redirecionamento',v:'Se alguém abrir o link de computador no celular (ou vice-versa), o dashboard redireciona automaticamente.'},
+    {i:'⚠️',l:'Atenção',v:'Qualquer mudança visível no desktop provavelmente precisa ser verificada no mobile também.'}
+  ],tech:'Auto-redirect: userAgent mobile OU innerWidth ≤ 768px'},
+  atualizacao:{title:'⏱️ Atualização automática dos dados',rows:[
+    {i:'🎯',l:'O que é',v:'Um timer interno que roda a cada 15 minutos e busca os dados mais recentes da planilha.'},
+    {i:'✅',l:'Para que serve',v:'Garante que o dashboard mostra informações atuais sem precisar recarregar a página.'},
+    {i:'💡',l:'Na prática',v:'Se alguém atualizar a planilha agora, o dashboard vai refletir isso em até 15 minutos.'},
+    {i:'⚠️',l:'Atenção',v:'Na versão local de teste, os dados não atualizam. Só funciona no endereço público.'}
+  ],tech:'setInterval com AUTO_REFRESH_MS = 15 * 60 * 1000'},
+  eixo:{title:'🗂️ Eixo',rows:[
+    {i:'🎯',l:'O que é',v:'A maior divisão do projeto — uma grande área temática como Comunicação, Expografia, Tecnologia.'},
+    {i:'📊',l:'Quantidade',v:'9 eixos no total.'},
+    {i:'💡',l:'No dashboard',v:'Aparece no topo da hierarquia. Clicar em um eixo abre todos os grupos dentro dele.'}
+  ]},
+  grupo:{title:'📁 Grupo',rows:[
+    {i:'🎯',l:'O que é',v:'Uma subárea dentro de um eixo. Agrupa marcos relacionados.'},
+    {i:'📊',l:'Quantidade',v:'48 grupos no total.'},
+    {i:'⚠️',l:'Atenção',v:'O mesmo nome de grupo pode existir em eixos diferentes — e são entradas completamente separadas. Não confundir.'}
+  ]},
+  marco:{title:'🎯 Marco',rows:[
+    {i:'🎯',l:'O que é',v:'Uma entrega importante dentro de um grupo. Tem data de início e fim.'},
+    {i:'💡',l:'No dashboard',v:'Tem seu próprio status (calculado pelas tarefas dentro dele) e pode ter comentários de progresso.'}
+  ]},
+  tarefa:{title:'✅ Tarefa',rows:[
+    {i:'🎯',l:'O que é',v:'A ação mais específica — quem faz, o que faz, quando entrega.'},
+    {i:'💡',l:'No dashboard',v:'O status da tarefa é o que alimenta o status do marco acima.'},
+    {i:'⚠️',l:'Atenção',v:'NUNCA resumir ou parafrasear comentários das tarefas — o dashboard exibe o texto exatamente como está na planilha.'}
+  ]},
+  passo_pedir:{title:'💬 Pedir ao Claude uma mudança',rows:[
+    {i:'🎯',l:'Como fazer',v:'Abra o Claude Cowork, conecte a pasta do projeto e descreva o que quer mudar em linguagem natural.'},
+    {i:'💡',l:'Exemplo bom',v:'"Quero adicionar um filtro por responsável no header do dashboard."'},
+    {i:'💡',l:'Exemplo ruim',v:'"Muda o filtro." — vago demais, resultado imprevisível.'},
+    {i:'⚠️',l:'Atenção',v:'Quanto mais contexto você der, melhor o resultado. Mencione onde fica, o que faz e por que precisa mudar.'}
+  ]},
+  passo_claude:{title:'🤖 Claude edita o código',rows:[
+    {i:'🎯',l:'O que acontece',v:'O Claude acessa o arquivo do dashboard, faz a alteração pedida e explica o que foi mudado.'},
+    {i:'💡',l:'Durante o processo',v:'Você pode pedir para ele explicar o que está fazendo — ele responde em linguagem simples.'},
+    {i:'⚠️',l:'Atenção',v:'Sempre peça para o Claude confirmar que salvou o arquivo antes de testar.'}
+  ]},
+  passo_testar:{title:'👁️ Testar localmente',rows:[
+    {i:'🎯',l:'O que é',v:'Ver a mudança no seu computador antes de publicar para todo mundo.'},
+    {i:'🔧',l:'Como fazer',v:'Clique duas vezes em SERVE_DASHBOARD.bat, abra o navegador em http://localhost:8765 e pressione Ctrl+Shift+R.'},
+    {i:'⚠️',l:'Atenção',v:'Sempre use Ctrl+Shift+R (não F5). O F5 simples pode mostrar a versão antiga salva em cache.'}
+  ]},
+  passo_publicar:{title:'🚀 Publicar via GitHub Desktop',rows:[
+    {i:'🎯',l:'O que é',v:'Enviar suas alterações para o servidor para que fiquem disponíveis para todo mundo.'},
+    {i:'🔧',l:'Como fazer',v:'1. Abra o GitHub Desktop\n2. Você vai ver os arquivos alterados\n3. Escreva uma mensagem descrevendo o que mudou\n4. Clique "Commit to main"\n5. Clique "Push origin"'},
+    {i:'⏱️',l:'Tempo',v:'Em 1 a 2 minutos o dashboard atualizado está no ar.'},
+    {i:'⚠️',l:'Verifique',v:'Após o push, abra o endereço público e pressione Ctrl+Shift+R para confirmar que a mudança chegou.'}
+  ]},
+  ds_auto:{title:'⏰ doc-sync automático',rows:[
+    {i:'🎯',l:'O que é',v:'Uma tarefa agendada que roda todo dia às 08:00 e verifica se o código do dashboard mudou desde a última vez.'},
+    {i:'✅',l:'O que você precisa fazer',v:'Nada — só aprovar quando aparecer um aviso com mudanças para documentar.'},
+    {i:'⚙️',l:'Como foi configurado',v:'Você configurou na etapa 6 do onboarding digitando no Cowork: "Configurar doc-sync para rodar todo dia às 08:00"'},
+    {i:'⚠️',l:'Se não rodar',v:'Verifique se o Claude Cowork está aberto no horário. O task precisa do Cowork ativo.'}
+  ]},
+  ds_manual:{title:'💬 doc-sync manual',rows:[
+    {i:'🎯',l:'Quando usar',v:'Quando você acabou de fazer um push e quer atualizar os documentos imediatamente, sem esperar as 08:00.'},
+    {i:'🔧',l:'Como fazer',v:'No Claude Cowork, digite: doc-sync (ou "atualizar docs")'},
+    {i:'⏱️',l:'Quanto demora',v:'Depende do tamanho das mudanças. Geralmente 2-5 minutos para analisar e apresentar as mudanças para aprovação.'}
+  ]},
+  st_feito:{title:'🟢 Feito',rows:[{i:'🎯',l:'Significa',v:'A tarefa foi entregue e concluída. Não requer nenhuma ação.'},{i:'📊',l:'Prioridade',v:'O melhor status possível.'}]},
+  st_andam:{title:'🔵 Em andamento',rows:[{i:'🎯',l:'Significa',v:'O trabalho está em progresso e dentro do prazo.'},{i:'💡',l:'Ação',v:'Acompanhar progresso normalmente.'}]},
+  st_iniciar:{title:'🔘 A iniciar',rows:[{i:'🎯',l:'Significa',v:'Ainda não começou, mas tem data definida e está no planejamento.'},{i:'💡',l:'Ação',v:'Verificar se o responsável está ciente da data de início.'}]},
+  st_definir:{title:'🟫 Definir datas',rows:[{i:'🎯',l:'Significa',v:'Esta tarefa ainda não tem datas definidas. Precisa de decisão.'},{i:'⚠️',l:'Atenção',v:'Tarefas sem data não aparecem no Gantt. Priorize definir as datas.'}]},
+  st_risco:{title:'🟠 Risco de atraso',rows:[{i:'🎯',l:'Significa',v:'O prazo vence em 7 dias ou menos e a tarefa ainda não está concluída.'},{i:'⚠️',l:'Ação necessária',v:'Contatar o responsável e avaliar o que está bloqueando.'}]},
+  st_atraso:{title:'🔴 Atrasado',rows:[{i:'🎯',l:'Significa',v:'O prazo já passou e a tarefa ainda não foi concluída.'},{i:'🚨',l:'Ação necessária',v:'Escalar imediatamente — o dashboard sinalizou o problema automaticamente.'}]},
+  st_cancel:{title:'⬛ Cancelado / Congelado',rows:[{i:'🎯',l:'Significa',v:'Esta entrega foi descontinuada ou pausada sem previsão de retomada.'},{i:'💡',l:'Ação',v:'Nenhuma — apenas registrado para histórico.'}]},
+  doc_manual:{title:'📘 Manual de Uso e Manutenção v6',rows:[
+    {i:'👥',l:'Quem lê',v:'Gestores e equipe IDG que usam o dashboard no dia a dia.'},
+    {i:'📖',l:'O que contém',v:'Como usar filtros, navegar entre abas, entender o Gantt, interpretar status, consultar requisições.'},
+    {i:'🔄',l:'Quando atualiza',v:'Sempre que algo muda na tela: novo filtro, nova aba, novo comportamento visível.'},
+    {i:'🤖',l:'Quem atualiza',v:'O doc-sync atualiza automaticamente após aprovação sua.'}
+  ]},
+  doc_onboarding:{title:'🛠️ Guia de Onboarding v10',rows:[
+    {i:'👥',l:'Quem lê',v:'O PMO que vai manter o código usando Claude (este guia é para você!).'},
+    {i:'📖',l:'O que contém',v:'Arquitetura, boas práticas, fluxo de trabalho, referências técnicas, armadilhas conhecidas e setup do doc-sync (§10).'},
+    {i:'🔄',l:'Quando atualiza',v:'Quando algum processo técnico muda ou uma nova armadilha é descoberta.'}
+  ]},
+  doc_ficha:{title:'📋 Ficha Técnica v3',rows:[
+    {i:'👥',l:'Quem lê',v:'Gestores seniores, TI ou stakeholders que precisam de uma visão rápida e formal do sistema.'},
+    {i:'📖',l:'O que contém',v:'Endereços, repositório, conta GitHub, planilhas, arquitetura resumida em tabela.'},
+    {i:'🔄',l:'Quando atualiza',v:'Quando o endereço, a planilha ou a conta GitHub mudam.'}
+  ]},
+  err_branco:{title:'⬜ Dashboard abriu em branco',rows:[
+    {i:'🔍',l:'O que é',v:'O arquivo de código ficou com um erro depois de uma edição. O navegador não conseguiu montar a página.'},
+    {i:'💬',l:'Falar pro Claude',v:'"O dashboard abriu em branco após a última alteração. Pode verificar se o arquivo index.html está completo e sem erros de código?"'},
+    {i:'🔧',l:'O Claude vai',v:'Verificar se o arquivo está íntegro, encontrar o erro e corrigir. Normalmente resolve em minutos.'},
+    {i:'⏱️',l:'Enquanto isso',v:'Não faça mais alterações no arquivo até o Claude confirmar que está corrigido.'},
+    {i:'🚨',l:'Se persistir',v:'Peça ao Claude: "Pode reverter para a última versão que funcionava?"'}
+  ],tech:'Causas técnicas: null bytes no HTML, /script ausente, template literal aninhado, função JS incompleta'},
+  err_dados:{title:'📊 Dados desatualizados ou ausentes',rows:[
+    {i:'🔍',l:'Primeira coisa',v:'Espere 15 minutos — o dashboard atualiza sozinho nesse intervalo. Se ainda não atualizou, continue.'},
+    {i:'🔄',l:'Segunda coisa',v:'Pressione Ctrl+Shift+R (não F5) para forçar o recarregamento completo da página.'},
+    {i:'📋',l:'Verificar a planilha',v:'Abra a planilha do projeto e confirme que os dados foram realmente salvos (não apenas digitados sem salvar).'},
+    {i:'💬',l:'Falar pro Claude',v:'"Os dados da planilha não estão aparecendo no dashboard. Pode verificar se a conexão com a planilha está funcionando?"'},
+    {i:'⚠️',l:'Atenção',v:'Em modo de teste local (localhost) os dados NUNCA atualizam — é esperado. Só funciona no endereço público.'}
+  ],tech:'Conexão via Google Sheets API v4 — chave restrita ao domínio. Localhost retorna 403 por design.'},
+  err_push:{title:'🚀 Mudança não apareceu no site',rows:[
+    {i:'⏱️',l:'Primeira coisa',v:'Aguarde 2 a 3 minutos após o push — o GitHub Pages leva esse tempo para publicar.'},
+    {i:'🔄',l:'Segunda coisa',v:'Pressione Ctrl+Shift+R no navegador — sem isso você pode estar vendo a versão em cache.'},
+    {i:'✅',l:'Verificar o push',v:'No GitHub Desktop, confirme que aparece "No local changes" e que o último commit está listado. Se ainda mostrar alterações pendentes, o push não foi feito.'},
+    {i:'💬',l:'Falar pro Claude',v:'"Fiz o push mas a mudança não apareceu no dashboard público. Pode confirmar se o commit foi enviado corretamente?"'},
+    {i:'🌐',l:'Checar o status',v:'Acesse github.com/PMO-creator/maz-dashboard e veja se o commit mais recente aparece lá.'}
+  ]},
+  err_github:{title:'❌ Erro ao publicar no GitHub Desktop',rows:[
+    {i:'🔍',l:'Causa mais comum',v:'O repositório remoto tem alterações que você ainda não baixou. Precisa sincronizar antes de enviar.'},
+    {i:'🔧',l:'O que fazer',v:'No GitHub Desktop, clique em "Fetch origin" e depois "Pull". Depois tente o Push novamente.'},
+    {i:'💬',l:'Falar pro Claude',v:'"O GitHub Desktop deu erro ao fazer push. A mensagem é: [copie aqui o texto do erro]. O que devo fazer?"'},
+    {i:'🚨',l:'Não force',v:'Se aparecer "Force push", NÃO clique sem consultar o Claude — pode apagar o trabalho de outras pessoas.'}
+  ],tech:'Erros comuns: "rejected — fetch first" (precisa de pull) ou "authentication failed" (senha/token expirado)'},
+  err_docsync:{title:'🔄 doc-sync não rodou',rows:[
+    {i:'🔍',l:'Causa mais comum',v:'O Claude Cowork não estava aberto às 08:00 quando o task tentou rodar.'},
+    {i:'🔧',l:'O que fazer',v:'Rode manualmente: abra o Cowork e digite "doc-sync"'},
+    {i:'✅',l:'Para evitar no futuro',v:'Deixe o Claude Cowork aberto (ou minimizado) de manhã. O task precisa do Cowork ativo para executar.'},
+    {i:'💬',l:'Verificar o agendamento',v:'No Cowork, pergunte: "O scheduled task do doc-sync ainda está configurado?"'},
+    {i:'💡',l:'Se nada mudou no código',v:'O doc-sync pode ter rodado e não avisado porque não encontrou mudanças relevantes para documentar — isso é comportamento correto.'}
+  ]},
+  err_status:{title:'🟠 Status errado no dashboard',rows:[
+    {i:'🔍',l:'Causa mais comum',v:'A data da tarefa na planilha pode estar em formato incorreto, ou o status foi digitado com um espaço ou erro de digitação.'},
+    {i:'📋',l:'Verificar na planilha',v:'Abra a planilha e confirme: (1) o status está escrito exatamente como os valores válidos, (2) a data está no formato correto.'},
+    {i:'📝',l:'Status válidos',v:'"Feito", "Em andamento", "Risco de atraso", "Atrasado", "A iniciar", "Definir datas", "Cancelado/Congelado" — qualquer variação é ignorada.'},
+    {i:'⏱️',l:'Após corrigir',v:'Aguarde até 15 minutos ou pressione Ctrl+Shift+R para o dashboard atualizar.'},
+    {i:'💡',l:'Atenção especial',v:'O dashboard pode mostrar "Atrasado" automaticamente se a data fim já passou — mesmo que a planilha diga outro status. É intencional.'}
+  ],tech:'preprocessStatuses() sobrescreve o status por data: vencido → Atrasado; vence em ≤7 dias → Risco de atraso'},
+  err_lento:{title:'🐢 Dashboard lento ou travando',rows:[
+    {i:'🔍',l:'Causa mais comum',v:'Muitos eixos e grupos expandidos ao mesmo tempo sobrecarregam o navegador, especialmente no Gantt.'},
+    {i:'🔧',l:'O que fazer',v:'Feche as abas do Gantt que não está usando (clique no eixo para recolher). Use os filtros de Status e Eixo para mostrar só o que precisa.'},
+    {i:'🌐',l:'Se for o navegador',v:'Feche outras abas abertas no navegador. O dashboard é pesado para processar — melhor funciona sozinho.'},
+    {i:'💻',l:'Se for o computador',v:'Feche outros programas. O dashboard usa bastante memória com todos os dados carregados.'},
+    {i:'💬',l:'Se persistir',v:'"O dashboard está muito lento mesmo com poucos eixos abertos. Pode verificar se tem algo no código causando isso?"'}
+  ]},
+  err_acesso:{title:'🔒 Link não abre / erro 404',rows:[
+    {i:'🔍',l:'Verificar o link',v:'Confirme que o endereço está exatamente: https://pmo-creator.github.io/maz-dashboard/'},
+    {i:'🌐',l:'Verificar o GitHub Pages',v:'Acesse github.com/PMO-creator/maz-dashboard → Settings → Pages e confirme que está publicado.'},
+    {i:'⏱️',l:'Após um push recente',v:'Se acabou de publicar, aguarde 2-3 minutos e tente de novo.'},
+    {i:'💬',l:'Falar pro Claude',v:'"O dashboard está dando 404. Pode verificar se o GitHub Pages está ativo e se o arquivo index.html existe no repositório?"'},
+    {i:'🚨',l:'Se o Pages estiver desativado',v:'Peça ao Claude para guiar você na reativação em github.com → Settings → Pages → Source: main branch.'}
+  ]},
+  err_claude:{title:'🤖 Mudança do Claude quebrou outra coisa',rows:[
+    {i:'🔍',l:'O que aconteceu',v:'Ao editar uma parte do código, o Claude pode ter afetado outra parte sem perceber. Acontece especialmente em arquivos grandes.'},
+    {i:'💬',l:'Falar pro Claude',v:'"Após a última alteração, [descreva o que parou de funcionar]. Pode investigar o que causou e corrigir?"'},
+    {i:'🔄',l:'Se quiser desfazer tudo',v:'"Pode reverter o arquivo para a versão antes da última alteração?" — o Claude acessa o histórico de backups.'},
+    {i:'🛡️',l:'Para evitar no futuro',v:'Sempre peça ao Claude para testar uma coisa de cada vez e confirmar que o resto continua funcionando antes de publicar.'},
+    {i:'⚠️',l:'Não publique',v:'Se algo está quebrado em modo local de teste, não faça push. Corrija primeiro, publique depois.'}
+  ]},
+  doc_usuario:{title:'🎯 Guia do Usuário Final v2',rows:[
+    {i:'👥',l:'Quem lê',v:'Equipe da exposição e parceiros que nunca viram o dashboard — leigos totais.'},
+    {i:'📖',l:'O que contém',v:'Como acessar o link, navegar, filtrar, interpretar o que vê.'},
+    {i:'🔄',l:'Quando atualiza',v:'Quando algo visível na tela muda de lugar, comportamento ou aparência.'}
+  ]}
+};
+
+const SEARCH_INDEX = [
+  {tab:'como',text:'Como funciona planilha dados conexão servidor usuário versões celular mobile atualização automática 15 minutos eixo grupo marco tarefa'},
+  {tab:'onboarding',text:'Primeiros passos GitHub Desktop clonar repositório servidor local testar pasta conectar Cowork doc-sync configurar'},
+  {tab:'mudancas',text:'Fazer mudanças código editar testar publicar commit push branco erro boas práticas'},
+  {tab:'docsync',text:'Atualizar documentos doc-sync automático manual aprovar manuais versão'},
+  {tab:'status',text:'Status cores feito em andamento risco atraso cancelado definir datas herança rollup'},
+  {tab:'docs',text:'Documentos Manual Onboarding Ficha Técnica Guia Usuário versão quem lê quando atualiza'},
+  {tab:'socorro',text:'Deu errado branco erro dados desatualizado push publicar GitHub Desktop doc-sync status errado lento travando 404 não abre Claude quebrou reverter problema'}
+];
+
+const TAB_LABELS = {como:'Como funciona',onboarding:'Primeiros passos',mudancas:'Fazer mudanças',docsync:'Atualizar docs',status:'Status e cores',docs:'Documentos',socorro:'Deu errado?'};
+
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+function openModal(key) {
+  const d = MODALS[key]; if(!d) return;
+  let html = `<div class="modal-title">${d.title}</div>`;
+  d.rows.forEach(r=>{
+    html += `<div class="tiprow"><span class="tiprow-icon">${r.i}</span><span class="tiprow-label">${r.l}</span><span class="tiprow-val">${r.v.replace(/\n/g,'<br>')}</span></div>`;
+  });
+  if(d.tech) {
+    html += `<div class="tip-tech"><div class="tip-tech-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">🔧 ver detalhes técnicos ▾</div><div class="tip-tech-body">${d.tech}</div></div>`;
+  }
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// CHECKLIST
+let checks = JSON.parse(localStorage.getItem('maz_checks')||'[false,false,false,false,false,false]');
+function renderChecks() {
+  let done = checks.filter(Boolean).length;
+  checks.forEach((v,i)=>{
+    const el = document.getElementById('ck'+i);
+    el.className = 'cl-check' + (v?' done':'');
+    el.textContent = v ? '✓' : '';
+  });
+  document.getElementById('progressFill').style.width = (done/6*100)+'%';
+  document.getElementById('progressLabel').textContent = done+' de 6 concluídos';
+}
+function toggleCheck(i) { checks[i]=!checks[i]; localStorage.setItem('maz_checks',JSON.stringify(checks)); renderChecks(); }
+function resetChecklist() { checks=[false,false,false,false,false,false]; localStorage.setItem('maz_checks',JSON.stringify(checks)); renderChecks(); }
+renderChecks();
+
+// COPY
+function copyCmd(btn, text) {
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='copiado ✓'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='copiar'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// SEARCH
+function doSearch(q) {
+  const res = document.getElementById('searchResults');
+  if(!q || q.length < 2) { res.style.display='none'; return; }
+  const ql = q.toLowerCase();
+  const matches = SEARCH_INDEX.filter(item => item.text.toLowerCase().includes(ql));
+  if(!matches.length) { res.style.display='none'; return; }
+  res.innerHTML = matches.map(m=>`
+    <div class="sr-item" onclick="showTab('${m.tab}',document.querySelector('.nb[onclick*=\\'${m.tab}\\']'));document.getElementById('searchResults').style.display='none';document.getElementById('searchInp').value=''">
+      <div class="sr-item-tab">${TAB_LABELS[m.tab]}</div>
+      <div class="sr-item-text">Ir para: ${TAB_LABELS[m.tab]}</div>
+    </div>`).join('');
+  res.style.display = 'block';
+}
+
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+</script>
+</body>
+</html>
