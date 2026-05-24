@@ -1070,7 +1070,7 @@ async function loadData(){
     const hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0');
     document.getElementById('header-date').textContent=`${String(now.getDate()).padStart(2,'0')} ${MONTHS[now.getMonth()]} ${now.getFullYear()} \u00b7 MAZ ELD`;
     document.getElementById('refresh-time').textContent=`${hh}:${mm}`;
-    if(statusEl){statusEl.textContent=reqsOk?'\U0001f7e2 Ao vivo':'\U0001f7e1 Cronograma OK \u00b7 REQ erro';statusEl.style.background=reqsOk?'#052e16':'#422006';statusEl.style.color=reqsOk?'#4ade80':'#fb923c';}
+    if(statusEl){statusEl.textContent=reqsOk?'🟢 Ao vivo':'🟡 Cronograma OK \u00b7 REQ erro';statusEl.style.background=reqsOk?'#052e16':'#422006';statusEl.style.color=reqsOk?'#4ade80':'#fb923c';}
     buildMobileFilters();renderGantt();renderStatusReport();renderReqs();
     if(_isInitialLoad){hideLoading();_isInitialLoad=false;}
     hideConnErr();
@@ -1078,7 +1078,7 @@ async function loadData(){
     if(_isInitialLoad){showConnErr();_isInitialLoad=false;}
     else{
       if(!WBS.length)document.getElementById('gantt-list').innerHTML=`<div class="error-msg">Erro: ${escHtml(err.message)}</div>`;
-      if(statusEl){statusEl.textContent=WBS.length?'\U0001f7e1 Offline \u2014 dados anteriores':'\U0001f534 Erro \u2014 sem dados';statusEl.style.background=WBS.length?'#422006':'#450a0a';statusEl.style.color=WBS.length?'#fb923c':'#f87171';}
+      if(statusEl){statusEl.textContent=WBS.length?'🟡 Offline \u2014 dados anteriores':'🔴 Erro \u2014 sem dados';statusEl.style.background=WBS.length?'#422006':'#450a0a';statusEl.style.color=WBS.length?'#fb923c':'#f87171';}
     }
   }
   btn.disabled=false;btn.textContent='\u27f3 Atualizar';
