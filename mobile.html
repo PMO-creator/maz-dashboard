@@ -91,7 +91,7 @@
   .marco-row{display:flex;align-items:flex-start;gap:8px}
   .marco-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
   .marco-info{flex:1;min-width:0}
-  .marco-name{font-size:12px;font-weight:700;color:var(--text);line-height:1.3}
+  .grupo-name{font-size:12px;font-weight:700;color:var(--text);line-height:1.3}
   .marco-meta{display:flex;gap:6px;margin-top:3px;flex-wrap:wrap;align-items:center}
   .marco-chip{font-size:10px;font-weight:800;padding:2px 7px;border-radius:3px;color:#FFF;white-space:nowrap}
   .marco-date{font-size:10px;color:var(--muted)}
@@ -132,7 +132,7 @@
   .sr-marco-header{display:flex;align-items:center;gap:7px;padding:9px 14px 9px 24px;cursor:pointer;user-select:none;background:#F8FAFC;min-height:40px}
   .sr-marco-header:active{background:#EEF2F6}
   .sr-marco-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-  .sr-marco-name{font-size:12px;font-weight:700;color:var(--text);flex:1;line-height:1.3}
+  .sr-grupo-name{font-size:12px;font-weight:700;color:var(--text);flex:1;line-height:1.3}
   .sr-marco-chip{font-size:10px;font-weight:800;padding:2px 7px;border-radius:3px;color:#FFF;white-space:nowrap;flex-shrink:0}
   .sr-marco-body{display:none;padding:6px 14px 10px 32px;background:#F8FAFC}
   .sr-marco-body.open{display:block}
@@ -500,7 +500,7 @@ function renderEixos(){
                   <div class="marco-row" onclick="toggleMarco('${mKey}')">
                     <span class="marco-dot ${S_COLOR[m.status]||'s-iniciar'}"></span>
                     <div class="marco-info">
-                      <div class="marco-name">${escHtml(m.tarefa)}</div>
+                      <div class="grupo-name">${escHtml(m.tarefa)}</div>
                       <div class="marco-meta">
                         <span class="marco-chip ${S_COLOR[m.status]||'s-iniciar'}">${S_LABEL[m.status]||m.status}</span>
                         ${m.end?`<span class="marco-date">até ${m.end}</span>`:''}
@@ -584,7 +584,7 @@ function renderStatusReport(){
                 return`<div class="sr-marco">
                   <div class="sr-marco-header" onclick="toggleSRMarco('${mKey}')">
                     <span class="sr-marco-dot ${S_COLOR[m.status]||'s-iniciar'}"></span>
-                    <span class="sr-marco-name">${escHtml(m.tarefa)}</span>
+                    <span class="sr-grupo-name">${escHtml(m.tarefa)}</span>
                     ${m.end?`<span class="sr-date">${fmtShort(m.end)}</span>`:''}
                     <span class="sr-marco-chip ${S_COLOR[m.status]||'s-iniciar'}">${S_LABEL[m.status]||m.status}</span>
                     <span class="grupo-chev" id="srmc-${mKey}">▶</span>
@@ -845,7 +845,7 @@ function renderGantt(){
         const subsHtml=(m.subs||[]).map(t=>'<div class="tarefa-item" data-status="'+escHtml(t.status||'')+'" data-resp="'+escHtml(t.resp||'')+'"><div class="tarefa-header"><span class="tarefa-chip '+( S_COLOR[t.status]||'s-iniciar')+'">'+( S_LABEL[t.status]||t.status)+'</span><div class="tarefa-body-wrap"><span class="tarefa-name">'+escHtml(t.tarefa)+'</span>'+(t.resp?'<span class="tarefa-resp">'+escHtml(t.resp)+'</span>':'')+ganttBar(t.start,t.end,t.status)+'</div></div></div>').join('');
         const chevSubs=(m.subs||[]).length?'<span class="marco-chev" id="gmc-'+mKey+'">&#9654;</span>':'';
         const bodySubs=(m.subs||[]).length?'<div class="tarefa-body" id="gmb-'+mKey+'" style="display:none">'+subsHtml+'</div>':'';
-        return '<div class="marco-item" id="gmi-'+mKey+'" data-status="'+escHtml(m.status||'')+'" data-resp="'+escHtml(m.resp||'')+'" data-end="'+(m.end||'')+'">'+'<div class="marco-row" onclick="toggleGanttMarco(\''+mKey+'\')"><span class="marco-dot '+(S_COLOR[m.status]||'s-iniciar')+'"></span><div class="marco-info"><div class="marco-name">'+escHtml(m.tarefa)+'</div>'+(m.resp?'<div class="marco-resp">'+escHtml(m.resp)+'</div>':'')+'<div class="marco-meta" style="align-items:flex-end"><span class="marco-chip '+(S_COLOR[m.status]||'s-iniciar')+'" style="margin-bottom:2px">'+(S_LABEL[m.status]||m.status)+'</span>'+ganttBar(m.start,m.end,m.status)+'</div></div>'+chevSubs+'</div>'+bodySubs+'</div>';
+        return '<div class="marco-item" id="gmi-'+mKey+'" data-status="'+escHtml(m.status||'')+'" data-resp="'+escHtml(m.resp||'')+'" data-end="'+(m.end||'')+'">'+'<div class="marco-row" onclick="toggleGanttMarco(\''+mKey+'\')"><span class="marco-dot '+(S_COLOR[m.status]||'s-iniciar')+'"></span><div class="marco-info"><div class="grupo-name">'+escHtml(m.tarefa)+'</div>'+(m.resp?'<div class="marco-resp">'+escHtml(m.resp)+'</div>':'')+'<div class="marco-meta" style="align-items:flex-end"><span class="marco-chip '+(S_COLOR[m.status]||'s-iniciar')+'" style="margin-bottom:2px">'+(S_LABEL[m.status]||m.status)+'</span>'+ganttBar(m.start,m.end,m.status)+'</div></div>'+chevSubs+'</div>'+bodySubs+'</div>';
       }).join(''):'<div class="empty" style="padding:10px 12px;font-size:11px">Sem marcos</div>';
       return '<div class="grupo-item" id="ggi-'+gKey+'" data-status="'+escHtml(g.status||'')+'" data-resp="'+escHtml(g.resp||'')+'">'+'<div class="grupo-header" onclick="toggleGanttGrupo(\''+gKey+'\')"><span class="grupo-dot '+(S_COLOR[g.status]||'s-iniciar')+'"></span><div class="grupo-name-wrap"><div class="grupo-name">'+escHtml(g.name)+'</div>'+ganttBar(g.start,g.end,g.status)+'</div><span class="grupo-chip '+(S_COLOR[g.status]||'s-iniciar')+'">'+( S_LABEL[g.status]||g.status)+'</span><span class="grupo-chev" id="ggc-'+gKey+'">&#9654;</span></div><div class="marco-body" id="ggb-'+gKey+'" style="display:none">'+marcosHtml+'</div></div>';
     }).join('');

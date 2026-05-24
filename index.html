@@ -278,12 +278,12 @@ async function loadSheetsData() {
     .wbs-header h2,.req-header h2,.gantt-section-title h2{font-size:18px}
     .tree-root .root-label{font-size:16px}
     .tree-root .root-badge{font-size:13px;padding:4px 10px}
-    .group-name{font-size:15px}
+    .eixo-name{font-size:15px}
     .group-id{font-size:14px;min-width:32px}
     .group-count{font-size:14px;padding:3px 8px}
     .status-chip{font-size:12px;padding:3px 8px}
     .marco-item{padding:9px 12px 9px 36px;gap:8px;flex-wrap:wrap}
-    .marco-name{font-size:14px}
+    .grupo-name{font-size:14px}
     .marco-id{font-size:13px;min-width:32px}
     .marco-chip{font-size:12px;padding:3px 8px}
     .marco-date,.marco-resp{font-size:12px}
@@ -294,10 +294,10 @@ async function loadSheetsData() {
 
     /* ── Marco band / Task cards ── */
     .marco-band{padding:10px 12px 10px 0;margin:8px 8px 0 12px;gap:8px}
-    .mb-name{font-size:14px}
+    .marco-name{font-size:14px}
     .mb-date,.mb-resp,.mb-status{font-size:13px}
     .task-card{margin:0 8px 0 28px;padding:10px 12px}
-    .tc-name{font-size:14px}
+    .tarefa-name{font-size:14px}
     .tc-date,.tc-resp{font-size:14px}
     .tc-label{font-size:12px;min-width:120px}
     .tc-text{font-size:13px}
@@ -344,8 +344,8 @@ async function loadSheetsData() {
     .tab-btn{font-size:12px;padding:6px 9px}
     .kpi-hero-value{font-size:42px}
     .kpi-mini-value{font-size:24px}
-    .group-name{font-size:13px}
-    .marco-name{font-size:13px}
+    .eixo-name{font-size:13px}
+    .grupo-name{font-size:13px}
     .wbs-header h2,.req-header h2,.gantt-section-title h2{font-size:16px}
     /* Tabelas: esconde colunas menos críticas */
     .req-q-table th:nth-child(4),
@@ -374,7 +374,7 @@ async function loadSheetsData() {
   .group-inner{display:flex;align-items:center;gap:10px;flex:1;padding:11px 14px 11px 12px}
   .group-toggle{font-size:15px;color:rgba(255,255,255,.8);width:18px;text-align:center;flex-shrink:0;transition:transform .25s}
   .group-id{font-size:20px;font-weight:700;color:#FFF;padding:4px 11px;border-radius:4px;flex-shrink:0;min-width:42px;text-align:center;background:rgba(0,0,0,.2)}
-  .group-name{font-size:22px;font-weight:700;color:#FFF;flex:1}
+  .eixo-name{font-size:22px;font-weight:700;color:#FFF;flex:1}
   .group-period{font-size:10px;color:rgba(255,255,255,.7);white-space:nowrap}
   .group-count{font-size:19px;font-weight:700;color:#FFF;background:rgba(0,0,0,.15);padding:4px 11px;border-radius:12px;white-space:nowrap}
   .status-chip{font-size:18px;font-weight:700;letter-spacing:.5px;padding:5px 12px;border-radius:4px;color:#FFF;white-space:nowrap;flex-shrink:0}
@@ -387,7 +387,7 @@ async function loadSheetsData() {
   .marco-item:not(.has-comment):hover{background:#B8D485}
   .marco-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
   .marco-id{font-size:18px;font-weight:700;color:var(--muted);min-width:44px}
-  .marco-name{font-size:21px;font-weight:700;color:var(--text);flex:1;word-wrap:break-word;overflow-wrap:break-word;min-width:0}
+  .grupo-name{font-size:21px;font-weight:700;color:var(--text);flex:1;word-wrap:break-word;overflow-wrap:break-word;min-width:0}
   .marco-date{font-size:14px;font-weight:400;color:#1E293B;white-space:nowrap;flex-shrink:0}
   .marco-resp{font-size:14px;font-weight:400;color:#1E293B;background:#E8F0FB;padding:4px 11px;border-radius:10px;white-space:nowrap;flex-shrink:0;max-width:200px;overflow:hidden;text-overflow:ellipsis}
   .marco-chip{font-size:18px;font-weight:700;padding:4px 11px;border-radius:3px;color:#FFF;white-space:nowrap;flex-shrink:0}
@@ -552,7 +552,7 @@ async function loadSheetsData() {
   
   .marco-band{display:flex;align-items:center;gap:10px;padding:12px 18px 12px 0;background:#F5FAF0;border-left:5px solid;flex-wrap:wrap;margin:12px 14px 0 20px;border-radius:8px 8px 0 0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
   .mb-status{font-size:16px;font-weight:800;letter-spacing:.5px;padding:4px 11px;border-radius:4px;color:#FFF;white-space:nowrap;flex-shrink:0;margin-left:16px}
-  .mb-name{font-size:18px;font-weight:700;color:#1A2E0A;flex:1;letter-spacing:.2px;word-wrap:break-word;overflow-wrap:break-word;min-width:0}
+  .marco-name{font-size:18px;font-weight:700;color:#1A2E0A;flex:1;letter-spacing:.2px;word-wrap:break-word;overflow-wrap:break-word;min-width:0}
   .mb-date{font-size:18px;color:#4B6A30;font-weight:700;white-space:nowrap}
   .mb-resp{font-size:18px;color:#4B6A30;font-weight:700;white-space:nowrap;max-width:240px;overflow:hidden;text-overflow:ellipsis}
   .task-card{background:#F0F4FA;border-left:5px solid;border-radius:0;padding:14px 18px;margin:0 14px 0 48px;box-shadow:inset 0 -1px 0 #DDE5EF}
@@ -560,7 +560,7 @@ async function loadSheetsData() {
   .task-card:hover{background:#E8EEF8}
   .tc-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
   .tc-status{font-size:14px;font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:4px;color:#FFF;white-space:nowrap;flex-shrink:0}
-  .tc-name{font-size:16px;font-weight:500;color:#0F172A;line-height:1.4;flex:1;word-wrap:break-word;overflow-wrap:break-word;min-width:0}
+  .tarefa-name{font-size:16px;font-weight:500;color:#0F172A;line-height:1.4;flex:1;word-wrap:break-word;overflow-wrap:break-word;min-width:0}
   .tc-meta{display:flex;gap:14px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
   .tc-date{font-size:19px;color:#334155;font-weight:500}
   .tc-resp{font-size:19px;color:#1E293B;background:#DDE8F4;padding:3px 10px;border-radius:8px;font-weight:600}
@@ -1130,7 +1130,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
     const encVal  = encTxt  ? escH(encTxt)  : (isAtrasado ? NPA : NP);
     const isCancelado=(t.status||'').toLowerCase().includes('cancelado');
     let h = `<div class="task-card" style="border-color:${mc}">`;
-    h += `<div class="tc-header"><span class="tc-status" style="background:${mc}">${sl_}</span><span class="tc-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span></div>`;
+    h += `<div class="tc-header"><span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span></div>`;
     if(dateStr||t.resp){
       h += `<div class="tc-meta">`;
       if(dateStr) h += `<span class="tc-date">\uD83D\uDCC5 ${dateStr}</span>`;
@@ -1188,7 +1188,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
       html += `<div class="marco-band" style="border-color:${mc};cursor:${cursorStyle}" ${clickAttr}>`;
       html += chevron;
       html += `<span class="mb-status" style="background:${mc}">${sl_}</span>`;
-      html += `<span class="mb-name">${escH(t.tarefa||'')}</span>`;
+      html += `<span class="marco-name">${escH(t.tarefa||'')}</span>`;
       if(dateStr) html += `<span class="mb-date">\uD83D\uDCC5 ${dateStr}</span>`;
       if(t.resp)  html += `<span class="mb-resp">\uD83D\uDC64 ${escH(abrevNome(t.resp))}</span>`;
       html += `</div>`;
@@ -1242,7 +1242,7 @@ function renderTree(){
         <div class="marco-item${hasC?' has-comment':''}" ${clickAttr}>
           <div class="marco-dot" style="background:${mc}"></div>
           <span class="marco-id">#${gi+1}.${mi+1}</span>
-          <span class="marco-name">${hl(m.name,f.search)}</span>
+          <span class="grupo-name">${hl(m.name,f.search)}</span>
           ${m.resp?`<span class="marco-resp" title="${escH(m.resp)}">${hl(m.resp,f.search)}</span>`:''}
           ${dateStr?`<span class="marco-date">${dateStr}</span>`:''}
           <span class="marco-chip" style="background:${mc}">${sl(m.status)}</span>
@@ -1257,7 +1257,7 @@ function renderTree(){
         <div class="group-inner">
           <span class="group-toggle" id="gtoggle-${gi}" style="transform:rotate(${isOpen?0:-90}deg)">▼</span>
           <span class="group-id" style="background:${color}">${escH(g.id)}</span>
-          <span class="group-name">${gName}</span>
+          <span class="eixo-name">${gName}</span>
           <span class="group-count">${vis.length} grupos</span>
         </div>
       </div>

@@ -1,6 +1,15 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Ambiente de trabalho
+
+Esta é a pasta de **teste e desenvolvimento**. Os arquivos editados aqui são copiados para `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard` para commit e push no GitHub.
+
+**Fluxo:**
+```
+maz-dashboard (git pull) → copiar para cá → editar → testar → copiar de volta → commit/push
+```
 
 ## Arquitetura
 
@@ -10,24 +19,69 @@ Dois arquivos HTML self-contained: `index.html` (desktop) e `mobile.html` (mobil
 - Chart.js carregado via CDN para gráficos
 - Gantt renderizado em SVG gerado dinamicamente
 - Publicado em GitHub Pages: `pmo-creator.github.io/maz-dashboard`
-- Auto-redirect: desktop→mobile e vice-versa baseado em `navigator.userAgent` + `window.innerWidth`
+- Auto-redirect: `index.html` → `mobile.html` se `userAgent` mobile OU `innerWidth ≤ 768`; inverso no `mobile.html`
 
-## Comandos de Desenvolvimento
+## Abas
 
-**Servidor local (necessário — API Key não funciona via `file://`):**
+**Desktop (`index.html`):** `gantt` · `eap` (Status Report) · `reqs` (Requisições)  
+**Mobile (`mobile.html`):** `gantt` · `report` (Status Report) · `reqs` (Requisições)
+
+A aba `reqs` esconde a filter-bar de status/responsável (só aparece nas abas de cronograma).
+
+## Fluxo de dados e renderização
+
+**Dado estático embutido** — `const WBS = [...]` está hardcoded no HTML (~linha 755 do `index.html`). É exibido imediatamente no `window.onload` enquanto a API ainda não respondeu.
+
+**Dado dinâmico** — `loadSheetsData()` faz fetch das duas planilhas, substitui o conteúdo de `WBS` e `REQS` in-place (`.length=0` + push), depois re-renderiza tudo.
+
+**Ordem de chamada no `window.onload`:**
 ```
-SERVE_DASHBOARD.bat
+preprocessStatuses() → buildGroupFilter() → buildRespFilter() → renderKPIs() →
+renderTree() → buildReqFilters() → renderReqKPIs() → renderReqs() →
+renderGanttSection() → switchTab('gantt') → loadSheetsData()
 ```
-Ou manualmente: `python -m http.server 8765` → abrir `http://localhost:8765/index.html`
 
-**Validar JS extraído de HTML:**
-```powershell
-# Extrair bloco <script> para arquivo temporário e checar sintaxe
-node --check temp.js
-```
-`node --check` não aceita `.html` direto — extrair para `.js` antes.
+Após `loadSheetsData()` bem-sucedido, a mesma sequência de render é repetida com dados frescos. Um `setInterval` de 15 min reinicia o ciclo automaticamente.
 
-**Deploy:** push para `main` → GitHub Pages atualiza automaticamente (sem CI/CD).
+## Funções-chave
+
+| Função | Responsabilidade |
+|---|---|
+| `preprocessStatuses()` | Auto-corrige status por data: vencido → `Atrasado`; vence em ≤7 dias → `Risco de atraso`; propaga worst-status de subtasks para marcos e grupos |
+| `_parseWBS(rows)` | Transforma linhas brutas do Sheet em árvore `EIXO → GRUPO → MARCO → TAREFA` |
+| `_findWeekCols(rows)` | Detecta dinamicamente as colunas da semana atual buscando "ATUALIZA" no header row 0; retorna `{pC, eC, weekLabel}` |
+| `_parseREQS(rows)` | Transforma linhas do sheet de Requisições em array de objetos |
+| `renderTree()` | Renderiza a aba Status Report (EAP) com accordion de eixos/grupos/marcos |
+| `renderGanttSection()` | Cria os headers colapsáveis do Gantt (lazy: não renderiza o SVG ainda) |
+| `renderGanttForEixo(gi)` | Renderiza o SVG do Gantt de um eixo específico — chamado só quando o usuário expande |
+| `renderKPIs()` | KPI cards da aba de cronograma |
+| `renderReqs()` | Lista de requisições com filtros |
+| `buildCommentPanel()` | Painel lateral de progresso/encaminhamento de um marco |
+| `setFilterLevel(level)` | Alterna `filterLevel` entre `'marco'` e `'tarefa'`; chama `applyFilter()` |
+
+## Variáveis globais relevantes (index.html)
+
+| Variável | Valores | Efeito |
+|---|---|---|
+| `ganttMode` | `'monthly'` · `'weekly'` | Escala de tempo do Gantt |
+| `filterLevel` | `'marco'` · `'tarefa'` | Nível de filtragem: marco filtra pelo status do marco; tarefa filtra pelas tarefas dentro do marco expandido |
+
+## Mapeamento de colunas do Google Sheet (cronograma)
+
+Linhas 0 e 1 = cabeçalhos; dados a partir da linha 2.
+
+| Índice | Conteúdo |
+|---|---|
+| 1 (CE) | Eixo |
+| 2 (CG) | Grupo |
+| 3 (CM) | Marco |
+| 4 (CT) | Tarefa |
+| 6 (CR) | Responsável |
+| 7 (CS) | Status |
+| 8 (CST) | Data início |
+| 9 (CEN) | Data fim |
+| pC (dinâmico) | Progresso da semana atual |
+| eC (dinâmico) | Encaminhamento da semana atual |
 
 ## Estrutura WBS (hierarquia de dados)
 
@@ -35,49 +89,18 @@ node --check temp.js
 EIXO → GRUPO → MARCO → TAREFA
 ```
 
-```javascript
-const WBS = [
-  { id, name, status, children: [        // EIXO
-    { name, status, start, end, tasks: [ // GRUPO
-      { tarefa, tipo:'marco', status, start, end, subtasks: [ // MARCO
-        { tarefa, status, start, end }   // TAREFA
-      ]}
-    ]}
-  ]}
-]
-```
-
 ## Mapeamento CSS → Hierarquia (CRÍTICO)
 
 | Nome | Classe CSS |
 |---|---|
-| EIXO | `.group-name` |
-| GRUPO | `.marco-name` |
-| MARCO | `.mb-name` |
-| TAREFA | `.tc-name` |
-
-Os nomes das classes são contra-intuitivos — `.group-name` é o nível mais alto (EIXO), não grupo.
+| EIXO | `.eixo-name` |
+| GRUPO | `.grupo-name` |
+| MARCO | `.marco-name` |
+| TAREFA | `.tarefa-name` |
 
 ## Status válidos
 
 `Atrasado` · `Risco de atraso` · `Em andamento` · `A iniciar` · `Definir datas` · `Feito` · `Cancelado/Congelado`
-
-- Não existe "Cancelado" isolado — sempre `Cancelado/Congelado` (cor `#374151`)
-- `Definir datas`: cor `#92400E`
-
-## Mapeamento colunas REQS (índice base 0)
-
-| Índice | Campo | Observação |
-|---|---|---|
-| 0 | `req` | Número da requisição |
-| 2 | `comp` | Componente/área |
-| 4 | `prio` | Prioridade — **usar APENAS esta** |
-| 5 | `desc` | Descrição |
-| 6 | `status` | Status atual |
-| 7 | `forn` | Fornecedor |
-| 12 | `fin` | Data de finalização |
-
-Col B (índice 1) também tem um campo parecido com prioridade — ignorar, gera falsos positivos.
 
 ## Google Sheets
 
@@ -90,56 +113,40 @@ Col B (índice 1) também tem um campo parecido com prioridade — ignorar, gera
 
 - Restrita a `pmo-creator.github.io/*`
 - Localhost retorna 403 propositalmente — comportamento esperado
-- Dev local: criar chave própria restrita a `localhost:8765` no Google Console
-
-## Gantt — SVG dimensões
-
-```javascript
-const LW = 280   // largura coluna de nomes
-const TW = 1800  // largura timeline
-const GRH = 68   // altura linha grupo
-const TRH = 50   // altura linha marco/task
-const SRH = 38   // altura linha tarefa
-```
-
-## Ordem de desenho SVG (não alterar)
-
-1. Background rect
-2. Stripes/linhas
-3. Holofote filtro de data
-4. Rows: backgrounds + barras + labels
-5. Linha-guia horizontal
-6. Label column overlay
-7. Re-draw labels
-8. Separador vertical
-9. **Header rects por último** (cobrem tudo)
 
 ## ⚠️ Armadilhas críticas
 
 1. **Dashboard branco sem erro** → checar: null bytes, `function` ausente, JS truncado, template literals aninhados
 2. **Template literals aninhados** → nunca backtick dentro de `${}` dentro de outro backtick
-3. **JS truncado** → verificar `</script>` no final antes de editar
-4. **Prioridade REQS** → APENAS col E (índice 4) — col B gera falsos positivos
-5. **`node --check` Node v22** → não aceita `.html` — extrair para `.js` temporário
-6. **Write/Edit pode truncar mid-line** em arquivos grandes → verificar última linha após editar
-7. **`display:none` em elementos com `max-height` JS** → nunca — usar `max-height:0`
-8. **Emoji com CSS filter** → nunca — renderizado pelo SO, filter quebra aparência
-9. **Edit tool com backticks** → falha ao fazer match em strings com backtick `` ` `` — usar PowerShell `[System.IO.File]` para substituições nesses casos
+3. **Prioridade REQS** → APENAS col E (índice 4) — col B gera falsos positivos
+4. **`node --check` Node v22** → não aceita `.html` — extrair para `.js` temporário
+5. **Edit tool com backticks** → falha ao fazer match — usar PowerShell `[System.IO.File]` para substituições
+6. **CRLF** → normalizar com `.Replace("\`r\`n", "\`n")` antes de substituições PowerShell
+7. **Dado estático vs. dinâmico** → editar o WBS hardcoded no HTML só para testes rápidos; o dado real vem do Sheet e sobrescreve tudo no load
+8. **Gantt é lazy** → `renderGanttSection()` não gera SVG; só `renderGanttForEixo(gi)` gera — chamado ao expandir o eixo
 
-## Histórico de decisões importantes
+## Comandos de Desenvolvimento
 
-### Mai/2026 — Reestruturação completa
+**Servidor local:**
+```
+SERVE_DASHBOARD.bat
+```
+Ou manualmente: `python -m http.server 8765` → abrir `http://localhost:8765/index.html`
 
-**API Key:**
-- Chave antiga (AIzaSyAayG0UP7kFxt165Zu38BMz0P1hgvGtq18) invalidada e deletada no Google Console
-- Nova chave restrita a pmo-creator.github.io/* apenas
+**Validar JS extraído de HTML:**
+```powershell
+$html = [System.IO.File]::ReadAllText("index.html", [System.Text.Encoding]::UTF8)
+$matches = [regex]::Matches($html, '(?s)<script>(.*?)</script>')
+$main = $matches | Sort-Object { $_.Groups[1].Value.Length } | Select-Object -Last 1
+[System.IO.File]::WriteAllText("$env:TEMP\check.js", $main.Groups[1].Value, [System.Text.Encoding]::UTF8)
+node --check "$env:TEMP\check.js"
+```
 
-**Arquitetura:**
-- Arquivos migrados de Dashboard/ para raiz do repositório
-- `gerar_dashboard.py` e `ATUALIZAR_DASHBOARD.bat` descontinuados
-- Dados passaram a ser buscados diretamente no browser via API Key
-- Não há mais geração local de HTML via Python
+**Copiar para o repo e publicar:**
+```powershell
+copy index.html  "..\maz-dashboard\index.html"
+copy mobile.html "..\maz-dashboard\mobile.html"
+# Depois: cd ..\maz-dashboard → git add → git commit → git push
+```
 
-**Abas das planilhas (mudança crítica):**
-- Cronograma: de `"cronograma exposição "` para `"master data"`
-- Requisições: de `"Planilha de Status de Compras P"` para `"Planilha de Status de Compras Prod"`
+9. **Arquivos temporários** → permitido criar `_fix_*.py`, `_tmp_*.py` ou qualquer script auxiliar durante a sessão. **Obrigatório deletar com `Remove-Item` imediatamente após uso.** A pasta deve conter apenas: `index.html`, `mobile.html`, `SERVE_DASHBOARD.bat`, `CLAUDE.md`, `ONBOARDING.md`, `01. Manuais\`.
