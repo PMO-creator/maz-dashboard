@@ -103,9 +103,11 @@
   .tarefa-item{padding:8px 12px 8px 36px;border-bottom:1px solid #EEF2F6}
   .tarefa-item:last-child{border-bottom:none}
   .tarefa-header{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}
-  .tarefa-chip{font-size:9px;font-weight:800;padding:2px 6px;border-radius:3px;color:#FFF;white-space:nowrap;flex-shrink:0}
+  .tarefa-chip{font-size:9px;font-weight:800;padding:2px 6px;border-radius:3px;color:#FFF;white-space:nowrap;flex-shrink:0;min-width:72px;text-align:center}
+  .tarefa-body-wrap{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start}
   .tarefa-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.3;flex:1}
-  .tarefa-resp{font-size:10px;color:var(--muted);background:#EEF3E8;padding:2px 7px;border-radius:6px;display:inline-block;margin-bottom:4px}
+  .tarefa-resp{font-size:10px;font-weight:600;color:#2D5016;background:#B8D980;padding:2px 7px;border-radius:6px;display:inline-block;margin-bottom:4px}
+  .marco-resp{font-size:10px;font-weight:600;color:#2D5016;background:#B8D980;padding:2px 7px;border-radius:6px;display:inline-block;margin-bottom:4px}
   .tarefa-field{margin-top:5px;border-top:1px solid #EEF2F6;padding-top:5px}
   .tarefa-field-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#0077AA;margin-bottom:2px}
   .tarefa-field-text{font-size:11px;color:var(--text);line-height:1.55;white-space:pre-wrap}
@@ -176,6 +178,7 @@
   .s-feito{background:var(--feito)}.s-andam{background:var(--andam)}.s-atraso{background:var(--atraso)}
   .s-risco{background:var(--risco)}.s-iniciar{background:var(--iniciar)}.s-definir{background:var(--definir)}
   .s-cancel{background:var(--cancel)}
+  .hbf{display:none!important}
   @keyframes loader-spin{to{transform:rotate(360deg)}}
   #loading-overlay{position:fixed;inset:0;background:rgba(15,28,5,.94);z-index:9500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
   .loading-spinner{width:50px;height:50px;border:5px solid rgba(138,196,58,.2);border-top-color:#8AC43A;border-radius:50%;animation:loader-spin .85s linear infinite}
@@ -272,6 +275,7 @@
 <div class="viz-bar-mobile">
   <span class="viz-lbl">VISUALIZAÇÃO</span>
   <select id="m-gantt-viz" class="viz-sel" onchange="applyMobileVizGantt()">
+    <option value="" selected>--</option>
     <option value="eixo">Eixo</option>
     <option value="grupo">Grupo</option>
     <option value="marco">Marco</option>
@@ -790,80 +794,65 @@ function ganttBar(start,end,status){
   const todayPct=Math.min(100,Math.max(0,(today-gs)/total*100));
   const fmtD=d=>{const[,m,dy]=d.split('-');const mon=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];return`${+dy} ${mon[+m]}`;};
   const todayMarker=todayPct>2&&todayPct<98?`<div style="position:absolute;left:${todayPct.toFixed(1)}%;top:-2px;bottom:-2px;width:2px;background:#FF2525;border-radius:1px;opacity:.8"></div>`:'';
-  return`<div style="padding:4px 0 2px">
+  return`<div style="padding:4px 0 2px;flex:1;min-width:0">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
       <span style="font-size:10px;color:#64748B">${fmtD(start)}</span>
-      <span style="font-size:10px;font-weight:800;color:${col}">${pct}%</span>
       <span style="font-size:10px;color:#64748B">${fmtD(end)}</span>
     </div>
-    <div style="position:relative;height:10px;background:#E2E8F0;border-radius:5px;overflow:visible">
-      <div style="width:${pct}%;height:100%;background:${col};border-radius:5px;box-shadow:0 1px 3px ${col}66"></div>
-      ${todayMarker}
+    <div style="display:flex;align-items:center;gap:6px">
+      <div style="flex:1;position:relative;height:10px;background:#E2E8F0;border-radius:5px;overflow:visible">
+        <div style="width:${pct}%;height:100%;background:${col};border-radius:5px;box-shadow:0 1px 3px ${col}66"></div>
+        ${todayMarker}
+      </div>
+      <span style="font-size:10px;font-weight:800;color:${col};white-space:nowrap;min-width:28px;text-align:right">${pct}%</span>
     </div>
   </div>`;
 }
 
+function applyGanttFilters(){
+  const hasS=mFilters.status.length>0,hasR=activeRespFilterM.length>0,hasD=!!(mFilters.dateStart||mFilters.dateEnd);
+  if(!hasS&&!hasR&&!hasD){document.querySelectorAll('#gantt-list .hbf').forEach(el=>el.classList.remove('hbf'));return;}
+  document.querySelectorAll('#gantt-list .tarefa-item').forEach(el=>{
+    let h=false;
+    if(hasS&&!mFilters.status.includes(el.dataset.status))h=true;
+    if(!h&&hasR&&!activeRespFilterM.includes(el.dataset.resp))h=true;
+    el.classList.toggle('hbf',h);
+  });
+  document.querySelectorAll('#gantt-list .marco-item').forEach(el=>{
+    let h=false;
+    if(hasS&&!mFilters.status.includes(el.dataset.status))h=true;
+    if(!h&&hasR&&!activeRespFilterM.includes(el.dataset.resp))h=true;
+    if(!h&&hasD){const end=el.dataset.end;if(mFilters.dateEnd&&end&&end>mFilters.dateEnd)h=true;if(!h&&mFilters.dateStart&&end&&end<mFilters.dateStart)h=true;}
+    el.classList.toggle('hbf',h);
+  });
+  document.querySelectorAll('#gantt-list .grupo-item').forEach(el=>{
+    const anyVis=[...el.querySelectorAll('.marco-item')].some(m=>!m.classList.contains('hbf'));
+    el.classList.toggle('hbf',!anyVis);
+  });
+  document.querySelectorAll('#gantt-list .eixo-card').forEach(el=>{
+    const anyVis=[...el.querySelectorAll('.grupo-item')].some(g=>!g.classList.contains('hbf'));
+    el.classList.toggle('hbf',!anyVis);
+  });
+}
 function renderGantt(){
   const el=document.getElementById('gantt-list');
   if(!WBS.length){el.innerHTML='<div class="empty">Sem dados</div>';return;}
-  el.innerHTML=WBS.map((e,ei)=>{if(activeRespFilterM.length&&!(e.children||[]).some(g=>grupoHasRespM(g)))return'';return`
-    <div class="eixo-card">
-      <div class="eixo-header" onclick="toggleGanttEixo(${ei})">
-        <span class="eixo-id ${S_COLOR[e.status]||'s-iniciar'}">${e.id}</span>
-        <span class="eixo-name">${escHtml(e.name)}</span>
-        <span class="eixo-chev" id="gec-${ei}">▶</span>
-      </div>
-      <div class="eixo-body" id="geb-${ei}" style="display:none">
-        ${e.children.filter(g=>{
-          if(mFilters.status.length&&!(g.marcos||[]).some(m=>mFilters.status.includes(m.status)||(m.subs||[]).some(t=>mFilters.status.includes(t.status))))return false;
-          if(activeRespFilterM.length&&!grupoHasRespM(g))return false;
-          if((mFilters.dateStart||mFilters.dateEnd)&&!(g.marcos||[]).some(m=>(!mFilters.dateEnd||!m.end||m.end<=mFilters.dateEnd)&&(!mFilters.dateStart||!m.end||m.end>=mFilters.dateStart)))return false;
-          return true;
-        }).map((g,gi)=>{
-          const gKey=`${ei}_${gi}`;
-          const visMarcos=g.marcos.filter(m=>{if(mFilters.status.length&&!mFilters.status.includes(m.status)&&!(m.subs||[]).some(t=>mFilters.status.includes(t.status)))return false;if(activeRespFilterM.length&&!(m.resp&&activeRespFilterM.includes(m.resp))&&!(m.subs||[]).some(t=>t.resp&&activeRespFilterM.includes(t.resp)))return false;if(mFilters.dateEnd&&m.end&&m.end>mFilters.dateEnd)return false;if(mFilters.dateStart&&m.end&&m.end<mFilters.dateStart)return false;return true;});
-          return`<div class="grupo-item">
-            <div class="grupo-header" onclick="toggleGanttGrupo('${gKey}')">
-              <span class="grupo-dot ${S_COLOR[g.status]||'s-iniciar'}"></span>
-              <div class="grupo-name-wrap">
-                <div class="grupo-name">${escHtml(g.name)}</div>
-                ${ganttBar(g.start,g.end,g.status)}
-              </div>
-              <span class="grupo-chip ${S_COLOR[g.status]||'s-iniciar'}">${S_LABEL[g.status]||g.status}</span>
-              <span class="grupo-chev" id="ggc-${gKey}">▶</span>
-            </div>
-            <div class="marco-body" id="ggb-${gKey}" style="display:none">
-              ${visMarcos.length?visMarcos.map((m,mi)=>{
-                const mKey=`${gKey}_${mi}`;
-                let visSubs=m.subs||[];if(mFilters.status.length)visSubs=visSubs.filter(t=>mFilters.status.includes(t.status));if(activeRespFilterM.length&&!(m.resp&&activeRespFilterM.includes(m.resp)))visSubs=visSubs.filter(t=>t.resp&&activeRespFilterM.includes(t.resp));
-                return`<div class="marco-item">
-                  <div class="marco-row" onclick="toggleGanttMarco('${mKey}')">
-                    <span class="marco-dot ${S_COLOR[m.status]||'s-iniciar'}"></span>
-                    <div class="marco-info">
-                      <div class="marco-name">${escHtml(m.tarefa)}</div>
-                      ${m.resp?`<div class="grupo-resp">${escHtml(m.resp)}</div>`:''}
-                      <div class="marco-meta">${ganttBar(m.start,m.end,m.status)}</div>
-                    </div>
-                    ${visSubs.length?`<span class="marco-chev" id="gmc-${mKey}">▶</span>`:''}
-                  </div>
-                  ${visSubs.length?`<div class="tarefa-body" id="gmb-${mKey}" style="display:none">
-                    ${visSubs.map(t=>`<div class="tarefa-item">
-                      <div class="tarefa-header">
-                        <span class="tarefa-chip ${S_COLOR[t.status]||'s-iniciar'}">${S_LABEL[t.status]||t.status}</span>
-                        <span class="tarefa-name">${escHtml(t.tarefa)}</span>
-                      </div>
-                      ${t.resp?`<span class="tarefa-resp">${escHtml(t.resp)}</span>`:''}
-                      ${ganttBar(t.start,t.end,t.status)}
-                    </div>`).join('')}
-                  </div>`:''}
-                </div>`;
-              }).join(''):'<div class="empty" style="padding:10px 12px;font-size:11px">Sem marcos</div>'}
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;}).join('');
-  ganttEixoOpenM.forEach(ei=>{const b=document.getElementById('geb-'+ei),c=document.getElementById('gec-'+ei);if(b)b.style.display='block';if(c)c.style.transform='rotate(90deg)';});
+  el.innerHTML=WBS.map((e,ei)=>{
+    const eixoHtml=e.children.map((g,gi)=>{
+      const gKey=ei+'_'+gi;
+      const marcosHtml=g.marcos.length?g.marcos.map((m,mi)=>{
+        const mKey=gKey+'_'+mi;
+        const subsHtml=(m.subs||[]).map(t=>'<div class="tarefa-item" data-status="'+escHtml(t.status||'')+'" data-resp="'+escHtml(t.resp||'')+'"><div class="tarefa-header"><span class="tarefa-chip '+( S_COLOR[t.status]||'s-iniciar')+'">'+( S_LABEL[t.status]||t.status)+'</span><div class="tarefa-body-wrap"><span class="tarefa-name">'+escHtml(t.tarefa)+'</span>'+(t.resp?'<span class="tarefa-resp">'+escHtml(t.resp)+'</span>':'')+ganttBar(t.start,t.end,t.status)+'</div></div></div>').join('');
+        const chevSubs=(m.subs||[]).length?'<span class="marco-chev" id="gmc-'+mKey+'">&#9654;</span>':'';
+        const bodySubs=(m.subs||[]).length?'<div class="tarefa-body" id="gmb-'+mKey+'" style="display:none">'+subsHtml+'</div>':'';
+        return '<div class="marco-item" id="gmi-'+mKey+'" data-status="'+escHtml(m.status||'')+'" data-resp="'+escHtml(m.resp||'')+'" data-end="'+(m.end||'')+'">'+'<div class="marco-row" onclick="toggleGanttMarco(\''+mKey+'\')"><span class="marco-dot '+(S_COLOR[m.status]||'s-iniciar')+'"></span><div class="marco-info"><div class="marco-name">'+escHtml(m.tarefa)+'</div>'+(m.resp?'<div class="marco-resp">'+escHtml(m.resp)+'</div>':'')+'<div class="marco-meta" style="align-items:flex-end"><span class="marco-chip '+(S_COLOR[m.status]||'s-iniciar')+'" style="margin-bottom:2px">'+(S_LABEL[m.status]||m.status)+'</span>'+ganttBar(m.start,m.end,m.status)+'</div></div>'+chevSubs+'</div>'+bodySubs+'</div>';
+      }).join(''):'<div class="empty" style="padding:10px 12px;font-size:11px">Sem marcos</div>';
+      return '<div class="grupo-item" id="ggi-'+gKey+'" data-status="'+escHtml(g.status||'')+'" data-resp="'+escHtml(g.resp||'')+'">'+'<div class="grupo-header" onclick="toggleGanttGrupo(\''+gKey+'\')"><span class="grupo-dot '+(S_COLOR[g.status]||'s-iniciar')+'"></span><div class="grupo-name-wrap"><div class="grupo-name">'+escHtml(g.name)+'</div>'+ganttBar(g.start,g.end,g.status)+'</div><span class="grupo-chip '+(S_COLOR[g.status]||'s-iniciar')+'">'+( S_LABEL[g.status]||g.status)+'</span><span class="grupo-chev" id="ggc-'+gKey+'">&#9654;</span></div><div class="marco-body" id="ggb-'+gKey+'" style="display:none">'+marcosHtml+'</div></div>';
+    }).join('');
+    return '<div class="eixo-card" data-ei="'+ei+'">'+'<div class="eixo-header" onclick="toggleGanttEixo('+ei+')"><span class="eixo-id '+(S_COLOR[e.status]||'s-iniciar')+'">'+e.id+'</span><span class="eixo-name">'+escHtml(e.name)+'</span><span class="eixo-chev" id="gec-'+ei+'">&#9654;</span></div><div class="eixo-body" id="geb-'+ei+'" style="display:none">'+eixoHtml+'</div></div>';
+  }).join('');
+  ganttEixoOpenM.forEach(ei=>{const b=document.getElementById('geb-'+ei),cv=document.getElementById('gec-'+ei);if(b)b.style.display='block';if(cv)cv.style.transform='rotate(90deg)';});
+  applyGanttFilters();
 }
 function toggleGanttEixo(ei){
   const b=document.getElementById('geb-'+ei),c=document.getElementById('gec-'+ei);
@@ -889,7 +878,7 @@ function toggleGanttMarco(key){
 /* ── FILTRO RESPONSÁVEL ── */
 let activeRespFilterM=[];
 let mFilters={status:[],dateStart:'',dateEnd:''};
-let mVizGantt='eixo',mVizSR='eixo';
+let mVizGantt='',mVizSR='eixo';
 const ganttEixoOpenM=new Set();
 const srEixoOpenM=new Set();
 function grupoHasRespM(g){
@@ -934,8 +923,8 @@ function applyMobileFilters(){
   mFilters.dateEnd=document.getElementById('m-date-end').value;
   const resp=document.getElementById('m-sel-resp').value;
   activeRespFilterM=resp?[resp]:[];
-  renderGantt();renderStatusReport();
-  applyMobileVizGantt();applyMobileVizSR();
+  applyGanttFilters();renderStatusReport();
+  applyMobileVizSR();
 }
 function clearMobileFilters(){
   mFilters={status:[],dateStart:'',dateEnd:''};
@@ -946,8 +935,8 @@ function clearMobileFilters(){
   const ds=document.getElementById('m-date-start'),de=document.getElementById('m-date-end');
   if(rs)rs.value='';
   if(ds)ds.value='';if(de)de.value='';
-  renderGantt();renderStatusReport();
-  applyMobileVizGantt();applyMobileVizSR();
+  applyGanttFilters();renderStatusReport();
+  applyMobileVizSR();
 }
 function recolherGantt(){
   const up={tarefa:'marco',marco:'grupo',grupo:'eixo',eixo:'eixo'};
@@ -973,6 +962,7 @@ function updateVizBtnState(){
 function applyMobileVizGantt(){
   const level=(document.getElementById('m-gantt-viz')||{}).value||mVizGantt;
   mVizGantt=level;
+  if(!level){updateVizBtnState();return;}
   const openEixo=level!=='eixo';
   WBS.forEach((_,ei)=>{
     const b=document.getElementById('geb-'+ei),cv=document.getElementById('gec-'+ei);

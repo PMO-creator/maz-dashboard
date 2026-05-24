@@ -528,6 +528,9 @@ async function loadSheetsData() {
   .ms-option:hover{background:rgba(138,196,58,.12)}
   .ms-option input{accent-color:var(--accent);width:15px;height:15px;flex-shrink:0;cursor:pointer}
   .ms-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .fl-wrap{display:flex;align-items:center;gap:6px;padding:6px 10px 4px;font-size:14px;color:#E2E8F0;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:4px}
+  .fl-btn{padding:2px 10px;border-radius:4px;border:1px solid #64748B;background:transparent;color:#E2E8F0;font-size:14px;cursor:pointer;transition:all .15s}
+  .fl-btn.active{background:#1E293B;color:#F8FAFC;border-color:#8AC43A}
   .ms-divider{border:none;border-top:1px solid rgba(255,255,255,.1);margin:4px 0}
   /* ── Expand dropdown ── */
   .expand-dd-wrap{position:relative;display:inline-block}
@@ -594,6 +597,10 @@ async function loadSheetsData() {
         <span class="ms-label-text" id="ms-status-label">Todos os status</span><span class="ms-arrow">▾</span>
       </button>
       <div class="ms-menu" id="ms-status-menu">
+        <div class="fl-wrap">Filtrar por:
+          <button id="fl-marco" class="fl-btn active" onclick="setFilterLevel('marco');event.stopPropagation()">Marco</button>
+          <button id="fl-tarefa" class="fl-btn" onclick="setFilterLevel('tarefa');event.stopPropagation()">Tarefa</button>
+        </div>
         <label class="ms-option ms-all-opt"><input type="checkbox" id="ms-status-chk-all" checked onchange="onMsAll('status',this)"><span style="font-weight:700;font-style:italic;color:#8AC43A">Todos</span></label>
         <hr class="ms-divider">
         <label class="ms-option"><input type="checkbox" value="Atrasado" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#FF2525"></span>Atrasado</label>
@@ -775,6 +782,7 @@ const REQS = [];
 // STATE
 let rootOpen=true, groupOpen=new Array(WBS.length).fill(false), commentOpen={}, marcoOpen={}, reqOpen=true;
 let ganttMode='monthly'; // 'monthly' | 'weekly'
+let filterLevel='marco'; // 'marco' | 'tarefa'
 
 // ── AUTO STATUS (data-driven, roda antes de tudo) ───────────────────────────
 function preprocessStatuses(){
@@ -1084,12 +1092,7 @@ function matchesFilter(g, m, f){
   const stLow=(f.status||[]).map(s=>s.toLowerCase());
   function stOk(v){ return !stLow.length||stLow.includes((v||'A iniciar').toLowerCase()); }
   function marcoPass(marco){
-    if(marco.tipo==='marco'){
-      const subs=marco.subtasks||[];
-      if(subs.length) return subs.some(t=>stOk(t.status));
-      return stOk(marco.status);
-    }
-    return stOk(marco.status);
+    return stOk(marco.status||'A iniciar');
   }
   let st;
   if(f.status.length===0){ st=true; }
@@ -1147,8 +1150,6 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
   const rfActive = respFilter && respFilter.length>0;
   let visTasks = (!statusFilter||statusFilter.length===0) ? tasks : tasks.filter(t=>{
     if(t.tipo==='marco'){
-      const subs=t.subtasks||[];
-      if(subs.length) return subs.some(s=>sfOk(s.status));
       return sfOk(t.status);
     }
     return sfOk(t.status);
@@ -1172,7 +1173,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
       const de  = t.end   ? fmtBRshort(t.end)   : '';
       const dateStr = [ds,de].filter(Boolean).join('\u2192');
       const allSubs = t.subtasks||[];
-      const statusSubs = (!statusFilter||statusFilter.length===0) ? allSubs : allSubs.filter(s=>sfOk(s.status));
+      const statusSubs = (!statusFilter||statusFilter.length===0||filterLevel==='marco') ? allSubs : allSubs.filter(s=>sfOk(s.status));
       // Se marco.resp bate \u2192 todas as tarefas; sen\u00e3o \u2192 s\u00f3 as do respons\u00e1vel
       const subs = rfActive&&!(t.resp&&respFilter.includes(t.resp))
         ? statusSubs.filter(s=>s.resp&&respFilter.includes(s.resp))
@@ -1386,6 +1387,13 @@ function clearDates(){
 }
 function showDateError(){const m=document.getElementById('date-err-modal');if(m)m.style.display='flex';}
 function hideDateError(){const m=document.getElementById('date-err-modal');if(m)m.style.display='none';}
+function setFilterLevel(level){
+  filterLevel=level;
+  const bm=document.getElementById('fl-marco'),bt=document.getElementById('fl-tarefa');
+  if(bm)bm.classList.toggle('active',level==='marco');
+  if(bt)bt.classList.toggle('active',level==='tarefa');
+  applyFilter();
+}
 function applyFilter(){
   const f=getFilters();
   if(f.dateStart&&f.dateEnd&&f.dateStart>f.dateEnd){showDateError();return;}
@@ -1408,7 +1416,7 @@ function applyFilter(){
       const card=document.getElementById('gantt-card-'+gi);
       if(!card)return;
       const eixoOut=f.group.length>0&&!f.group.includes(e.id);
-      const hasVisible=f.status.length===0||(e.children||[]).some(g=>f.status.includes(g.status));
+      const hasVisible=f.status.length===0||(e.children||[]).some(g=>(g.tasks||[]).some(t=>f.status.includes(t.status||'A iniciar')));
       const respOut=f.resp.length>0&&!(e.children||[]).some(m=>grupoHasResp(m,f.resp));
       card.style.display=(eixoOut||!hasVisible||respOut)?'none':'';
       if(ganttOpen[gi]&&!eixoOut&&hasVisible&&!respOut)renderGanttForEixo(gi);
@@ -1790,7 +1798,7 @@ function renderGanttForEixo(gi){
   const rows=[];
   allGrupos.forEach((g,ri)=>{
     if(!inRange(g.start,g.end))return;
-    if(fStatus.length>0 && !fStatus.includes(g.status))return;
+    if(fStatus.length>0 && !(g.tasks||[]).some(t=>fStatus.includes(t.status||'A iniciar')))return;
     const allMarcos = (g.tasks||[]).filter(t=>t.tipo==='marco'||(t.start||t.end));
     const datedTasks = allMarcos.filter(t=>t.start||t.end);
     if(fResp.length>0){const hasAny=datedTasks.some(t=>(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp)));if(!hasAny)return;}
@@ -1801,7 +1809,7 @@ function renderGanttForEixo(gi){
       datedTasks.filter(t=>inRange(t.start,t.end)&&(!fStatus.length||fStatus.includes(t.status))).forEach((t,ti)=>{
         if(fResp.length>0){const mm=(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp));if(!mm)return;}
         const datedSubs=(t.subtasks||[]).filter(s=>s.start||s.end);
-        const filteredSubs=datedSubs.filter(s=>inRange(s.start,s.end)&&(!fStatus.length||fStatus.includes(s.status)));
+        const filteredSubs=datedSubs.filter(s=>inRange(s.start,s.end)&&(!fStatus.length||filterLevel==='marco'||fStatus.includes(s.status)));
         const visSubs=fResp.length>0&&!(t.resp&&fResp.includes(t.resp))?filteredSubs.filter(s=>s.resp&&fResp.includes(s.resp)):filteredSubs;
         const hasSubs=visSubs.length>0;
         const marcoExp=!!ganttMarcoExpanded[gi+'_'+ri+'_'+ti];
