@@ -176,6 +176,14 @@
   .s-feito{background:var(--feito)}.s-andam{background:var(--andam)}.s-atraso{background:var(--atraso)}
   .s-risco{background:var(--risco)}.s-iniciar{background:var(--iniciar)}.s-definir{background:var(--definir)}
   .s-cancel{background:var(--cancel)}
+  @keyframes loader-spin{to{transform:rotate(360deg)}}
+  #loading-overlay{position:fixed;inset:0;background:rgba(15,28,5,.94);z-index:9500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+  .loading-spinner{width:50px;height:50px;border:5px solid rgba(138,196,58,.2);border-top-color:#8AC43A;border-radius:50%;animation:loader-spin .85s linear infinite}
+  .loading-txt{color:#FFF;font-size:15px;font-weight:700;letter-spacing:.02em}
+  .loading-sub{color:rgba(255,255,255,.5);font-size:12px}
+  #conn-err-banner{position:fixed;top:0;left:0;right:0;z-index:9000;background:#DC2626;color:#FFF;padding:10px 14px;display:none;align-items:center;gap:10px;flex-wrap:wrap}
+  .conn-err-btn{background:#FFF;color:#DC2626;border:none;padding:5px 12px;border-radius:4px;font-weight:700;cursor:pointer;font-size:12px;white-space:nowrap}
+  .conn-err-btn.secondary{background:rgba(255,255,255,.15);color:#FFF;border:1px solid rgba(255,255,255,.4)}
 
   /* GANTT */
   .gantt-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--accent) transparent;padding-bottom:6px}
@@ -393,6 +401,7 @@ function parseWBS(rows){
     const em=eixoMap[name];
     const children=em.groupOrder.map(gName=>{
       const gm=em.groups[gName],s=gm.summary,marcos=gm.marcos;
+      marcos.forEach(m=>{if(m.subs&&m.subs.length){const allDone=m.subs.every(s=>s.status==='Feito'||s.status==='Cancelado/Congelado'||s.status==='Cancelado');if(m.status!=='Cancelado/Congelado'&&m.status!=='Cancelado')m.status=allDone?'Feito':worst(m.subs.map(s=>s.status));}});
       const status=s?s.status:worst(marcos.map(m=>m.status));
       const resp=s?s.resp:(marcos[0]?.resp||'');
       const prog=s?s.prog:'';const enc=s?s.enc:'';
@@ -1030,12 +1039,19 @@ function switchTab(name,el){
   if(bar)bar.style.display=(name==='reqs')?'none':'flex';
 }
 
+let _isInitialLoad=true;
+function showLoading(){const o=document.getElementById('loading-overlay');if(o)o.style.display='flex';}
+function hideLoading(){const o=document.getElementById('loading-overlay');if(o)o.style.display='none';}
+function showConnErr(){hideLoading();const b=document.getElementById('conn-err-banner');if(b)b.style.display='flex';}
+function hideConnErr(){const b=document.getElementById('conn-err-banner');if(b)b.style.display='none';}
+function retrySheets(){hideConnErr();showLoading();_isInitialLoad=true;loadData();}
+
 /* ── LOAD DATA ── */
 async function loadData(){
   const btn=document.getElementById('btn-refresh');
-  btn.disabled=true;btn.textContent='…';
+  btn.disabled=true;btn.textContent='\u2026';
   const statusEl=document.getElementById('data-status');
-  try{
+  const fetchAll=async()=>{
     const wbsRows=await fetchSheet(CRONOGRAMA_ID,CRONOGRAMA_SHEET);
     WBS.length=0;parseWBS(wbsRows).forEach(e=>WBS.push(e));
     let reqsOk=false;
@@ -1044,23 +1060,35 @@ async function loadData(){
       REQS.length=0;parseREQS(reqsRows).forEach(r=>REQS.push(r));
       reqsOk=true;
     }catch(e){console.warn('REQS:',e.message);}
+    return reqsOk;
+  };
+  const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('Tempo limite excedido (15s)')),15000));
+  try{
+    const reqsOk=await Promise.race([fetchAll(),timeout]);
     const now=new Date();
     const MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     const hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0');
-    document.getElementById('header-date').textContent=`${String(now.getDate()).padStart(2,'0')} ${MONTHS[now.getMonth()]} ${now.getFullYear()} · MAZ ELD`;
+    document.getElementById('header-date').textContent=`${String(now.getDate()).padStart(2,'0')} ${MONTHS[now.getMonth()]} ${now.getFullYear()} \u00b7 MAZ ELD`;
     document.getElementById('refresh-time').textContent=`${hh}:${mm}`;
-    if(statusEl){statusEl.textContent=reqsOk?'🟢 Ao vivo':'🟡 Cronograma OK · REQ erro';statusEl.style.background=reqsOk?'#052e16':'#422006';statusEl.style.color=reqsOk?'#4ade80':'#fb923c';}
+    if(statusEl){statusEl.textContent=reqsOk?'\U0001f7e2 Ao vivo':'\U0001f7e1 Cronograma OK \u00b7 REQ erro';statusEl.style.background=reqsOk?'#052e16':'#422006';statusEl.style.color=reqsOk?'#4ade80':'#fb923c';}
     buildMobileFilters();renderGantt();renderStatusReport();renderReqs();
+    if(_isInitialLoad){hideLoading();_isInitialLoad=false;}
+    hideConnErr();
   }catch(err){
-    if(!WBS.length)document.getElementById('gantt-list').innerHTML=`<div class="error-msg">Erro: ${escHtml(err.message)}</div>`;
-    if(statusEl){statusEl.textContent=WBS.length?'🟡 Offline — dados anteriores':'🔴 Erro — sem dados';statusEl.style.background=WBS.length?'#422006':'#450a0a';statusEl.style.color=WBS.length?'#fb923c':'#f87171';}
+    if(_isInitialLoad){showConnErr();_isInitialLoad=false;}
+    else{
+      if(!WBS.length)document.getElementById('gantt-list').innerHTML=`<div class="error-msg">Erro: ${escHtml(err.message)}</div>`;
+      if(statusEl){statusEl.textContent=WBS.length?'\U0001f7e1 Offline \u2014 dados anteriores':'\U0001f534 Erro \u2014 sem dados';statusEl.style.background=WBS.length?'#422006':'#450a0a';statusEl.style.color=WBS.length?'#fb923c':'#f87171';}
+    }
   }
-  btn.disabled=false;btn.textContent='⟳ Atualizar';
+  btn.disabled=false;btn.textContent='\u27f3 Atualizar';
 }
 
-buildMobileFilters();renderGantt();renderStatusReport();renderReqs();
+showLoading();
 loadData();
 setInterval(loadData,15*60*1000);
 </script>
+<div id="loading-overlay"><div class="loading-spinner"></div><div class="loading-txt">Carregando dados...</div><div class="loading-sub">Conectando ao Google Sheets</div></div>
+<div id="conn-err-banner"><span style="flex:1;font-size:13px;font-weight:600">&#9888; N&#227;o foi poss&#237;vel carregar os dados. Verifique sua conex&#227;o.</span><button class="conn-err-btn" onclick="retrySheets()">&#8634; Tentar novamente</button><button class="conn-err-btn secondary" onclick="location.reload()">&#8635; Recarregar p&#225;gina</button></div>
 </body>
 </html>
