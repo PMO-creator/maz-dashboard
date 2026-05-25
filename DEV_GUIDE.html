@@ -13,7 +13,7 @@
   --tooltip-bg:#152208; --tooltip-border:#78BB35;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#3D6218;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:18px;line-height:1.75}
+body{background:#B8E85C;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:18px;line-height:1.75}
 
 /* HEADER */
 .hdr{background:var(--bg);border-bottom:2px solid var(--accent);padding:18px 28px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:200}
@@ -40,8 +40,8 @@ body{background:#3D6218;color:var(--text);font-family:-apple-system,BlinkMacSyst
 /* LAYOUT */
 .content{max-width:1060px;margin:0 auto;padding:32px 24px}
 .section{display:none}.section.active{display:block}
-.sec-title{font-size:28px;font-weight:700;color:var(--accent);margin-bottom:6px}
-.sec-sub{color:var(--muted);font-size:17px;max-width:680px;margin-bottom:28px}
+.sec-title{font-size:28px;font-weight:700;color:#2E4A13;margin-bottom:6px}
+.sec-sub{color:#4A6828;font-size:17px;max-width:680px;margin-bottom:28px}
 
 /* CARD */
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px}
@@ -1228,8 +1228,8 @@ function toggleEditMode(){
   editMode=!editMode;
   var fab=document.getElementById('editFab');
   fab.innerHTML=editMode?'✕ Cancelar':'✏️ Editar';
-  fab.style.background=editMode?'#5A1A8A':'var(--accent)';
-  fab.style.color=editMode?'white':'var(--bg)';
+  fab.style.background=editMode?'#5A1A8A':'#3D6218';
+  fab.style.color=editMode?'white':'#B8E85C';
   document.getElementById('saveFab').style.display=editMode?'flex':'none';
   var editableSelectors='.card-label,.sec-title,.sec-sub,.cl-title,.cl-desc,.cl-when,.ds-title,.ds-desc,.doc-version,.doc-title,.doc-who,.doc-when,.alert div:last-child,td,th';
   document.querySelectorAll(editableSelectors).forEach(function(el){
@@ -1291,7 +1291,7 @@ window.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 <!-- EDIT FAB -->
-<button id="editFab" onclick="toggleEditMode()" title="Editar conteúdo" style="position:fixed;bottom:28px;right:28px;z-index:600;height:50px;border-radius:25px;background:var(--accent);border:none;color:var(--bg);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.5);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 24px;white-space:nowrap">✏️ Editar</button>
+<button id="editFab" onclick="toggleEditMode()" title="Editar conteúdo" style="position:fixed;bottom:28px;right:28px;z-index:600;height:50px;border-radius:25px;background:#3D6218;border:none;color:#B8E85C;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.5);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 24px;white-space:nowrap">✏️ Editar</button>
 <button id="saveFab" onclick="saveFile()" title="Baixar arquivo editado" style="position:fixed;bottom:94px;right:28px;z-index:600;width:54px;height:54px;border-radius:50%;background:#7C3AED;border:none;color:white;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.5);transition:all .2s;display:none;align-items:center;justify-content:center">💾</button>
 <div id="savePopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:800;align-items:center;justify-content:center">
   <div style="background:#1E0C02;border:2px solid #C4581A;border-radius:18px;padding:36px 32px;max-width:500px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.8)">
