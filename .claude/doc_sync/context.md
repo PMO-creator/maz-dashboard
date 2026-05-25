@@ -53,17 +53,19 @@
 
 ### Colunas das Requisições (índices 0-based)
 
+> ⚠️ Corrigido em commit 7662590 — índices anteriores estavam deslocados e causavam KPIs zerados.
+
 | Coluna | Índice | Campo |
 |---|---|---|
 | A | 0 | N. Requisição |
-| C | 2 | Comprador |
-| E | 4 | Prioridade ← USAR APENAS ESTA |
-| F | 5 | Descrição |
-| G | 6 | Status |
-| H | 7 | Fornecedor |
+| B | 1 | Comprador |
+| D | 3 | Prioridade ← USAR APENAS ESTA |
+| E | 4 | Descrição |
+| F | 5 | Status |
+| G | 6 | Fornecedor |
 | M | 12 | Data prevista |
 
-> ⚠️ Prioridade: usar APENAS coluna E (índice 4). Coluna B gera falsos positivos.
+> ⚠️ Prioridade: usar APENAS coluna D (índice 3). Coluna B gera falsos positivos.
 
 ---
 
@@ -222,7 +224,7 @@ Eixo  = pior status dos seus grupos
 | Dashboard branco sem erro no console | Verificar: (a) null bytes no HTML, (b) `function` ausente em declaração JS, (c) JS truncado — verificar se `</script>` existe no final |
 | Template literals aninhados | Nunca usar crase dentro de `${}` dentro de outro crase — `node --check` passa mas browser quebra |
 | JS truncado | Verificar se `</script>` existe no final do arquivo antes de editar |
-| Prioridade REQS | Usar APENAS coluna E (índice 4) — coluna B gera falsos positivos |
+| Prioridade REQS | Usar APENAS coluna D (índice 3) — coluna B gera falsos positivos |
 | `node --check` no Node v22 | Não aceita `.html` — extrair bloco `<script>` para arquivo `.js` temporário |
 | Deduplicação de grupos | Sempre per eixo — nunca global |
 | `--definir` (Definir datas) | Cor é MARROM `#92400E`, não roxo |
