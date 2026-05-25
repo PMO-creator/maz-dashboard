@@ -671,12 +671,20 @@ function preprocessStatuses(){
           if(task.status!=='Cancelado/Congelado'&&task.status!=='Cancelado'){
             task.status = allDone ? 'Feito' : worstStatus(task.subtasks.map(st=>st.status||''));
           }
+          const _ss=task.subtasks.map(st=>st.start).filter(d=>d&&d.length>=10).sort();
+          const _se=task.subtasks.map(st=>st.end).filter(d=>d&&d.length>=10).sort();
+          if(_ss.length) task.start=_ss[0];
+          if(_se.length) task.end=_se[_se.length-1];
         } else {
           fixLeaf(task);
         }
       });
       const gs=worstStatus(grupo.tasks.map(t=>t.status||''));
       if(grupo.status!=='Cancelado/Congelado'&&grupo.status!=='Cancelado') grupo.status=gs;
+      const _gs=grupo.tasks.map(t=>t.start).filter(d=>d&&d.length>=10).sort();
+      const _ge=grupo.tasks.map(t=>t.end).filter(d=>d&&d.length>=10).sort();
+      if(_gs.length) grupo.start=_gs[0];
+      if(_ge.length) grupo.end=_ge[_ge.length-1];
     });
     const es=worstStatus(eixo.children.map(g=>g.status||''));
     if(eixo.status!=='Cancelado/Congelado'&&eixo.status!=='Cancelado') eixo.status=es;

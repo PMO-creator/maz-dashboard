@@ -1239,10 +1239,16 @@ function preprocessStatuses(){
           const allDone=m.subs.every(s=>s.status==='Feito'||s.status==='Cancelado/Congelado'||s.status==='Cancelado');
           if(m.status!=='Cancelado/Congelado'&&m.status!=='Cancelado')
             m.status=allDone?'Feito':worst(m.subs.map(s=>s.status||''));
+          const _ms=m.subs.map(s=>s.start).filter(d=>d&&d.length>=10).sort();
+          const _me=m.subs.map(s=>s.end).filter(d=>d&&d.length>=10).sort();
+          if(_ms.length)m.start=_ms[0];if(_me.length)m.end=_me[_me.length-1];
         }else{fixLeaf(m);}
       });
       if(grupo.status!=='Cancelado/Congelado'&&grupo.status!=='Cancelado')
         grupo.status=grupo.marcos.length?worst(grupo.marcos.map(m=>m.status||'')):(grupo.status||'A iniciar');
+      const _gs=grupo.marcos.map(m=>m.start).filter(d=>d&&d.length>=10).sort();
+      const _ge=grupo.marcos.map(m=>m.end).filter(d=>d&&d.length>=10).sort();
+      if(_gs.length)grupo.start=_gs[0];if(_ge.length)grupo.end=_ge[_ge.length-1];
     });
     eixo.status=worst(eixo.children.map(c=>c.status||''));
   });
