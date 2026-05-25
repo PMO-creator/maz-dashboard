@@ -1275,4 +1275,22 @@ function doSearch(val){
 function jumpTo(tab){
   var btn=document.querySelector('[onclick*="\''+tab+'\'"]');
   if(btn)showTab(tab,btn);
-  document.getElementById('searchResults').style.display='no
+  document.getElementById('searchResults').style.display='none';
+  document.getElementById('searchInp').value='';
+}
+
+window.addEventListener('DOMContentLoaded',function(){
+  buildIndex();
+  try{
+    var saved=JSON.parse(sessionStorage.getItem('cl')||'[]');
+    var checks=[];
+    for(var i=0;i<6;i++){
+      if(saved[i]){var el=document.getElementById('ck'+i);el.classList.add('done');el.textContent='✓';}
+      checks.push(document.getElementById('ck'+i).classList.contains('done'));
+    }
+    updateProgress(checks);
+  }catch(e){}
+});
+</script>
+</body>
+</html>
