@@ -185,6 +185,9 @@ tr:hover td{background:rgba(138,196,58,.04)}
     <button id="editBtn" onclick="toggleEditMode()" style="background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s">✏️ Editar</button>
     <button id="saveBtn" onclick="saveFile()" style="display:none;background:var(--accent);border:none;color:var(--bg);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700">💾 Baixar arquivo</button>
   </div>
+  <div id="editBanner" style="display:none;background:#7c3aed18;border:1px solid #7c3aed55;border-radius:8px;padding:8px 14px;font-size:12px;color:#a78bfa;margin-top:8px;font-weight:600">
+    📁 Após salvar, copie o arquivo baixado para <code style="background:#7c3aed22;padding:2px 6px;border-radius:4px;font-size:11px">Manual/DEV_GUIDE.html</code> — caso contrário, o doc-sync sobrescreverá suas edições.
+  </div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
     <input class="search-inp" id="searchInp" placeholder="Buscar conceito..." oninput="doSearch(this.value)" onblur="setTimeout(()=>{document.getElementById('searchResults').style.display='none'},200)">
@@ -1234,6 +1237,7 @@ function toggleEditMode(){
   btn.style.borderColor=editMode?'var(--accent)':'var(--border)';
   btn.style.color=editMode?'var(--accent)':'var(--muted)';
   document.getElementById('saveBtn').style.display=editMode?'inline-block':'none';
+  document.getElementById('editBanner').style.display=editMode?'block':'none';
   var editableSelectors='.card-label,.sec-title,.sec-sub,.cl-title,.cl-desc,.cl-when,.ds-title,.ds-desc,.doc-version,.doc-title,.doc-who,.doc-when,.alert div:last-child,td,th';
   document.querySelectorAll(editableSelectors).forEach(function(el){
     el.contentEditable=editMode?'true':'false';
@@ -1271,22 +1275,4 @@ function doSearch(val){
 function jumpTo(tab){
   var btn=document.querySelector('[onclick*="\''+tab+'\'"]');
   if(btn)showTab(tab,btn);
-  document.getElementById('searchResults').style.display='none';
-  document.getElementById('searchInp').value='';
-}
-
-window.addEventListener('DOMContentLoaded',function(){
-  buildIndex();
-  try{
-    var saved=JSON.parse(sessionStorage.getItem('cl')||'[]');
-    var checks=[];
-    for(var i=0;i<6;i++){
-      if(saved[i]){var el=document.getElementById('ck'+i);el.classList.add('done');el.textContent='✓';}
-      checks.push(document.getElementById('ck'+i).classList.contains('done'));
-    }
-    updateProgress(checks);
-  }catch(e){}
-});
-</script>
-</body>
-</html>
+  document.getElementById('searchResults').style.display='no
