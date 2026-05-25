@@ -12,7 +12,8 @@
 5. [Testar no celular pela rede local](#5-testar-no-celular-pela-rede-local)
 6. [Reverter para uma versão anterior](#6-reverter-para-uma-versão-anterior)
 7. [Referências técnicas](#7-referências-técnicas)
-8. [Armadilhas técnicas conhecidas](#8-armadilhas-técnicas-conhecidas)
+8. [Skills disponíveis no repositório](#8-skills-disponíveis-no-repositório)
+9. [Armadilhas técnicas conhecidas](#9-armadilhas-técnicas-conhecidas)
 
 ---
 
@@ -119,15 +120,17 @@ GitHub\
     index.html
     mobile.html
     SERVE_DASHBOARD.bat
-    ONBOARDING.md
     CLAUDE.md
+    01. Manuais\                  ← PDFs dos manuais (referência para o dev)
 
   maz-dashboard\                 ← AQUI você faz commit e push
     index.html
     mobile.html
-    SERVE_DASHBOARD.bat
-    ONBOARDING.md
+    DEV_GUIDE.html
+    ONBOARDING.md                ← este arquivo (leia antes de trabalhar)
     CLAUDE.md
+    .claude\doc_sync\            ← skill doc-sync + contexto + snapshot
+    .claude\code_audit\          ← skill de auditoria de código
 ```
 
 > A separação existe para evitar que um arquivo em edição (potencialmente quebrado) seja publicado acidentalmente. Só vai para `maz-dashboard` o que foi testado e aprovado.
@@ -327,26 +330,45 @@ git push --force
 | J | 9 | Data fim |
 
 **Requisições (`_parseREQS`):**
+
+> ⚠️ Corrigido em commit 7662590 — índices anteriores estavam deslocados causando KPIs zerados.
+
 | Coluna | Índice | Campo |
 |---|---|---|
 | A | 0 | Nº Requisição |
-| C | 2 | Comprador |
-| E | 4 | Prioridade |
-| F | 5 | Descrição |
-| G | 6 | Status |
-| H | 7 | Fornecedor |
+| B | 1 | Comprador |
+| D | 3 | Prioridade ← USAR APENAS ESTA |
+| E | 4 | Descrição |
+| F | 5 | Status |
+| G | 6 | Fornecedor |
 | M | 12 | Data prevista |
 
+> ⚠️ Prioridade: usar APENAS coluna D (índice 3). Coluna B gera falsos positivos.
+
 ### Regras de auto-status
+
+> Atualizado em commit 2ea1b35 — ranking e regras de default revisados.
+
 | Condição | Status resultante |
 |---|---|
-| Status vazio | `A iniciar` |
-| `A iniciar` + data início já passou | `Risco de atraso` |
+| Subtask sem status + sem data | `Definir datas` |
+| `A iniciar` + sem data de início | `Definir datas` |
+| Grupo/eixo sem status definido | `Definir datas` |
 | Qualquer status + data fim já passou | `Atrasado` |
 | Qualquer status + data fim nos próximos 7 dias | `Risco de atraso` |
 | `Feito`, `Cancelado`, `Cancelado/Congelado` | Nunca muda |
 
-Rollup: **grupo = pior status dos marcos / eixo = pior status dos grupos**
+**Ranking de pior status (rollup):**
+```
+Atrasado(0) > Risco de atraso(1) > Em andamento(2) > Definir datas(3) > A iniciar(4) > Feito(5) > Cancelado/Congelado(6)
+```
+
+**Cálculo automático de datas** (commit 8080c50):
+- Marco: início = mínimo das subtasks · fim = máximo das subtasks
+- Grupo: início = mínimo dos marcos · fim = máximo dos marcos
+- Marcos sem subtasks mantêm as datas da planilha
+
+Rollup: **marco = pior status das tarefas / grupo = pior status dos marcos / eixo = pior status dos grupos**
 
 ### Auto-refresh
 15 minutos — constante `AUTO_REFRESH_MS` em ambos os HTMLs.
@@ -354,6 +376,17 @@ Rollup: **grupo = pior status dos marcos / eixo = pior status dos grupos**
 ### Filtros do Dashboard
 
 Os filtros globais (Status, Eixo, Data e Responsável) ficam na barra superior do desktop (`index.html`) e como chips/dropdowns no mobile (`mobile.html`). Todos alimentam a função `applyFilter()` que re-renderiza a árvore EAP e o Gantt.
+
+#### Filtro de Fornecedor — Aba Requisições (commit b4a0b53)
+
+Dropdown multi-select na barra de filtros da aba Requisições. Lê valores únicos da coluna G (Fornecedor). Itens sem fornecedor agrupados como "Sem Fornecedor". Botão verde **"Limpar filtros"** reseta status, fornecedor, comprador, prioridade e busca.
+
+| Função JS | Responsabilidade |
+|---|---|
+| `buildReqFilters()` | Monta os filtros de status, comprador, prioridade e fornecedor |
+| `applyReqFilter()` | Aplica todos os filtros e re-renderiza a lista de requisições |
+
+---
 
 #### Filtro de Responsável — Desktop (`index.html`)
 
@@ -399,18 +432,44 @@ Localização: chips horizontais com classe `.resp-chip` exibidos entre as abas 
 
 ---
 
-## 8. Armadilhas técnicas conhecidas
+## 8. Skills disponíveis no repositório
+
+O repo inclui duas skills em `.claude/` prontas para uso com **Claude Code**:
+
+### code_audit — Auditor de código
+
+Analisa o `git diff` e reporta problemas antes de subir para produção. Cobre segurança, arquitetura, qualidade de código, fluxo git e dependências externas.
+
+**É sugerida automaticamente** pelo Claude Code antes de commit/push e ao adicionar dependências. Sempre pergunta antes de rodar.
+
+**Como acionar manualmente (escrever em linguagem natural no Claude Code):**
+
+| O que digitar | O que faz |
+|---|---|
+| `"audita o que mudou"` | Analisa só o git diff atual — leve |
+| `"resumo do projeto"` | Lê o CLAUDE.md e resume o estado — leve |
+| `"auditoria completa"` | Lê todos os arquivos — pesado, usar com moderação |
+
+### doc-sync — Sincronização de documentação
+
+Compara o `index.html` atual com o snapshot anterior, identifica mudanças relevantes e atualiza os manuais (Manual, Onboarding, Guia Usuário, ONBOARDING.md). Roda via **Cowork** (não Claude Code), com a pasta `IDG - Relatórios de Análise` montada.
+
+Ver documentação completa em `.claude/doc_sync/SKILL.md`.
+
+---
+
+## 9. Armadilhas técnicas conhecidas
 
 | Armadilha | Como evitar |
 |---|---|
 | Dashboard branco sem erro no console | Verificar: (a) null bytes no HTML, (b) palavra `function` ausente em declaração JS, (c) JS truncado sem `</script>`, (d) template literals aninhados |
 | Template literals aninhados | Nunca usar crase dentro de `${}` dentro de outro crase — `node --check` passa mas browser quebra |
 | JS truncado | Verificar se `</script>` existe no final do arquivo antes de editar |
-| Prioridade REQS | Usar APENAS coluna E (índice 4) — coluna B gera falsos positivos |
+| Prioridade REQS | Usar APENAS coluna D (índice 3) — coluna B gera falsos positivos. Índices antigos (E/4) causavam KPIs zerados (corrigido commit 7662590) |
 | `node --check` no Node v22 | Não aceita `.html` — extrair bloco script para arquivo `.js` temporário |
 | Edit tool do Claude Code falha | Arquivo contém backticks JS (template literals). Usar PowerShell com `[System.IO.File]::ReadAllBytes` |
 | String não encontrada no Replace | Arquivo usa CRLF. Normalizar: `$content.Replace("\`r\`n", "\`n")` antes de substituir |
 
 ---
 
-*Guia atualizado em 23/Mai/2026 — v11 — Dashboard MAZ 2026 · IDG PMO*
+*Guia atualizado em 25/Mai/2026 — v11.1 — Dashboard MAZ 2026 · IDG PMO*
