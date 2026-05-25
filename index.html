@@ -639,16 +639,19 @@ function preprocessStatuses(){
   const today=new Date(); today.setHours(0,0,0,0);
   const d7=new Date(today); d7.setDate(d7.getDate()+7);
   // '' (vazio) tratado como 'A iniciar' no rollup — subtask sem status não é "feita"
-  const RANK={'Atrasado':0,'Risco de atraso':1,'Em andamento':2,'A iniciar':3,'Definir datas':4,'Feito':5,'Cancelado/Congelado':6,'Cancelado':6,'':3};
+  const RANK={'Atrasado':0,'Risco de atraso':1,'Em andamento':2,'Definir datas':3,'A iniciar':4,'Feito':5,'Cancelado/Congelado':6,'Cancelado':6,'':3};
   const worstStatus=function(statuses){
     return statuses.reduce((w,s)=>(RANK[s]??3)<(RANK[w]??3)?s:w, 'Feito');
   };
   const fixLeaf=function(item){
     // status vazio → A iniciar
-    if(!item.status){ item.status='A iniciar'; return; }
+    if(!item.status){
+    if(!item.start||item.start.length<10){ item.status='Definir datas'; return; }
+    item.status='A iniciar';
+  }
     if(item.status==='Feito'||item.status==='Cancelado/Congelado'||item.status==='Cancelado') return;
     if(item.status==='A iniciar'){
-      if(!item.start||item.start.length<10) return;
+      if(!item.start||item.start.length<10){ item.status='Definir datas'; return; }
       const start=new Date(item.start);
       if(start<today){ item.status='Risco de atraso'; return; }
       return;
@@ -2175,9 +2178,9 @@ function _fmtDate(d) {
   return '';
 }
 function _worstStatus(statuses) {
-  const RANK={'Atrasado':0,'Risco de atraso':1,'Em andamento':2,'A iniciar':3,'Definir datas':4,'Feito':5,'Cancelado/Congelado':6,'Cancelado':6};
+  const RANK={'Atrasado':0,'Risco de atraso':1,'Em andamento':2,'Definir datas':3,'A iniciar':4,'Feito':5,'Cancelado/Congelado':6,'Cancelado':6};
   const valid=statuses.filter(s=>s in RANK);
-  if(!valid.length) return 'A iniciar';
+  if(!valid.length) return 'Definir datas';
   return valid.reduce((w,s)=>RANK[s]<RANK[w]?s:w,'Feito');
 }
 

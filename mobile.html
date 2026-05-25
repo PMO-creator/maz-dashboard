@@ -349,7 +349,7 @@ const REQS_SHEET_ID    = '1azrdS4OGO-CWD1ods69i8iZJcwq4oyISdT2n_tu1uJM';
 const REQS_SHEET_NAME  = 'Planilha de Status de Compras Prod';
 
 const S_COLOR={'Feito':'s-feito','Em andamento':'s-andam','Atrasado':'s-atraso','Risco de atraso':'s-risco','A iniciar':'s-iniciar','Definir datas':'s-definir','Cancelado':'s-cancel','Cancelado/Congelado':'s-cancel'};
-const S_RANK={'Atrasado':0,'Risco de atraso':1,'Em andamento':2,'A iniciar':3,'Definir datas':4,'Feito':5,'Cancelado/Congelado':6,'Cancelado':6,'':3};
+const S_RANK={'Atrasado':0,'Risco de atraso':1,'Em andamento':2,'Definir datas':3,'A iniciar':4,'Feito':5,'Cancelado/Congelado':6,'Cancelado':6,'':3};
 const S_LABEL={'Feito':'FEITO','Em andamento':'ANDAMENTO','Atrasado':'ATRASADO','Risco de atraso':'RISCO','A iniciar':'A INICIAR','Definir datas':'DEFINIR','Cancelado':'CANCELADO','Cancelado/Congelado':'CONGELADO'};
 const STRIP_CFG=[
   {key:'Atrasado',label:'Atrasado',cls:'sc-atraso'},
@@ -373,7 +373,7 @@ function fmtShort(d){
   const p=d.match(/^(\d{4})-(\d{2})-(\d{2})/);
   return p?`${parseInt(p[3],10)} ${MO[parseInt(p[2],10)-1]}`:''
 }
-function worst(arr){const v=arr.filter(s=>s in S_RANK);if(!v.length)return'A iniciar';return v.reduce((w,s)=>S_RANK[s]<S_RANK[w]?s:w,'Feito');}
+function worst(arr){const v=arr.filter(s=>s in S_RANK);if(!v.length)return'Definir datas';return v.reduce((w,s)=>S_RANK[s]<S_RANK[w]?s:w,'Feito');}
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 async function fetchSheet(id,name){
@@ -487,6 +487,7 @@ function filterStatus(status,el){
   el.classList.add('active-filter');
   const lbl=document.getElementById('filter-label');
   lbl.textContent=status?`Filtro: ${S_LABEL[status]||status}`:'Status por Eixo';
+  const reportTab=document.querySelectorAll('.tab')[1];if(reportTab)switchTab('report',reportTab);
   renderEixos();
 }
 
@@ -1218,10 +1219,10 @@ function preprocessStatuses(){
   const today=new Date();today.setHours(0,0,0,0);
   const d7=new Date(today);d7.setDate(d7.getDate()+7);
   const fixLeaf=function(item){
-    if(!item.status){item.status='A iniciar';return;}
+    if(!item.status){if(!item.start||item.start.length<10){item.status='Definir datas';return;}item.status='A iniciar';}
     if(item.status==='Feito'||item.status==='Cancelado/Congelado'||item.status==='Cancelado')return;
     if(item.status==='A iniciar'){
-      if(!item.start||item.start.length<10)return;
+      if(!item.start||item.start.length<10){item.status='Definir datas';return;}
       if(new Date(item.start)<today){item.status='Risco de atraso';}
       return;
     }
