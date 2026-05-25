@@ -6,14 +6,14 @@
 <title>Guia MAZ 2026 — Para o próximo PMO</title>
 <style>
 :root {
-  --accent:#B8E85C; --accentD:#90CC3A; --bg:#2A4012; --bg2:#3A5820; --bg3:#486826;
-  --text:#F0F4E8; --muted:#CCDFA0; --card:#223513; --border:#628C32;
+  --accent:#B8E85C; --accentD:#90CC3A; --bg:#2E4A13; --bg2:#3A5820; --bg3:#486826;
+  --text:#F0F4E8; --muted:#CCDFA0; --card:#1C2C0A; --border:#5A8030;
   --feito:#05C46B; --andam:#1A56FF; --risco:#FF6B00; --atraso:#FF2525;
   --warn:#FF6B00; --info:#1A56FF;
   --tooltip-bg:#152208; --tooltip-border:#78BB35;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#192A08;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:18px;line-height:1.75}
+body{background:#3D6218;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:18px;line-height:1.75}
 
 /* HEADER */
 .hdr{background:var(--bg);border-bottom:2px solid var(--accent);padding:18px 28px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:200}
@@ -1294,15 +1294,13 @@ window.addEventListener('DOMContentLoaded',function(){
 <button id="editFab" onclick="toggleEditMode()" title="Editar conteúdo" style="position:fixed;bottom:28px;right:28px;z-index:600;height:50px;border-radius:25px;background:var(--accent);border:none;color:var(--bg);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.5);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 24px;white-space:nowrap">✏️ Editar</button>
 <button id="saveFab" onclick="saveFile()" title="Baixar arquivo editado" style="position:fixed;bottom:94px;right:28px;z-index:600;width:54px;height:54px;border-radius:50%;background:#7C3AED;border:none;color:white;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.5);transition:all .2s;display:none;align-items:center;justify-content:center">💾</button>
 <div id="savePopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:800;align-items:center;justify-content:center">
-  <div style="background:#1a0a2e;border:2px solid #7c3aed;border-radius:18px;padding:36px 32px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.8)">
+  <div style="background:#1E0C02;border:2px solid #C4581A;border-radius:18px;padding:36px 32px;max-width:500px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.8)">
     <div style="font-size:40px;margin-bottom:16px">💾</div>
-    <div style="font-size:19px;font-weight:700;color:#c084fc;margin-bottom:12px">Arquivo baixado!</div>
-    <div style="font-size:15px;color:#d4b0ff;margin-bottom:26px;line-height:1.75">
-      Lembre-se de copiar o arquivo para<br>
-      <code style="background:#7c3aed33;padding:5px 12px;border-radius:6px;font-size:13px;color:#e9d5ff;display:inline-block;margin:10px 0">Manual/DEV_GUIDE.html</code><br>
-      Caso contrário, o doc-sync sobrescreverá suas edições na próxima execução.
-    </div>
-    <button onclick="closeSavePopup()" style="background:#7c3aed;border:none;color:white;padding:13px 36px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">✓ OK, entendido</button>
+    <div style="font-size:19px;font-weight:700;color:#FF8C42;margin-bottom:12px">Arquivo baixado!</div>
+    <div style="font-size:15px;color:#FFBA80;margin-bottom:10px;line-height:1.75">Lembre-se de copiar o arquivo para:</div>
+    <code style="background:#2A1200;border:1px solid #C4581A;padding:10px 14px;border-radius:8px;font-size:12px;color:#FFD0A0;display:block;margin:0 0 18px 0;text-align:left;word-break:break-all;user-select:all;cursor:text">C:\Users\gagui\OneDrive\Documentos\Claude\Projects\IDG - Relatórios de Análise\Manual\DEV_GUIDE.html</code>
+    <div style="font-size:13px;color:#CC7040;margin-bottom:24px">Caso contrário, o doc-sync sobrescreverá suas edições na próxima execução.</div>
+    <button onclick="closeSavePopup()" style="background:#C4581A;border:none;color:white;padding:13px 36px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer" onmouseover="this.style.background='#A84515'" onmouseout="this.style.background='#C4581A'">✓ OK, entendido</button>
   </div>
 </div>
 </body>
