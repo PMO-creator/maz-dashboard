@@ -151,21 +151,41 @@
   .sr-tarefa-name{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
 
   /* REQS */
-  .req-filters{display:flex;gap:6px;padding:10px 10px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .req-filters::-webkit-scrollbar{display:none}
-  .req-filter-chip{font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
-  .req-filter-chip.active{background:var(--accentD);color:#FFF;border-color:var(--accentD)}
-  .req-section{padding:0 10px 0}
-  .req-card{background:var(--card);border-radius:10px;margin-bottom:7px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);display:flex;align-items:stretch}
+  .req-filter-bar{background:#2F4A18;padding:8px 10px;border-bottom:1px solid rgba(138,196,58,.2);display:flex;flex-direction:column;gap:6px}
+  .req-filter-row{display:flex;gap:6px;align-items:center}
+  .req-dd-wrap-m{position:relative;flex:1}
+  .req-dd-btn-m{background:#1B3A0A;color:#FFF;border:1.5px solid rgba(138,196,58,.4);padding:7px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:5px;white-space:nowrap;width:100%}
+  .req-ms-arrow{font-size:10px;opacity:.7;flex-shrink:0}
+  .req-ms-menu{background:#FFF;border:1px solid #E2E8F0;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.18);position:fixed;z-index:600;display:none;max-height:260px;overflow-y:auto}
+  .req-ms-menu.open{display:block}
+  .req-ms-option{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid #F1F5F9;color:#1E293B}
+  .req-ms-option:last-child{border-bottom:none}
+  .req-ms-option input{width:15px;height:15px;accent-color:#4A7C1E;cursor:pointer;flex-shrink:0}
+  .req-ms-divider{margin:0;border:none;border-top:1px solid #E2E8F0}
+  .req-ms-all{font-weight:700;color:#2F4A18;font-style:italic}
+  .req-clear-btn-m{background:#4A7C1E;color:#FFF;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;width:100%}
+  .req-quadros-m{padding:10px;display:flex;flex-direction:column;gap:10px}
+  .req-quadro-m{border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .req-quadro-hdr-m{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;user-select:none}
+  .req-quadro-title-m{font-size:13px;font-weight:800;color:#FFF;letter-spacing:.3px}
+  .req-quadro-count-m{font-size:11px;font-weight:700;color:rgba(255,255,255,.85);background:rgba(0,0,0,.15);padding:2px 8px;border-radius:10px}
+  .req-quadro-chev-m{color:rgba(255,255,255,.8);font-size:11px;transition:transform .25s;flex-shrink:0}
+  .req-quadro-body-m{overflow:hidden;transition:max-height .3s ease}
+  .req-card{background:var(--card);margin:0 8px 8px;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.07);display:flex;align-items:stretch}
   .req-left-bar{width:4px;flex-shrink:0}
   .req-content{padding:10px 12px;flex:1;min-width:0}
-  .req-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:4px}
-  .req-num{font-size:11px;font-weight:800;color:var(--muted);min-width:28px;flex-shrink:0}
-  .req-desc{font-size:13px;font-weight:700;color:var(--text);line-height:1.3;flex:1}
-  .req-status-chip{font-size:10px;font-weight:800;padding:3px 9px;border-radius:10px;color:#FFF;white-space:nowrap;flex-shrink:0}
-  .req-meta{display:flex;gap:8px;flex-wrap:wrap}
-  .req-comp{font-size:10px;color:var(--muted)}
-  .req-fin{font-size:10px;color:var(--muted)}
+  .req-top{display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;margin-bottom:4px;align-items:center}
+  .req-hdr-lbl{font-size:10px;font-weight:800;color:#374151;text-transform:uppercase;letter-spacing:.5px}
+  .req-hdr-center{text-align:center}
+  .req-hdr-right{text-align:right}
+  .req-num{font-size:11px;font-weight:800;color:var(--text)}
+  .req-comp-top{font-size:11px;font-weight:800;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .req-status-chip{font-size:10px;font-weight:800;padding:3px 8px;border-radius:10px;white-space:nowrap;justify-self:end}
+  .req-status-chip{font-size:10px;font-weight:800;padding:3px 8px;border-radius:10px;white-space:nowrap}
+  .req-desc{font-size:13px;font-weight:700;color:var(--text);line-height:1.3;margin:4px 0 5px}
+  .req-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px}
+  .req-forn{font-size:12px;font-weight:800;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .req-fin{font-size:12px;font-weight:800;color:var(--muted);flex-shrink:0;text-align:right}
 
   /* EMPTY STATE */
   .empty{text-align:center;padding:32px 20px;color:var(--muted);font-size:13px}
@@ -309,8 +329,11 @@
 
 <!-- TAB: REQUISIÇÕES -->
 <div id="tab-reqs" class="tab-panel">
-  <div class="req-filters" id="req-filters"></div>
-  <div class="req-section" id="req-list"><div class="loading"><div class="spinner"></div><br>Carregando...</div></div>
+  <div class="req-filter-bar" id="req-filter-bar">
+    <div class="req-filter-row" id="req-filter-row1"></div>
+    <div class="req-filter-row"><button class="req-clear-btn-m" onclick="clearReqFilters()">Limpar filtros</button></div>
+  </div>
+  <div class="req-quadros-m" id="req-quadros-m"></div>
 </div>
 
 <div class="footer">
@@ -423,7 +446,8 @@ function parseREQS(rows){
     let req=(r[0]||'').toString().trim();
     if(!req||REQS_HDR.has(req))return null;
     if(/^\d+\.0$/.test(req))req=req.slice(0,-2);
-    return{req,comp:(r[2]||'').toString().trim(),desc:(r[5]||'').toString().trim(),status:(r[6]||'').toString().trim(),fin:fmtDate((r[12]||'').toString().trim())};
+    let prio=(r[3]||'').toString().trim();if(/^\d+\.0$/.test(prio))prio=prio.slice(0,-2);
+    return{req,prio,comp:(r[1]||'').toString().trim(),desc:(r[4]||'').toString().trim(),status:(r[5]||'').toString().trim(),forn:(r[6]||'').toString().trim(),fin:fmtDate((r[12]||'').toString().trim())};
   }).filter(Boolean);
 }
 
@@ -653,37 +677,190 @@ function toggleSRMarco(key){
 }
 
 /* ── REQUISIÇÕES ── */
-const REQ_STATUS_COLORS={'Finalizada':'s-feito','Em andamento':'s-andam','Cancelado':'s-cancel','Cotação':'s-risco','Não iniciada':'s-iniciar','Não inciada':'s-iniciar'};
-let activeReqFilter='Todos';
-function renderReqs(){
-  const filters=document.getElementById('req-filters');
-  const statuses=['Todos',...new Set(REQS.map(r=>r.status).filter(Boolean))];
-  filters.innerHTML=statuses.map(s=>`<div class="req-filter-chip${s===activeReqFilter?' active':''}" onclick="filterReq('${s}',this)">${s}</div>`).join('');
-  const el=document.getElementById('req-list');
-  const data=activeReqFilter==='Todos'?REQS:REQS.filter(r=>r.status===activeReqFilter);
-  if(!data.length){el.innerHTML='<div class="empty">Sem requisições</div>';return;}
-  el.innerHTML=data.map(r=>`
-    <div class="req-card">
-      <div class="req-left-bar ${REQ_STATUS_COLORS[r.status]||'s-iniciar'}"></div>
-      <div class="req-content">
-        <div class="req-top">
-          <span class="req-num">#${r.req}</span>
-          <span class="req-desc">${escHtml(r.desc||r.comp||'—')}</span>
-          <span class="req-status-chip ${REQ_STATUS_COLORS[r.status]||'s-iniciar'}">${escHtml(r.status)||'—'}</span>
-        </div>
-        <div class="req-meta">
-          ${r.comp?`<span class="req-comp">${escHtml(r.comp)}</span>`:''}
-          ${r.fin?`<span class="req-fin">📅 ${r.fin}</span>`:''}
-        </div>
-      </div>
-    </div>`).join('');
+const REQ_STATUS_COLORS={
+  'Não iniciada':           {bg:'#F1F5F9',fg:'#6B7280'},
+  'Em cotação':             {bg:'#DBEAFE',fg:'#3B82F6'},
+  'Cotação em análise':     {bg:'#EDE9FE',fg:'#6366F1'},
+  'Cotação iniciada':       {bg:'#EDE9FE',fg:'#6366F1'},
+  'Aguardando requisitante':{bg:'#FEF3C7',fg:'#F59E0B'},
+  'Aguardando fornecedor':  {bg:'#FED7AA',fg:'#F97316'},
+  'Cotação finalizada':     {bg:'#CFFAFE',fg:'#0891B2'},
+  'Projuris':               {bg:'#F3E8FF',fg:'#8B5CF6'},
+  'Contrato em assinatura': {bg:'#CCFBF1',fg:'#0D9488'},
+  'Emissão do pedido':      {bg:'#DBEAFE',fg:'#1D4ED8'},
+  'Compra finalizada':      {bg:'#D1FAE5',fg:'#16A34A'},
+  'Cancelado':              {bg:'#E5E7EB',fg:'#1F2937'},
+};
+function buildReqMobileFilters(){
+  const row1=document.getElementById('req-filter-row1');
+  if(!row1)return;
+  const REQ_ST_ORDER=['Não iniciada','Em cotação','Cotação em análise','Cotação iniciada','Aguardando requisitante','Aguardando fornecedor','Cotação finalizada','Projuris','Contrato em assinatura','Emissão do pedido','Compra finalizada','Cancelado'];
+  const stItems=REQ_ST_ORDER.map(function(s){
+    const c=REQ_STATUS_COLORS[s]||{bg:'#F1F5F9',fg:'#6B7280'};
+    return '<label class="req-ms-option"><input type="checkbox" value="'+escHtml(s)+'" checked onchange="onMReqStChange()"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+c.fg+';flex-shrink:0"></span> '+escHtml(s)+'</label>';
+  }).join('');
+  const forns=[...new Set(REQS.map(function(r){return(r.forn||'').trim();}))].sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+  const fornItems=forns.map(function(f){
+    const label=f||'Sem Fornecedor';
+    return '<label class="req-ms-option"><input type="checkbox" value="'+escHtml(f)+'" checked onchange="onMReqFornChange()"> '+escHtml(label)+'</label>';
+  }).join('');
+  row1.innerHTML=
+    '<div class="req-dd-wrap-m" id="req-st-dd-wrap">'
+    +'<button class="req-dd-btn-m" onclick="toggleMReqStMenu();event.stopPropagation()">'
+    +'<span id="req-st-lbl-m">Status</span><span class="req-ms-arrow">&#9660;</span></button>'
+    +'<div class="req-ms-menu" id="req-st-menu-m" style="min-width:230px">'
+    +'<label class="req-ms-option req-ms-all"><input type="checkbox" id="req-st-all-m" checked onchange="onMReqStAll(this)"> Todos os status</label>'
+    +'<hr class="req-ms-divider">'+stItems+'</div></div>'
+    +'<div class="req-dd-wrap-m" id="req-forn-dd-wrap">'
+    +'<button class="req-dd-btn-m" onclick="toggleMReqFornMenu();event.stopPropagation()">'
+    +'<span id="req-forn-lbl-m">Fornecedor</span><span class="req-ms-arrow">&#9660;</span></button>'
+    +'<div class="req-ms-menu" id="req-forn-menu-m" style="min-width:250px">'
+    +'<label class="req-ms-option req-ms-all"><input type="checkbox" id="req-forn-all-m" checked onchange="onMReqFornAll(this)"> Todos os fornecedores</label>'
+    +'<hr class="req-ms-divider">'+fornItems+'</div></div>';
 }
-function filterReq(status,el){
-  activeReqFilter=status;
-  document.querySelectorAll('.req-filter-chip').forEach(e=>e.classList.remove('active'));
-  el.classList.add('active');
+function toggleMReqStMenu(){
+  const menu=document.getElementById('req-st-menu-m');
+  if(!menu)return;
+  const isOpen=menu.classList.contains('open');
+  document.querySelectorAll('.req-ms-menu.open').forEach(function(m){m.classList.remove('open');});
+  if(!isOpen){
+    const btn=document.querySelector('#req-st-dd-wrap .req-dd-btn-m');
+    const rect=btn.getBoundingClientRect();
+    menu.style.top=(rect.bottom+4)+'px';
+    menu.style.left=rect.left+'px';
+    menu.classList.add('open');
+  }
+}
+function toggleMReqFornMenu(){
+  const menu=document.getElementById('req-forn-menu-m');
+  if(!menu)return;
+  const isOpen=menu.classList.contains('open');
+  document.querySelectorAll('.req-ms-menu.open').forEach(function(m){m.classList.remove('open');});
+  if(!isOpen){
+    const btn=document.querySelector('#req-forn-dd-wrap .req-dd-btn-m');
+    const rect=btn.getBoundingClientRect();
+    menu.style.top=(rect.bottom+4)+'px';
+    menu.style.left=rect.left+'px';
+    menu.classList.add('open');
+  }
+}
+function onMReqStAll(el){
+  document.querySelectorAll('#req-st-menu-m input:not(#req-st-all-m)').forEach(function(i){i.checked=el.checked;});
+  _updateMReqStLabel();renderReqs();
+}
+function onMReqStChange(){
+  const allChk=document.getElementById('req-st-all-m');
+  const items=[...document.querySelectorAll('#req-st-menu-m input:not(#req-st-all-m)')];
+  const n=items.filter(function(i){return i.checked;}).length;
+  if(allChk){allChk.checked=n===items.length;allChk.indeterminate=n>0&&n<items.length;}
+  _updateMReqStLabel();renderReqs();
+}
+function _updateMReqStLabel(){
+  const items=[...document.querySelectorAll('#req-st-menu-m input:not(#req-st-all-m)')];
+  const checked=items.filter(function(i){return i.checked;}).map(function(i){return i.value;});
+  const lbl=document.getElementById('req-st-lbl-m');
+  if(!lbl)return;
+  if(checked.length===0||checked.length===items.length)lbl.textContent='Status';
+  else if(checked.length===1)lbl.textContent=checked[0].length>15?checked[0].substring(0,13)+'…':checked[0];
+  else lbl.textContent=checked.length+' status';
+}
+function onMReqFornAll(el){
+  document.querySelectorAll('#req-forn-menu-m input:not(#req-forn-all-m)').forEach(function(i){i.checked=el.checked;});
+  _updateMReqFornLabel();renderReqs();
+}
+function onMReqFornChange(){
+  const allChk=document.getElementById('req-forn-all-m');
+  const items=[...document.querySelectorAll('#req-forn-menu-m input:not(#req-forn-all-m)')];
+  const n=items.filter(function(i){return i.checked;}).length;
+  if(allChk){allChk.checked=n===items.length;allChk.indeterminate=n>0&&n<items.length;}
+  _updateMReqFornLabel();renderReqs();
+}
+function _updateMReqFornLabel(){
+  const items=[...document.querySelectorAll('#req-forn-menu-m input:not(#req-forn-all-m)')];
+  const checked=items.filter(function(i){return i.checked;}).map(function(i){return i.value;});
+  const lbl=document.getElementById('req-forn-lbl-m');
+  if(!lbl)return;
+  if(checked.length===0||checked.length===items.length)lbl.textContent='Fornecedor';
+  else if(checked.length===1)lbl.textContent=(checked[0]||'Sem Fornecedor').length>15?(checked[0]||'Sem Fornecedor').substring(0,13)+'…':(checked[0]||'Sem Fornecedor');
+  else lbl.textContent=checked.length+' fornecedores';
+}
+function clearReqFilters(){
+  document.querySelectorAll('#req-st-menu-m input').forEach(function(i){i.checked=true;});
+  _updateMReqStLabel();
+  document.querySelectorAll('#req-forn-menu-m input').forEach(function(i){i.checked=true;});
+  _updateMReqFornLabel();
   renderReqs();
 }
+function renderReqs(){
+  const HDRS=new Set(['Cotação','Finalizada','Não inciada','Não iniciada']);
+  const valid=REQS.filter(function(r){return r.req&&!HDRS.has(r.req)&&/\d/.test(r.req);});
+  const _stItems=[...document.querySelectorAll('#req-st-menu-m input:not(#req-st-all-m)')];
+  const _stChecked=_stItems.filter(function(i){return i.checked;}).map(function(i){return i.value;});
+  const _stAll=_stChecked.length===_stItems.length||_stItems.length===0;
+  const _fornItems=[...document.querySelectorAll('#req-forn-menu-m input:not(#req-forn-all-m)')];
+  const _fornChecked=_fornItems.filter(function(i){return i.checked;}).map(function(i){return i.value;});
+  const _fornAll=_fornChecked.length===_fornItems.length||_fornItems.length===0;
+  const filtered=valid.filter(function(r){
+    if(!_stAll&&!_stChecked.includes(r.status))return false;
+    if(!_fornAll&&!_fornChecked.includes(r.forn||''))return false;
+    return true;
+  });
+  const grid=document.getElementById('req-quadros-m');
+  if(!grid)return;
+  if(!filtered.length){grid.innerHTML='<div class="empty">Sem requisições</div>';return;}
+  const QUADROS=[
+    {key:'1',label:'P1 — ALTA',color:'#DC2626'},
+    {key:'2',label:'P2 — MÉDIA',color:'#EA580C'},
+    {key:'3',label:'P3 — NORMAL',color:'#2563EB'},
+    {key:'4',label:'P4 — BAIXA',color:'#64748B'},
+    {key:'',label:'SEM PRIORIDADE',color:'#7C3AED'}
+  ];
+  const sortByReq=function(a,b){return(parseInt(a.req)||0)-(parseInt(b.req)||0);};
+  grid.innerHTML=QUADROS.map(function(q){
+    const items=filtered.filter(function(r){return(r.prio||'')===q.key;}).sort(sortByReq);
+    if(!items.length)return '';
+    const cards=items.map(function(r){
+      const sc=REQ_STATUS_COLORS[r.status]||{bg:'#F1F5F9',fg:'#6B7280'};
+      return '<div class="req-card">'
+        +'<div class="req-left-bar" style="background:'+sc.fg+'"></div>'
+        +'<div class="req-content">'
+        +'<div class="req-top">'
+        +'<span class="req-hdr-lbl">Nr. REQ</span>'
+        +'<span class="req-hdr-lbl req-hdr-center">Comprador</span>'
+        +'<span class="req-hdr-lbl req-hdr-right">Status</span>'
+        +'<span class="req-num">#'+escHtml(r.req)+'</span>'
+        +'<span class="req-comp-top">'+escHtml(r.comp||'—')+'</span>'
+        +'<span class="req-status-chip" style="background:'+sc.bg+';color:'+sc.fg+'">'+escHtml(r.status||'—')+'</span>'
+        +'</div>'
+        +'<div class="req-desc">'+escHtml(r.desc||'—')+'</div>'
+        +'<div class="req-bottom">'
+        +'<span class="req-forn">'+(r.forn?escHtml(r.forn):'Sem Fornecedor')+'</span>'
+        +'<span class="req-fin">'+(r.fin?escHtml(r.fin):'Sem Previsão')+'</span>'
+        +'</div></div></div>';
+    }).join('');
+    return '<div class="req-quadro-m">'
+      +'<div class="req-quadro-hdr-m" style="background:'+q.color+'" onclick="toggleMReqQuadro(this)">'
+      +'<span class="req-quadro-title-m">'+q.label+'</span>'
+      +'<div style="display:flex;align-items:center;gap:6px">'
+      +'<span class="req-quadro-count-m">'+items.length+'</span>'
+      +'<span class="req-quadro-chev-m">&#9654;</span>'
+      +'</div></div>'
+      +'<div class="req-quadro-body-m" style="max-height:0" data-open="0">'
+      +cards+'</div></div>';
+  }).join('');
+}
+function toggleMReqQuadro(hdr){
+  const body=hdr.nextElementSibling;
+  const chev=hdr.querySelector('.req-quadro-chev-m');
+  const isOpen=body.dataset.open==='1';
+  if(isOpen){body.style.maxHeight='0';body.dataset.open='0';if(chev)chev.style.transform='';}
+  else{body.style.maxHeight=body.scrollHeight+'px';body.dataset.open='1';if(chev)chev.style.transform='rotate(90deg)';}
+}
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.req-dd-wrap-m')){
+    document.querySelectorAll('.req-ms-menu.open').forEach(function(m){m.classList.remove('open');});
+  }
+});
 
 /* ── GANTT ── */
 const GANTT_COLOR={'Feito':'#05C46B','Em andamento':'#1A56FF','Atrasado':'#FF2525','Risco de atraso':'#FF6B00','A iniciar':'#5A6E85','Definir datas':'#92400E','Cancelado':'#374151','Cancelado/Congelado':'#374151'};
@@ -1093,7 +1270,7 @@ async function loadData(){
     document.getElementById('header-date').textContent=`${String(now.getDate()).padStart(2,'0')} ${MONTHS[now.getMonth()]} ${now.getFullYear()} \u00b7 MAZ ELD`;
     document.getElementById('refresh-time').textContent=`${hh}:${mm}`;
     if(statusEl){statusEl.textContent=reqsOk?'🟢 Ao vivo':'🟡 Cronograma OK \u00b7 REQ erro';statusEl.style.background=reqsOk?'#052e16':'#422006';statusEl.style.color=reqsOk?'#4ade80':'#fb923c';}
-    preprocessStatuses();buildMobileFilters();renderGantt();renderStatusReport();renderReqs();
+    preprocessStatuses();buildMobileFilters();renderGantt();renderStatusReport();buildReqMobileFilters();renderReqs();
     if(_isInitialLoad){hideLoading();_isInitialLoad=false;}
     hideConnErr();
   }catch(err){
