@@ -164,4 +164,27 @@ EIXO → GRUPO → MARCO → TAREFA
 
 | Planilha | ID | Aba |
 |---|---|---|
-| Cronograma | `17nttJ_
+| Cronograma | `17nttJ_ShqWztvDWH3l59iNqboLqkviZs3_PM5J3ihdA` | `master data` |
+| Requisições | `1azrdS4OGO-CWD1ods69i8iZJcwq4oyISdT2n_tu1uJM` | `Planilha de Status de Compras Prod` |
+
+## API Key
+
+- Restrita a `pmo-creator.github.io/*`
+- Localhost retorna 403 propositalmente — comportamento esperado
+
+## ⚠️ Armadilhas críticas
+
+1. **Dashboard branco sem erro** → checar: null bytes, `function` ausente, JS truncado, template literals aninhados
+2. **Template literals aninhados** → nunca backtick dentro de `${}` dentro de outro backtick
+3. **Prioridade REQS** → col D (índice 3) — mapeamento confirmado contra sheet real em mai/2026
+4. **`node --check` Node v22** → não aceita `.html` — extrair para `.js` temporário
+5. **Edit tool com backticks** → falha ao fazer match — usar PowerShell `[System.IO.File]` para substituições
+6. **CRLF** → normalizar com `.Replace("\`r\`n", "\`n")` antes de substituições PowerShell
+7. **Dado estático vs. dinâmico** → editar o WBS hardcoded no HTML só para testes rápidos; o dado real vem do Sheet e sobrescreve tudo no load
+8. **Gantt é lazy** → `renderGanttSection()` não gera SVG; só `renderGanttForEixo(gi)` gera — chamado ao expandir o eixo
+
+## Arquivos temporários
+
+Permitido criar `_fix_*.py`, `_tmp_*.py` ou qualquer script auxiliar durante a sessão. **Obrigatório deletar com `Remove-Item` imediatamente após uso.**
+
+A pasta deve conter apenas: `index.html`, `mobile.html`, `DEV_GUIDE.html`, `ONBOARDING.md`, `CLAUDE.md`, `.claude\`

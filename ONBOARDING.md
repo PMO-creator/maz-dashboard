@@ -418,4 +418,58 @@ Localização: chips horizontais com classe `.resp-chip` exibidos entre as abas 
 
 | Elemento/Função JS | Responsabilidade |
 |---|---|
-| `activeRespFilterM` | Array de 
+| `activeRespFilterM` | Array de responsáveis ativos no mobile |
+| `buildRespFilterMobile()` | Gera os chips de responsável para o mobile |
+| `grupoHasRespM(grupo)` | Versão mobile de `grupoHasResp` |
+| `toggleRespChip(resp, el)` | Ativa/desativa chip e re-renderiza |
+| `#gantt-resp-msg` | Mensagem "SELECIONE AO MENOS UM RESPONSÁVEL" (Gantt) |
+| `#sr-resp-msg` | Mensagem "SELECIONE AO MENOS UM RESPONSÁVEL" (Status Report) |
+
+**Lógica de filtragem mobile:**
+- Chip "Todos" ativo → mostra tudo (array vazio = sem filtro)
+- Chip de nome ativo → filtra eixos, grupos e marcos sem o responsável
+- Eixos sem match somem da lista (tanto no Gantt quanto no Status Report)
+
+---
+
+## 8. Skills disponíveis no repositório
+
+O repo inclui duas skills em `.claude/` prontas para uso com **Claude Code**:
+
+### code_audit — Auditor de código
+
+Analisa o `git diff` e reporta problemas antes de subir para produção. Cobre segurança, arquitetura, qualidade de código, fluxo git e dependências externas.
+
+**É sugerida automaticamente** pelo Claude Code antes de commit/push e ao adicionar dependências. Sempre pergunta antes de rodar.
+
+**Como acionar manualmente (escrever em linguagem natural no Claude Code):**
+
+| O que digitar | O que faz |
+|---|---|
+| `"audita o que mudou"` | Analisa só o git diff atual — leve |
+| `"resumo do projeto"` | Lê o CLAUDE.md e resume o estado — leve |
+| `"auditoria completa"` | Lê todos os arquivos — pesado, usar com moderação |
+
+### doc-sync — Sincronização de documentação
+
+Compara o `index.html` atual com o snapshot anterior, identifica mudanças relevantes e atualiza os manuais (Manual, Onboarding, Guia Usuário, ONBOARDING.md). Roda via **Cowork** (não Claude Code), com a pasta `IDG - Relatórios de Análise` montada.
+
+Ver documentação completa em `.claude/doc_sync/SKILL.md`.
+
+---
+
+## 9. Armadilhas técnicas conhecidas
+
+| Armadilha | Como evitar |
+|---|---|
+| Dashboard branco sem erro no console | Verificar: (a) null bytes no HTML, (b) palavra `function` ausente em declaração JS, (c) JS truncado sem `</script>`, (d) template literals aninhados |
+| Template literals aninhados | Nunca usar crase dentro de `${}` dentro de outro crase — `node --check` passa mas browser quebra |
+| JS truncado | Verificar se `</script>` existe no final do arquivo antes de editar |
+| Prioridade REQS | Usar APENAS coluna D (índice 3) — coluna B gera falsos positivos. Índices antigos (E/4) causavam KPIs zerados (corrigido commit 7662590) |
+| `node --check` no Node v22 | Não aceita `.html` — extrair bloco script para arquivo `.js` temporário |
+| Edit tool do Claude Code falha | Arquivo contém backticks JS (template literals). Usar PowerShell com `[System.IO.File]::ReadAllBytes` |
+| String não encontrada no Replace | Arquivo usa CRLF. Normalizar: `$content.Replace("\`r\`n", "\`n")` antes de substituir |
+
+---
+
+*Guia atualizado em 25/Mai/2026 — v11.1 — Dashboard MAZ 2026 · IDG PMO*
