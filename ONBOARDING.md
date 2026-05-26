@@ -403,4 +403,36 @@ Localização: chips horizontais com classe `.resp-chip` exibidos entre as abas 
 **Lógica de filtragem mobile:**
 - Chip "Todos" ativo → mostra tudo (array vazio = sem filtro)
 - Chip de nome ativo → filtra eixos, grupos e marcos sem o responsável
-- Eixos sem match somem da lista (
+- Eixos sem match somem da lista (tanto no Gantt quanto no Status Report)
+
+---
+
+## 8. Skills disponíveis no repositório
+
+O repo inclui a skill `doc-sync` em `doc-sync/`, pronta para uso com **Cowork**:
+
+### doc-sync — Sincronização de documentação
+
+Compara o `index.html` atual com o snapshot anterior, identifica mudanças relevantes e atualiza automaticamente os manuais (Manual de Uso, Guia de Onboarding, Ficha Técnica, ONBOARDING.md). Roda via **Cowork** com a pasta `maz-dashboard` montada.
+
+**Como acionar:** digitar `doc-sync` ou `"atualizar docs"` no chat Cowork.
+
+Ver documentação completa em `doc-sync/SKILL.md`.
+
+---
+
+## 9. Armadilhas técnicas conhecidas
+
+| Armadilha | Como evitar |
+|---|---|
+| Dashboard branco sem erro no console | Verificar: (a) null bytes no HTML, (b) palavra `function` ausente em declaração JS, (c) JS truncado sem `</script>`, (d) template literals aninhados |
+| Template literals aninhados | Nunca usar crase dentro de `${}` dentro de outro crase — `node --check` passa mas browser quebra |
+| JS truncado | Verificar se `</script>` existe no final do arquivo antes de editar |
+| Prioridade REQS | Usar APENAS coluna D (índice 3) — coluna B gera falsos positivos. Índices antigos (E/4) causavam KPIs zerados (corrigido commit 7662590) |
+| `node --check` no Node v22 | Não aceita `.html` — extrair bloco script para arquivo `.js` temporário |
+| Edit tool do Claude Code falha | Arquivo contém backticks JS (template literals). Usar PowerShell com `[System.IO.File]::ReadAllBytes` |
+| String não encontrada no Replace | Arquivo usa CRLF. Normalizar: `$content.Replace("\`r\`n", "\`n")` antes de substituir |
+
+---
+
+*Guia atualizado em 26/Mai/2026 — v12 — Dashboard MAZ 2026 · IDG PMO*
