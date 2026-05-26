@@ -63,9 +63,11 @@
 | E | 4 | Descrição |
 | F | 5 | Status |
 | G | 6 | Fornecedor |
+| H | 7 | Fornecedor (coluna alternativa — ignorar, usar G) |
 | M | 12 | Data prevista |
 
 > ⚠️ Prioridade: usar APENAS coluna D (índice 3). Coluna B gera falsos positivos.
+> ⚠️ Filtro de Fornecedor adicionado em commit b4a0b53 — dropdown multi-select na aba Requisições (coluna G). Itens sem fornecedor agrupados como "Sem Fornecedor".
 
 ---
 
@@ -94,8 +96,8 @@ Projeto MAZ 2026
 | Em andamento | `--andam` | Azul | `#1A56FF` |
 | Risco de atraso | `--risco` | Laranja | `#FF6B00` |
 | Atrasado | `--atraso` | Vermelho | `#FF2525` |
-| A iniciar | `--iniciar` | Cinza azulado | `#5A6E85` |
 | Definir datas | `--definir` | Marrom | `#92400E` |
+| A iniciar | `--iniciar` | Cinza azulado | `#5A6E85` |
 | Cancelado/Congelado | `--cancel` | Cinza escuro | `#374151` |
 
 ### Paleta de destaque
@@ -110,11 +112,13 @@ Projeto MAZ 2026
 ### Regra do pior status (rollup)
 
 ```
-Rank: Atrasado(0) > Risco de atraso(1) > Em andamento(2) > A iniciar(3) > Definir datas(4) > Feito(5) > Cancelado/Congelado(6)
+Rank: Atrasado(0) > Risco de atraso(1) > Em andamento(2) > Definir datas(3) > A iniciar(4) > Feito(5) > Cancelado/Congelado(6)
 Marco = pior status das suas tarefas
 Grupo = pior status dos seus marcos
 Eixo  = pior status dos seus grupos
 ```
+
+> Regras de auto-status (commit 2ea1b35): subtask sem status + sem data → "Definir datas"; "A iniciar" sem data de início → "Definir datas"; padrão de grupo/eixo sem status → "Definir datas".
 
 ---
 
@@ -137,7 +141,7 @@ Eixo  = pior status dos seus grupos
 
 ### 4.2 Guia de Onboarding — Manutenção Dashboard
 
-- **Arquivo atual:** `Guia de Onboarding_Manutençao Dashboard_MAZ_2026_v10.docx` + `_v10.pdf`
+- **Arquivo atual:** `Guia de Onboarding_Manutençao Dashboard_MAZ_2026_v12.docx`
 - **Público-alvo:** Desenvolvedor que vai manter o código. Nível: técnico, mas pode ser iniciante em JS.
 - **Tom:** Técnico, preciso. Comandos git literais. Sem abstrações.
 - **O que cobre:** Arquitetura, boas práticas, configuração, fluxo de trabalho (teste → push → produção), reverter versões, referências técnicas (URLs, Sheets IDs, colunas, funções JS), armadilhas conhecidas.
@@ -160,11 +164,25 @@ Eixo  = pior status dos seus grupos
 
 ### 4.4 Guia do Usuário Final
 
-- **Arquivo atual:** `Guia como usar Dashboard_Usuário final_MAZ_2026_v2.pptx` + `_v2.pdf`
+- **Arquivo atual:** `Guia como usar Dashboard_Usuário final_MAZ_2026_v3.pptx` + `_v3.pdf`
 - **Público-alvo:** Usuários finais do projeto — equipe da exposição, parceiros. Nível: leigo total.
 - **Tom:** Visual, simples, passo a passo com capturas de tela descritas. Máximo 1 ideia por slide.
 - **O que cobre:** Como acessar o dashboard, navegar entre abas, usar filtros, interpretar status, ver o Gantt, consultar requisições.
 - **Versionar quando:** Mudança visual significativa (novo botão visível, nova aba, novo fluxo de navegação), mudança de URL de acesso.
+
+### 4.5 ONBOARDING.md (repo)
+
+- **Arquivo atual:** `maz-dashboard/ONBOARDING.md`
+- **Público-alvo:** Desenvolvedor novo que clonou o repo. Lê diretamente no GitHub sem precisar baixar nada. Nível: técnico.
+- **Tom:** Técnico, direto. Comandos literais. Tabelas de referência rápida.
+- **O que cobre:** Arquitetura, boas práticas, configuração inicial, fluxo de trabalho, referências técnicas (URLs, Sheets, colunas, funções JS, filtros), armadilhas.
+- **Seções críticas:**
+  - §1 Arquitetura + fluxo de dados
+  - §3 Estrutura de pastas de trabalho
+  - §7 Referências técnicas (colunas das planilhas, auto-status, filtros)
+  - §8 Armadilhas técnicas
+- **Versionar quando:** Qualquer mudança técnica que afetaria o Guia de Onboarding docx — nova função JS relevante, novo parâmetro, mudança de coluna no Sheets, nova armadilha, novo fluxo de trabalho, mudança na estrutura de pastas.
+- **Importante:** É o complemento em Markdown do Guia de Onboarding docx. Quando o docx é atualizado para nova versão, o ONBOARDING.md também deve ser atualizado com as mesmas informações técnicas.
 
 ---
 
@@ -198,22 +216,23 @@ Eixo  = pior status dos seus grupos
 
 ## 6. Mapeamento: tipo de mudança → documentos afetados
 
-| Mudança | Manual v6 | Onboarding v10 | Ficha Técnica | Guia Usuário |
-|---|---|---|---|---|
-| Novo filtro visível | ✅ §3.3 | ✅ §8 | ❌ | ✅ slide filtros |
-| Nova aba no dashboard | ✅ nova seção | ✅ §1+§8 | ❌ | ✅ novo slide |
-| Novo botão no header | ✅ §3 | ❌ | ❌ | ✅ |
-| Nova coluna lida do Sheets | ❌ | ✅ §8 colunas | ❌ | ❌ |
-| Mudança de URL | ✅ se menciona URL | ✅ §8 URLs | ✅ | ✅ acesso |
-| Mudança ID planilha/aba | ❌ | ✅ §8 | ✅ | ❌ |
-| Novo status/cor | ✅ §3.5 legenda | ✅ §8 | ❌ | ✅ legenda |
-| Nova armadilha técnica | ❌ | ✅ §9 | ❌ | ❌ |
-| Mudança de dependência CDN | ❌ | ✅ §1 arquitetura | ✅ | ❌ |
-| Novo arquivo no repo | ❌ | ✅ §1+§5 | ❌ | ❌ |
-| mobile.html alterado | ❌ (se não muda UX) | ✅ §8 mobile | ❌ | ✅ se UX muda |
-| Mudança de comportamento EAP | ✅ §4 | ✅ §8 | ❌ | ✅ |
-| Mudança de comportamento Gantt | ✅ §5 | ✅ §8 | ❌ | ✅ |
-| Mudança de comportamento REQS | ✅ §6 | ✅ §8 | ❌ | ✅ |
+| Mudança | Manual v7 | Onboarding v12 | Ficha Técnica v3 | Guia Usuário v3 | ONBOARDING.md |
+|---|---|---|---|---|---|
+| Novo filtro visível | ✅ §3.3 | ✅ §8 | ❌ | ✅ slide filtros | ✅ §7 filtros |
+| Nova aba no dashboard | ✅ nova seção | ✅ §1+§8 | ❌ | ✅ novo slide | ✅ §1+§7 |
+| Novo botão no header | ✅ §3 | ❌ | ❌ | ✅ | ❌ |
+| Nova coluna lida do Sheets | ❌ | ✅ §8 colunas | ❌ | ❌ | ✅ §7 colunas |
+| Mudança de URL | ✅ se menciona URL | ✅ §8 URLs | ✅ | ✅ acesso | ✅ §7 URLs |
+| Mudança ID planilha/aba | ❌ | ✅ §8 | ✅ | ❌ | ✅ §7 |
+| Novo status/cor | ✅ §3.5 legenda | ✅ §8 | ❌ | ✅ legenda | ✅ §7 auto-status |
+| Nova armadilha técnica | ❌ | ✅ §9 | ❌ | ❌ | ✅ §8 |
+| Mudança de dependência CDN | ❌ | ✅ §1 arquitetura | ✅ | ❌ | ✅ §1 |
+| Novo arquivo no repo | ❌ | ✅ §1+§5 | ❌ | ❌ | ✅ §3 estrutura pastas |
+| mobile.html alterado | ❌ (se não muda UX) | ✅ §8 mobile | ❌ | ✅ se UX muda | ✅ §7 mobile |
+| Mudança de comportamento EAP | ✅ §4 | ✅ §8 | ❌ | ✅ | ❌ |
+| Mudança de comportamento Gantt | ✅ §5 | ✅ §8 | ❌ | ✅ | ❌ |
+| Mudança de comportamento REQS | ✅ §6 | ✅ §8 | ❌ | ✅ | ✅ §7 filtros REQS |
+| Mudança na estrutura de pastas | ❌ | ✅ §3+§5 | ❌ | ❌ | ✅ §3 |
 
 ---
 
@@ -249,15 +268,15 @@ Eixo  = pior status dos seus grupos
 
 | Documento | Versão atual | Notas |
 |---|---|---|
-| Manual de Uso e Manutenção | v6 | Inclui §3.5 com coluna Cor (Mai/2026) |
-| Guia de Onboarding | v10 | Inclui §8 Filtro Responsável + §9 Armadilhas (Mai/2026) |
+| Manual de Uso e Manutenção | v7 | §6 filtro Fornecedor + botão Limpar · §3.5 ranking status · §5 datas automáticas (Mai/2026) |
+| Guia de Onboarding | v12 | §10 skills disponíveis (code_audit + doc-sync) · §3 estrutura 2 pastas · regras auto-status revisadas + ranking com números · armadilha Prioridade D/3 corrigida (Mai/2026) |
 | Ficha Técnica | v3 | — |
-| Guia Usuário Final | v2 | — |
+| Guia Usuário Final | v3 | Slide Requisições: filtro Fornecedor + botão Limpar (Mai/2026) |
 
 ---
 
 ## 10. Snapshot de referência
 
-> O arquivo `_snapshot_ref.html` (gerado pela skill `doc-sync` após cada execução bem-sucedida) é a versão do `index.html` usada como linha de base para o próximo diff.
-> Se não existir, usar o backup mais recente em `Dashboard_backups/`.
-> Snapshot atual: `EAP_MAZ_2026_Dashboard_20260522_index.html`
+> O arquivo `_snapshot_index.html` (gerado pela skill `doc-sync` após cada execução bem-sucedida) é a versão do `index.html` usada como linha de base para o próximo diff.
+> Localização: `maz-dashboard\.claude\doc_sync\_snapshot_index.html`
+> Snapshot atual: gerado em 22/05/2026 (última execução do doc-sync).

@@ -22,7 +22,8 @@ Caminhos importantes:
 - **Repo GitHub local:** `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\`
 - **Pasta de documentos:** `C:\Users\gagui\OneDrive\Documentos\Claude\Projects\IDG - Relatórios de Análise\Manual\`
 - **Snapshot de referência:** `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\.claude\doc_sync\_snapshot_index.html`
-- **Esta skill:** `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\.claude\doc_sync\`
+- **Esta skill:** `C:\Users\gagui\OneDrive\Documentos\Claude\Projects\IDG - Relatórios de Análise\doc-sync\`
+- **Relatórios de execução:** `C:\Users\gagui\OneDrive\Documentos\Claude\Projects\IDG - Relatórios de Análise\doc-sync\reports\`
 
 > Se o snapshot não existir na primeira execução, usar o backup mais recente em
 > `IDG - Relatórios de Análise\Dashboard_backups\` como linha de base.
@@ -33,19 +34,27 @@ Caminhos importantes:
 
 ### ETAPA 0 — Auto-sincronização da skill
 
-Antes de qualquer coisa, copiar os arquivos da skill para o repo GitHub para
-garantir portabilidade:
+> **Arquitetura:** `IDG/doc-sync/` é o local de manutenção da skill (editável via Cowork).
+> O repo `maz-dashboard/.claude/doc_sync/` recebe uma cópia para portabilidade — um dev que clona o repo já encontra a skill.
+> A direção é sempre IDG → repo (não o contrário), porque o diretório `.claude/` do repo
+> é write-protected no Cowork.
 
-```bash
-# Garante que .claude/doc-sync/ existe no repo
-mkdir -p "C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\.claude\doc-sync"
+Copiar os arquivos atualizados para o repo GitHub:
 
-# Copia skill e contexto para o repo (sobrescreve)
-cp SKILL.md  "C:\...\maz-dashboard\.claude\doc_sync\SKILL.md"
-cp context.md "C:\...\maz-dashboard\.claude\doc_sync\context.md"
+```python
+import shutil, os
+
+idg = r"C:\Users\gagui\OneDrive\Documentos\Claude\Projects\IDG - Relatórios de Análise\doc-sync"
+repo = r"C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\.claude\doc_sync"
+
+# SKILL.md e context.md: IDG é a fonte de verdade → copia para repo
+for f in ["SKILL.md", "context.md"]:
+    shutil.copy2(os.path.join(idg, f), os.path.join(repo, f))
+    print(f"✓ Sincronizado: {f}")
 ```
 
-> Isso garante que o próximo desenvolvedor, ao clonar o repo, já tem a skill.
+> **Para editar a skill:** abrir sessão Cowork com `IDG - Relatórios de Análise` montado →
+> editar `doc-sync/SKILL.md` → na próxima execução do doc-sync, ETAPA 0 propaga para o repo.
 
 ---
 
@@ -150,42 +159,103 @@ Se o usuário disser "não" em algum item específico, pular aquele item.
 
 Para cada documento afetado, executar na ordem:
 
-#### 6a. Manual de Uso e Manutenção (`_v6.docx`)
+#### 6a. Manual de Uso e Manutenção (versão atual: `_v7.docx`)
 - Usar skill `docx` (unpack → edit XML → repack)
 - Editar apenas as seções mapeadas — nunca reescrever o documento inteiro
-- Incrementar versão: `_v6.docx` → `_v7.docx`
+- Incrementar versão ao salvar (ex: `_v7.docx` → `_v8.docx`)
+- Mover versão anterior para `Manual/old_versions/`
 - Tom: linguagem acessível, orientado a tarefa, sem jargão técnico
 
-#### 6b. Guia de Onboarding (`_v10.docx`)
+#### 6b. Guia de Onboarding (versão atual: `_v11.docx`)
 - Usar skill `docx`
 - Editar seções técnicas: §8 Referências, §9 Armadilhas
-- Incrementar versão: `_v10.docx` → `_v11.docx`
+- Incrementar versão ao salvar (ex: `_v11.docx` → `_v12.docx`)
+- Mover versão anterior para `Manual/old_versions/`
 - Tom: técnico e preciso, comandos literais quando aplicável
 
-#### 6c. Ficha Técnica (`_v3.docx`)
+#### 6c. Ficha Técnica (versão atual: `_v3.docx`)
 - Usar skill `docx`
 - Atualizar apenas URLs, IDs, dependências
-- Incrementar versão: `_v3.docx` → `_v4.docx`
+- Incrementar versão ao salvar (ex: `_v3.docx` → `_v4.docx`)
+- Mover versão anterior para `Manual/old_versions/`
 - Tom: formal, tabular, conciso
 
-#### 6d. Guia do Usuário Final (`_v2.pptx`)
+#### 6d. Guia do Usuário Final (versão atual: `_v3.pptx`)
 - Usar skill `pptx`
 - Atualizar slides afetados — nunca recriar o deck
-- Incrementar versão: `_v2.pptx` → `_v3.pptx`
+- Incrementar versão ao salvar (ex: `_v3.pptx` → `_v4.pptx`)
+- Mover versão anterior para `Manual/old_versions/`
 - Tom: visual, simples, máximo 1 ideia por slide
+
+#### 6e. ONBOARDING.md (`maz-dashboard/ONBOARDING.md`)
+- Arquivo Markdown no repo git — editar in-place (sem versionamento numérico)
+- **Critério de sincronização:** atualizar ONBOARDING.md **somente** quando a mudança altera comportamento técnico — nova função JS, novo índice de coluna, nova armadilha, novo fluxo de dados, nova estrutura de pastas. **Não atualizar** para explicações de UX humanas (como abrir PowerShell, onde clicar, passo a passo para leigos) — essas ficam apenas no docx. Regra prática: *"Um dev experiente precisaria saber isso para trabalhar corretamente?" → sim = atualizar; não = só docx.*
+- Atualizar quando Guia de Onboarding docx for atualizado para nova versão, OU quando houver mudanças técnicas em: colunas Sheets, auto-status, estrutura de pastas, armadilhas, filtros do dashboard
+- Tom: técnico, direto, com tabelas de referência e comandos literais
+- Usar Edit tool ou PowerShell se o arquivo tiver backticks JS
+- Após editar, commitar junto com as demais alterações do ciclo doc-sync:
+  ```bash
+  cd "C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard"
+  git add ONBOARDING.md
+  git commit -m "doc-sync: atualiza ONBOARDING.md ([descrição da mudança])"
+  git push
+  ```
+
+#### 6f. DEV_GUIDE.html (`Manual/DEV_GUIDE.html`)
+- Arquivo HTML sem versionamento numérico — editar in-place
+- Atualizar quando houver mudanças técnicas relevantes (nova função, nova armadilha, novo fluxo de dados)
+
+> ⚠️ **Verificação obrigatória antes de editar:** O DEV_GUIDE possui um botão "✏️ Editar / 💾 Baixar arquivo" que salva via download do browser para a pasta Downloads do Windows. Se o usuário editou manualmente pelo browser, o arquivo baixado precisa ser copiado de volta para `Manual/` — caso contrário, o doc-sync sobrescreve as edições.
+
+**Antes de qualquer edição no DEV_GUIDE, executar:**
+```python
+import os
+snapshot = r"C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\.claude\doc_sync\_snapshot_index.html"
+devguide = r"C:\Users\gagui\OneDrive\Documentos\Claude\Projects\IDG - Relatórios de Análise\Manual\DEV_GUIDE.html"
+snap_mtime = os.path.getmtime(snapshot)
+guide_mtime = os.path.getmtime(devguide)
+if guide_mtime > snap_mtime:
+    from datetime import datetime
+    print(f"⚠️ DEV_GUIDE.html foi modificado em {datetime.fromtimestamp(guide_mtime):%d/%m/%Y %H:%M} — APÓS o último snapshot ({datetime.fromtimestamp(snap_mtime):%d/%m/%Y %H:%M}).")
+    print("Possível edição manual via botão do browser.")
+    print("→ Perguntar ao usuário: 'Detectei edições manuais no DEV_GUIDE. Deseja incorporá-las antes de continuar?'")
+    # AGUARDAR confirmação do usuário antes de prosseguir
+else:
+    print("✅ DEV_GUIDE sem edições manuais desde o último snapshot. Seguro para atualizar.")
+```
+
+Se o usuário confirmar edições pendentes:
+1. Verificar se existe `DEV_GUIDE.html` recente na pasta Downloads (`C:\Users\gagui\Downloads\`)
+2. Se sim, perguntar: *"Encontrei DEV_GUIDE.html em Downloads (modificado em [data]). Usar esse como base?"*
+3. Se sim, copiar de Downloads para `Manual/` antes de continuar
+
+- Após atualizar, **copiar para o repo maz-dashboard e commitar** para publicar no GitHub Pages:
+  ```bash
+  cp "Manual/DEV_GUIDE.html" "C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\DEV_GUIDE.html"
+  cd "C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard"
+  git add DEV_GUIDE.html
+  git commit -m "doc-sync: atualiza DEV_GUIDE.html ([descrição da mudança])"
+  git push
+  ```
+- URL pública resultante: `https://pmo-creator.github.io/maz-dashboard/DEV_GUIDE.html`
+- Tom: técnico, orientado a desenvolvedor, com exemplos de código quando aplicável
 
 > ⚠️ Regra crítica: NUNCA resumir ou parafrasear comentários vindos da
 > planilha Google Sheets. Sempre exibir texto bruto.
 
 ---
 
-### ETAPA 7 — Regeneração dos PDFs
+### ETAPA 7 — Geração de PDFs (OBRIGATÓRIA)
 
-Para cada `.docx` ou `.pptx` atualizado, gerar o PDF correspondente:
+> **Por que obrigatório:** GitHub e usuários finais acessam apenas o PDF — o `.docx`/`.pptx` é o arquivo de edição, o `.pdf` é o arquivo de consumo. Sem o PDF, a atualização está incompleta.
+
+Para **cada** `.docx` ou `.pptx` criado ou atualizado, gerar o PDF correspondente na mesma pasta:
 
 ```bash
 python scripts/office/soffice.py --headless --convert-to pdf [arquivo] --outdir [mesma pasta]
 ```
+
+Nunca encerrar um ciclo doc-sync sem verificar que todos os PDFs foram gerados e têm tamanho > 0.
 
 ---
 
@@ -210,48 +280,4 @@ Exibir resumo com links diretos:
 ✅ doc-sync concluído — [data]
 
 Documentos atualizados:
-• [Ver Manual v7](computer://C:\...\Manual de Uso e Manutenção Dashboard_v7.docx)
-• [Ver Onboarding v11](computer://C:\...\Guia de Onboarding_v11.docx)
-• [Ver Ficha Técnica v4](computer://C:\...\Ficha_Tecnica_v4.docx)
-• [Ver Guia Usuário v3](computer://C:\...\Guia como usar Dashboard_v3.pptx)
-
-Próximo doc-sync: amanhã às 08:00
-```
-
----
-
-## Regras de qualidade
-
-1. **Nunca reescrever um documento inteiro** — editar cirurgicamente as seções afetadas
-2. **Sempre pedir aprovação** antes de gravar qualquer arquivo
-3. **Explicar em linguagem de leigo** — o usuário não precisa entender JS para aprovar
-4. **Versionar sempre** — nunca sobrescrever sem incrementar versão
-5. **Auto-sincronizar** — sempre copiar SKILL.md + context.md para o repo no início
-6. **Snapshot obrigatório** — sempre salvar novo snapshot ao final
-
----
-
-## Configuração inicial (primeira execução)
-
-Na primeira vez que esta skill for executada, verificar:
-
-1. ✅ O repo GitHub está clonado em `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\`?
-2. ✅ A pasta `.claude\doc_sync\` existe no repo?
-3. ✅ Existe um snapshot de referência?
-
-Se qualquer um for "não", guiar o usuário na configuração antes de prosseguir.
-
----
-
-## Para o próximo desenvolvedor
-
-Esta skill vive em `.claude/doc-sync/SKILL.md` dentro do repositório.
-Ao clonar o repo, instale a skill no seu Claude/Cowork importando o arquivo `.skill`
-que está na raiz do repositório (`doc-sync.skill`).
-
-Para configurar o scheduled task diário (varredura automática às 08:00):
-1. Abra o Cowork
-2. Digite: *"Configurar doc-sync para rodar todo dia às 08:00"*
-3. O Claude vai configurar automaticamente
-
-Documentação completa em `Guia de Onboarding_Manutençao Dashboard_MAZ_2026_vXX.docx §10`.
+• [Ver Manual vN](computer://C:\Users\gagui\OneDrive\Documentos\Claude\Projects\IDG - Relatórios de Análise\Manual\Manual de Uso e Manutenção Dashboard_vN.docx) · [PDF](computer:/

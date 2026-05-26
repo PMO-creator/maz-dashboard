@@ -1,15 +1,59 @@
-﻿# CLAUDE.md
+# CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude when working with this repository.
 
-## Ambiente de trabalho
+## O que é esta pasta
 
-Esta é a pasta de **teste e desenvolvimento**. Os arquivos editados aqui são copiados para `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard` para commit e push no GitHub.
+Este é o **repositório git** do Dashboard MAZ 2026 — fonte de produção publicada via GitHub Pages.
 
-**Fluxo:**
+**Edições de código NÃO acontecem aqui.** O fluxo é:
 ```
-maz-dashboard (git pull) → copiar para cá → editar → testar → copiar de volta → commit/push
+Ambiente de Teste_Dashboard/ → editar → testar → copiar para cá → git commit → git push
 ```
+
+## Para novos desenvolvedores
+
+**Comece pelo `ONBOARDING.md`** nesta pasta — cobre arquitetura, fluxo de trabalho completo e armadilhas conhecidas.
+
+Os manuais de uso (PDF) ficam em `Ambiente de Teste_Dashboard\01. Manuais\`.
+
+## Estrutura do repo
+
+```
+index.html          → dashboard desktop (single-file, ~332KB)
+mobile.html         → dashboard mobile (~43KB)
+DEV_GUIDE.html      → guia técnico (publicado no GitHub Pages)
+ONBOARDING.md       → onboarding para novos devs — leia primeiro
+.claude/
+  doc_sync/         → skill doc-sync + _snapshot_index.html + context.md
+  code_audit/       → skill de auditoria de código (ver abaixo)
+```
+
+**Não devem estar nesta pasta:** scripts de dev (SERVE_DASHBOARD.bat), PDFs de manuais.
+Esses ficam em `Ambiente de Teste_Dashboard\`.
+
+### Skill code_audit
+
+Auditor educativo de código para **Claude Code** (não Cowork). Analisa o `git diff` antes de cada push e reporta problemas de segurança, arquitetura, qualidade e boas práticas git — com severidade 🔴🟡🟢 e explicação educativa (o que é, por que é problema, como corrigir).
+
+**Quando é sugerida automaticamente:** antes de commit/push, ao adicionar dependência externa (CDN, biblioteca), ao mexer em API key, após mudanças grandes (3+ funções).
+
+**Como acionar manualmente (linguagem natural no Claude Code):**
+- `"audita o que mudou"` → analisa só o git diff atual (leve)
+- `"resumo do projeto"` → lê só o CLAUDE.md, resume o estado (leve)
+- `"auditoria completa"` → lê todos os arquivos (pesado — usar com moderação)
+
+**Referências:** `.claude/code_audit/references/` — segurança, arquitetura, código, fluxo git, dependências.
+
+## Publicar no GitHub Pages
+
+```powershell
+cd C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard
+git add index.html mobile.html   # adicionar outros arquivos se necessário
+git commit -m "descrição da mudança"
+git push
+```
+GitHub Pages atualiza automaticamente em ~1 minuto.
 
 ## Arquitetura
 
@@ -23,7 +67,7 @@ Dois arquivos HTML self-contained: `index.html` (desktop) e `mobile.html` (mobil
 
 ## Abas
 
-**Desktop (`index.html`):** `gantt` · `eap` (Status Report) · `reqs` (Requisições)  
+**Desktop (`index.html`):** `gantt` · `eap` (Status Report) · `reqs` (Requisições)
 **Mobile (`mobile.html`):** `gantt` · `report` (Status Report) · `reqs` (Requisições)
 
 A aba `reqs` esconde a filter-bar de status/responsável (só aparece nas abas de cronograma).
@@ -83,6 +127,18 @@ Linhas 0 e 1 = cabeçalhos; dados a partir da linha 2.
 | pC (dinâmico) | Progresso da semana atual |
 | eC (dinâmico) | Encaminhamento da semana atual |
 
+## Mapeamento de colunas do Google Sheet (requisições)
+
+| Índice | Conteúdo |
+|---|---|
+| 0 | N. Requisição |
+| 1 | Comprador |
+| 3 | Prioridade ← USAR APENAS ESTA (col B gera falsos positivos) |
+| 4 | Descrição |
+| 5 | Status |
+| 6 | Fornecedor |
+| 12 | Data prevista |
+
 ## Estrutura WBS (hierarquia de dados)
 
 ```
@@ -98,55 +154,14 @@ EIXO → GRUPO → MARCO → TAREFA
 | MARCO | `.marco-name` |
 | TAREFA | `.tarefa-name` |
 
-## Status válidos
+## Status válidos e ranking (pior→melhor)
 
-`Atrasado` · `Risco de atraso` · `Em andamento` · `A iniciar` · `Definir datas` · `Feito` · `Cancelado/Congelado`
+`Atrasado` · `Risco de atraso` · `Em andamento` · `Definir datas` · `A iniciar` · `Feito` · `Cancelado/Congelado`
+
+> Ranking para rollup: Atrasado(0) > Risco(1) > Em andamento(2) > Definir datas(3) > A iniciar(4) > Feito(5) > Cancelado(6)
 
 ## Google Sheets
 
 | Planilha | ID | Aba |
 |---|---|---|
-| Cronograma | `17nttJ_ShqWztvDWH3l59iNqboLqkviZs3_PM5J3ihdA` | `master data` |
-| Requisições | `1azrdS4OGO-CWD1ods69i8iZJcwq4oyISdT2n_tu1uJM` | `Planilha de Status de Compras Prod` |
-
-## API Key
-
-- Restrita a `pmo-creator.github.io/*`
-- Localhost retorna 403 propositalmente — comportamento esperado
-
-## ⚠️ Armadilhas críticas
-
-1. **Dashboard branco sem erro** → checar: null bytes, `function` ausente, JS truncado, template literals aninhados
-2. **Template literals aninhados** → nunca backtick dentro de `${}` dentro de outro backtick
-3. **Prioridade REQS** → col D (índice 3) — mapeamento confirmado contra sheet real em mai/2026
-4. **`node --check` Node v22** → não aceita `.html` — extrair para `.js` temporário
-5. **Edit tool com backticks** → falha ao fazer match — usar PowerShell `[System.IO.File]` para substituições
-6. **CRLF** → normalizar com `.Replace("\`r\`n", "\`n")` antes de substituições PowerShell
-7. **Dado estático vs. dinâmico** → editar o WBS hardcoded no HTML só para testes rápidos; o dado real vem do Sheet e sobrescreve tudo no load
-8. **Gantt é lazy** → `renderGanttSection()` não gera SVG; só `renderGanttForEixo(gi)` gera — chamado ao expandir o eixo
-
-## Comandos de Desenvolvimento
-
-**Servidor local:**
-```
-SERVE_DASHBOARD.bat
-```
-Ou manualmente: `python -m http.server 8765` → abrir `http://localhost:8765/index.html`
-
-**Validar JS extraído de HTML:**
-```powershell
-$html = [System.IO.File]::ReadAllText("index.html", [System.Text.Encoding]::UTF8)
-$matches = [regex]::Matches($html, '(?s)<script>(.*?)</script>')
-$main = $matches | Sort-Object { $_.Groups[1].Value.Length } | Select-Object -Last 1
-[System.IO.File]::WriteAllText("$env:TEMP\check.js", $main.Groups[1].Value, [System.Text.Encoding]::UTF8)
-node --check "$env:TEMP\check.js"
-```
-
-**Copiar para o repo e publicar:**
-```powershell
-copy index.html  "..\maz-dashboard\index.html"
-copy mobile.html "..\maz-dashboard\mobile.html"
-# Depois: cd ..\maz-dashboard → git add → git commit → git push
-```
-
-9. **Arquivos temporários** → permitido criar `_fix_*.py`, `_tmp_*.py` ou qualquer script auxiliar durante a sessão. **Obrigatório deletar com `Remove-Item` imediatamente após uso.** A pasta deve conter apenas: `index.html`, `mobile.html`, `SERVE_DASHBOARD.bat`, `CLAUDE.md`, `ONBOARDING.md`, `01. Manuais\`.
+| Cronograma | `17nttJ_
