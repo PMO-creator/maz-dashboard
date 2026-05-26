@@ -112,42 +112,29 @@ node --version
 
 ### Estrutura de pastas de trabalho
 
-O projeto usa **duas pastas separadas**:
+O projeto usa **uma única pasta** — edição, teste e publicação acontecem no mesmo lugar:
 
 ```
 GitHub\
-  Ambiente de Teste_Dashboard\   ← AQUI você edita e testa
-    index.html
-    mobile.html
-    SERVE_DASHBOARD.bat
-    CLAUDE.md
-    01. Manuais\                  ← PDFs dos manuais (referência para o dev)
-
-  maz-dashboard\                 ← AQUI você faz commit e push
-    index.html
-    mobile.html
-    DEV_GUIDE.html
+  maz-dashboard\                 ← PASTA ÚNICA — edita, testa e publica daqui
+    index.html                   → Dashboard desktop (~330 KB)
+    mobile.html                  → Dashboard mobile (~43 KB)
+    SERVE_DASHBOARD.bat          → Servidor local (duplo-clique para preview)
     ONBOARDING.md                ← este arquivo (leia antes de trabalhar)
     CLAUDE.md
-    .claude\doc_sync\            ← skill doc-sync + contexto + snapshot
-    .claude\code_audit\          ← skill de auditoria de código
+    doc-sync\                    ← skill doc-sync + contexto + snapshot
+    Manual\                      ← documentação versionada (docx/pdf)
+    00. Apoio\                   ← logos e banners
 ```
 
-> A separação existe para evitar que um arquivo em edição (potencialmente quebrado) seja publicado acidentalmente. Só vai para `maz-dashboard` o que foi testado e aprovado.
+> A separação anterior em duas pastas foi eliminada em 26/Mai/2026. Tudo acontece diretamente em `maz-dashboard`; o servidor local (`SERVE_DASHBOARD.bat`) permite testar antes de commitar sem risco de publicação acidental.
 
 ### Clonar o repositório (primeira vez)
 ```bash
 git clone https://github.com/PMO-creator/maz-dashboard
 ```
 
-Você terá a pasta `maz-dashboard/` com os HTMLs prontos.
-
-Para criar o ambiente de teste, copie os HTMLs para a pasta `Ambiente de Teste_Dashboard`:
-```powershell
-copy maz-dashboard\index.html  "Ambiente de Teste_Dashboard\index.html"
-copy maz-dashboard\mobile.html "Ambiente de Teste_Dashboard\mobile.html"
-copy maz-dashboard\SERVE_DASHBOARD.bat "Ambiente de Teste_Dashboard\SERVE_DASHBOARD.bat"
-```
+Você terá a pasta `maz-dashboard/` com tudo que precisa. Não há pasta de ambiente de teste separada — o servidor local (`SERVE_DASHBOARD.bat`) já cumpre esse papel dentro da própria pasta.
 
 ### Configurar acesso ao GitHub
 O responsável anterior precisa te adicionar como colaborador:
@@ -158,48 +145,44 @@ O responsável anterior precisa te adicionar como colaborador:
 ## 4. Fluxo de trabalho — do teste ao ar
 
 ```
-maz-dashboard  →  Ambiente de Teste  →  (edita + testa)  →  maz-dashboard  →  GitHub Pages
-  (origem)           (trabalho)                               (commit/push)     (produção)
+maz-dashboard  →  (edita + testa aqui mesmo)  →  commit/push  →  GitHub Pages
+  (pasta única)                                                     (produção)
 ```
 
-### Passo 0 — Sincronizar o ambiente de teste
+### Passo 0 — Puxar a versão mais recente
 
-Antes de começar, garantir que o ambiente de teste tem a versão mais recente do repositório:
+Antes de começar, garantir que a pasta local está atualizada:
 
-```powershell
+```bash
 # No terminal, dentro de maz-dashboard:
 git pull
-
-# Copiar para o ambiente de teste:
-copy index.html  "..\Ambiente de Teste_Dashboard\index.html"
-copy mobile.html "..\Ambiente de Teste_Dashboard\mobile.html"
 ```
 
 ### Passo 1 — Subir o servidor local
 
-Na pasta `Ambiente de Teste_Dashboard`, rodar:
+Na pasta `maz-dashboard`, rodar:
 ```
 SERVE_DASHBOARD.bat
 ```
-→ Abre automaticamente `http://localhost:8765/index.html`
+→ Abre automaticamente `http://localhost:8000`
 
 Ou manualmente:
 ```bash
-python -m http.server 8765
+python -m http.server 8000
 ```
 
 ### Passo 2 — Fazer as alterações
 
-Edite `index.html` e/ou `mobile.html` com **Claude Code** (abrir o Claude Code na pasta `Ambiente de Teste_Dashboard`).
+Edite `index.html` e/ou `mobile.html` com **Claude Code** (abrir o Claude Code na pasta `maz-dashboard`).
 
 > ⚠️ Alterações que afetam layout, KPIs, lógica de dados ou parsing de colunas **normalmente afetam os dois arquivos**. Sempre verifique ambos.
 
 ### Passo 3 — Testar localmente
 
 ```
-Desktop → http://localhost:8765/index.html
-Mobile  → http://localhost:8765/mobile.html
-Celular → http://[SEU-IP]:8765/index.html  (ver seção 5)
+Desktop → http://localhost:8000/index.html
+Mobile  → http://localhost:8000/mobile.html
+Celular → http://[SEU-IP]:8000/index.html  (ver seção 5)
 ```
 
 - Fazer **hard refresh** (`Ctrl+Shift+R`) a cada alteração
@@ -207,14 +190,6 @@ Celular → http://[SEU-IP]:8765/index.html  (ver seção 5)
 - Testar as funcionalidades afetadas pela mudança
 
 ### Passo 4 — Publicar (só quando aprovado)
-
-Copiar os arquivos testados para `maz-dashboard` e fazer o commit:
-
-```powershell
-# Copiar para o repositório:
-copy "Ambiente de Teste_Dashboard\index.html"  maz-dashboard\index.html
-copy "Ambiente de Teste_Dashboard\mobile.html" maz-dashboard\mobile.html
-```
 
 ```bash
 # No terminal, dentro de maz-dashboard:
@@ -247,7 +222,7 @@ Adaptador de Rede Wi-Fi:
 ### Acessar no celular
 No browser do celular digitar:
 ```
-http://192.168.1.105:8765/index.html
+http://192.168.1.105:8000/index.html
 ```
 O redirect automático vai direcionar para `mobile.html`.
 
@@ -428,48 +403,4 @@ Localização: chips horizontais com classe `.resp-chip` exibidos entre as abas 
 **Lógica de filtragem mobile:**
 - Chip "Todos" ativo → mostra tudo (array vazio = sem filtro)
 - Chip de nome ativo → filtra eixos, grupos e marcos sem o responsável
-- Eixos sem match somem da lista (tanto no Gantt quanto no Status Report)
-
----
-
-## 8. Skills disponíveis no repositório
-
-O repo inclui duas skills em `.claude/` prontas para uso com **Claude Code**:
-
-### code_audit — Auditor de código
-
-Analisa o `git diff` e reporta problemas antes de subir para produção. Cobre segurança, arquitetura, qualidade de código, fluxo git e dependências externas.
-
-**É sugerida automaticamente** pelo Claude Code antes de commit/push e ao adicionar dependências. Sempre pergunta antes de rodar.
-
-**Como acionar manualmente (escrever em linguagem natural no Claude Code):**
-
-| O que digitar | O que faz |
-|---|---|
-| `"audita o que mudou"` | Analisa só o git diff atual — leve |
-| `"resumo do projeto"` | Lê o CLAUDE.md e resume o estado — leve |
-| `"auditoria completa"` | Lê todos os arquivos — pesado, usar com moderação |
-
-### doc-sync — Sincronização de documentação
-
-Compara o `index.html` atual com o snapshot anterior, identifica mudanças relevantes e atualiza os manuais (Manual, Onboarding, Guia Usuário, ONBOARDING.md). Roda via **Cowork** (não Claude Code), com a pasta `IDG - Relatórios de Análise` montada.
-
-Ver documentação completa em `.claude/doc_sync/SKILL.md`.
-
----
-
-## 9. Armadilhas técnicas conhecidas
-
-| Armadilha | Como evitar |
-|---|---|
-| Dashboard branco sem erro no console | Verificar: (a) null bytes no HTML, (b) palavra `function` ausente em declaração JS, (c) JS truncado sem `</script>`, (d) template literals aninhados |
-| Template literals aninhados | Nunca usar crase dentro de `${}` dentro de outro crase — `node --check` passa mas browser quebra |
-| JS truncado | Verificar se `</script>` existe no final do arquivo antes de editar |
-| Prioridade REQS | Usar APENAS coluna D (índice 3) — coluna B gera falsos positivos. Índices antigos (E/4) causavam KPIs zerados (corrigido commit 7662590) |
-| `node --check` no Node v22 | Não aceita `.html` — extrair bloco script para arquivo `.js` temporário |
-| Edit tool do Claude Code falha | Arquivo contém backticks JS (template literals). Usar PowerShell com `[System.IO.File]::ReadAllBytes` |
-| String não encontrada no Replace | Arquivo usa CRLF. Normalizar: `$content.Replace("\`r\`n", "\`n")` antes de substituir |
-
----
-
-*Guia atualizado em 25/Mai/2026 — v11.1 — Dashboard MAZ 2026 · IDG PMO*
+- Eixos sem match somem da lista (
