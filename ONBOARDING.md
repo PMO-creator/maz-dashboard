@@ -409,15 +409,27 @@ Localização: chips horizontais com classe `.resp-chip` exibidos entre as abas 
 
 ## 8. Skills disponíveis no repositório
 
-O repo inclui a skill `doc-sync` em `doc-sync/`, pronta para uso com **Cowork**:
+Cada skill vive na sua própria pasta na raiz do repo, com o bundle `.skill` junto.
 
-### doc-sync — Sincronização de documentação
+### doc-sync — Sincronização de documentação (Cowork)
 
 Compara o `index.html` atual com o snapshot anterior, identifica mudanças relevantes e atualiza automaticamente os manuais (Manual de Uso, Guia de Onboarding, Ficha Técnica, ONBOARDING.md). Roda via **Cowork** com a pasta `maz-dashboard` montada.
 
-**Como acionar:** digitar `doc-sync` ou `"atualizar docs"` no chat Cowork.
+**Como instalar:** abrir `doc-sync/doc-sync.skill` no Cowork e clicar em "Save skill".  
+**Como acionar:** digitar `doc-sync` ou `"atualizar docs"` no chat Cowork.  
+**Documentação completa:** `doc-sync/SKILL.md`
 
-Ver documentação completa em `doc-sync/SKILL.md`.
+### code-audit — Auditor de código (Claude Code)
+
+Analisa `index.html` e `mobile.html` completos em busca de problemas de segurança, arquitetura, qualidade de código, armadilhas JavaScript e dependências externas. Roda via **Claude Code** (terminal) com a pasta `maz-dashboard` aberta.
+
+**Como instalar:** abrir `code-audit/code-audit.skill` no Claude Code e instalar.
+
+| O que digitar | Modo |
+|---|---|
+| `"audita o que mudou"` | Só o `git diff` atual — rápido |
+| `"auditoria completa"` | Lê index.html + mobile.html inteiros |
+| `"audita o index"` / `"audita o mobile"` | Arquivo específico |
 
 ---
 
