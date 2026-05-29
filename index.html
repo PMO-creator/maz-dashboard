@@ -74,15 +74,15 @@
   /* KPI */
   .kpi-row{display:grid;grid-template-columns:260px 1fr;gap:var(--gap);margin-bottom:var(--gap);align-items:stretch}
   /* Hero card — Taxa de Execução */
-  .kpi-hero{background:var(--bg2);border-radius:var(--radius);padding:28px 24px;box-shadow:0 2px 12px rgba(0,0,0,.18);border-left:5px solid var(--accent);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-  .kpi-hero-label{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.65);margin-bottom:10px;font-weight:700}
-  .kpi-hero-value{font-size:72px;font-weight:800;line-height:1;color:var(--accent)}
-  .kpi-hero-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:10px;font-weight:500;letter-spacing:.4px}
+  .kpi-hero{background:#B4DA82;border-radius:var(--radius);padding:28px 24px;box-shadow:0 2px 12px rgba(0,0,0,.18);border-left:5px solid var(--accentD);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+  .kpi-hero-label{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:rgba(0,0,0,.55);margin-bottom:10px;font-weight:700}
+  .kpi-hero-value{font-size:48px;font-weight:800;line-height:1;color:var(--accent)}
+  .kpi-hero-sub{font-size:12px;color:rgba(0,0,0,.5);margin-top:10px;font-weight:500;letter-spacing:.4px}
   /* Mini grid — 6 status KPIs */
   .kpi-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:14px}
   .kpi-mini{background:var(--card);border-radius:var(--radius);padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid var(--accent)}
   .kpi-mini-label{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:5px;font-weight:700}
-  .kpi-mini-value{font-size:36px;font-weight:800;line-height:1}
+  .kpi-mini-value{font-size:24px;font-weight:800;line-height:1}
   .kpi-mini-count{font-size:12px;color:var(--muted);margin-top:4px;font-weight:500}
 
   /* CHARTS */
@@ -780,6 +780,32 @@ function renderKPIs(){
   });
   const pctMarcos=totalMarcos?Math.round(marcosCompletos/totalMarcos*100):0;
 
+  // Cor dinâmica do hero: compara pctMarcos com progresso esperado do cronograma
+  function _validProjDate(d){return d&&/^\d{4}-\d{2}-\d{2}/.test(d)&&d>='2025-01-01'&&d<='2026-12-31';}
+  const _projDates=[];
+  WBS.forEach(eixo=>eixo.children.forEach(grupo=>grupo.tasks.forEach(task=>{
+    if(task.status==='Definir datas')return;
+    if(_validProjDate(task.start))_projDates.push(task.start);
+    if(_validProjDate(task.end))_projDates.push(task.end);
+    (task.subtasks||[]).forEach(st=>{
+      if(st.status==='Definir datas')return;
+      if(_validProjDate(st.start))_projDates.push(st.start);
+      if(_validProjDate(st.end))_projDates.push(st.end);
+    });
+  })));
+  const _projStart=_projDates.length?_projDates.reduce((a,b)=>a<b?a:b):null;
+  const _projEnd=_projDates.length?_projDates.reduce((a,b)=>a>b?a:b):null;
+  let heroColor='#05C46B';
+  if(_projStart&&_projEnd&&_projStart<_projEnd){
+    const _now=new Date();const _s=new Date(_projStart);const _e=new Date(_projEnd);
+    const _totalMs=_e-_s;const _elapsedMs=Math.max(0,_now-_s);
+    const _expectedPct=Math.min(100,Math.round(_elapsedMs/_totalMs*100));
+    const _diff=pctMarcos-_expectedPct;
+    if(_diff>=0)heroColor='#05C46B';
+    else if(_diff>=-10)heroColor='#FBBF24';
+    else heroColor='#FF2525';
+  }
+
   // ── KPIs de tarefas (mini grid) ──
   const allTasks=[];
   WBS.forEach(eixo=>{
@@ -803,7 +829,7 @@ function renderKPIs(){
   document.getElementById('kpi-row').innerHTML=`
     <div class="kpi-hero">
       <div class="kpi-hero-label">Marcos Concluídos</div>
-      <div class="kpi-hero-value">${pctMarcos}%</div>
+      <div class="kpi-hero-value" style="color:${heroColor}">${pctMarcos}%</div>
       <div class="kpi-hero-sub">${marcosCompletos} de ${totalMarcos} marcos entregues</div>
     </div>
     <div class="kpi-mini-grid">
