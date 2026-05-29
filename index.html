@@ -462,14 +462,6 @@
         <label class="ms-option"><input type="checkbox" value="Cancelado/Congelado" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#000000"></span>Cancelado/Congelado</label>
       </div>
     </div>
-    <div class="ms-wrap" id="ms-group-wrap">
-      <button class="ms-btn" onclick="toggleMs('group');event.stopPropagation()">
-        <span class="ms-label-text" id="ms-group-label">Todos os eixos</span><span class="ms-arrow">▾</span>
-      </button>
-      <div class="ms-menu" id="ms-group-menu" style="min-width:280px">
-        <!-- populado por buildGroupFilter() -->
-      </div>
-    </div>
     <div class="ms-wrap" id="ms-resp-wrap">
       <button class="ms-btn" onclick="toggleMs('resp');event.stopPropagation()">
         <span class="ms-label-text" id="ms-resp-label">Todos os responsáveis</span><span class="ms-arrow">▾</span>
@@ -724,34 +716,7 @@ function hl(text,term){
 }
 
 // ── EAP FUNCTIONS ────────────────────────────────────────────────────────────
-function buildGroupFilter(){
-  const menu=document.getElementById('ms-group-menu');
-  if(!menu)return;
-  // "Todos" no topo
-  const allLbl=document.createElement('label');
-  allLbl.className='ms-option ms-all-opt';
-  const allInp=document.createElement('input');
-  allInp.type='checkbox';allInp.id='ms-group-chk-all';allInp.checked=true;
-  allInp.onchange=function(){onMsAll('group',this);};
-  const allTxt=document.createElement('span');
-  allTxt.textContent='Todos';allTxt.style.cssText='font-weight:700;font-style:italic;color:#8AC43A';
-  allLbl.appendChild(allInp);allLbl.appendChild(allTxt);
-  menu.appendChild(allLbl);
-  const hr=document.createElement('hr');hr.className='ms-divider';menu.appendChild(hr);
-  // Eixos
-  WBS.forEach(g=>{
-    const label=document.createElement('label');
-    label.className='ms-option';
-    const inp=document.createElement('input');
-    inp.type='checkbox';inp.value=g.id;inp.checked=true;
-    inp.onchange=()=>onMsChange('group');
-    const dot=document.createElement('span');
-    dot.className='ms-dot';dot.style.background=sc(g.status||'Em andamento');
-    label.appendChild(inp);label.appendChild(dot);
-    label.appendChild(document.createTextNode(g.id+'. '+g.name.substring(0,35)));
-    menu.appendChild(label);
-  });
-}
+
 function buildRespFilter(){
   const menu=document.getElementById('ms-resp-menu');
   if(!menu)return;
@@ -912,15 +877,12 @@ function getFilters(){
   const _stAll=[...document.querySelectorAll('#ms-status-menu input:not([id$="-chk-all"])')];
   const _stChk=_stAll.filter(el=>el.checked).map(el=>el.value);
   const statusChecked=(_stChk.length===_stAll.length||_stChk.length===0)?[]:_stChk;
-  const _grAll=[...document.querySelectorAll('#ms-group-menu input:not([id$="-chk-all"])')];
-  const _grChk=_grAll.filter(el=>el.checked).map(el=>el.value);
-  const groupChecked=(_grChk.length===_grAll.length||_grChk.length===0)?[]:_grChk;
+
   const _rpAll=[...document.querySelectorAll('#ms-resp-menu input:not([id$="-chk-all"])')];
   const _rpChk=_rpAll.filter(el=>el.checked).map(el=>el.value);
   const respChecked=(_rpChk.length===_rpAll.length||_rpChk.length===0)?[]:_rpChk;
   return{
     status:statusChecked,
-    group:groupChecked,
     resp:respChecked,
     search:(document.getElementById('searchInput').value||'').trim().toLowerCase(),
     dateStart:document.getElementById('filter-date-start').value||'',
@@ -944,7 +906,6 @@ function dateInRange(m, ds, de){
 }
 
 function matchesFilter(g, m, f){
-  const gr = f.group.length===0 || f.group.includes(g.id);
   const q  = f.search;
   const tx = !q || g.name.toLowerCase().includes(q) ||
     (m ? (m.name.toLowerCase().includes(q)||(m.resp&&m.resp.toLowerCase().includes(q))) : g.children.some(c=>c.name.toLowerCase().includes(q)||(c.resp&&c.resp.toLowerCase().includes(q))));
@@ -959,7 +920,7 @@ function matchesFilter(g, m, f){
   if(f.status.length===0){ st=true; }
   else if(m){ st=(m.tasks&&m.tasks.length)?m.tasks.some(marcoPass):stOk(m.status); }
   else { st=g.children.some(c=>(c.tasks&&c.tasks.length)?c.tasks.some(marcoPass):stOk(c.status)); }
-  return st && gr && tx && dt;
+  return st && tx && dt;
 }
 
 function abrevNome(n){
@@ -1082,9 +1043,8 @@ function renderTree(){
   WBS.forEach((g,gi)=>{
     let vis=g.children.filter(m=>matchesFilter(g,m,f));
     if(f.resp.length>0) vis=vis.filter(m=>grupoHasResp(m,f.resp));
-    const hasFilter=f.status.length>0||f.group.length>0||f.resp.length>0||f.search||f.dateStart||f.dateEnd;
+    const hasFilter=f.status.length>0||f.resp.length>0||f.search||f.dateStart||f.dateEnd;
     if(vis.length===0 && hasFilter) return;
-    // eixo filter now handled by matchesFilter()
     vg++;vm+=vis.length;
     const isOpen=groupOpen[gi];
     const color=sc(g.status);
@@ -1140,7 +1100,7 @@ function renderTree(){
   document.getElementById('no-results').style.display=html?'none':'block';
   const rb=document.getElementById('root-badge');if(rb)rb.textContent=`${vg} eixos · ${vm} grupos`;
 
-  const hasFilter=f.status.length>0||f.group.length>0||f.resp.length>0||f.search||f.dateStart||f.dateEnd;
+  const hasFilter=f.status.length>0||f.resp.length>0||f.search||f.dateStart||f.dateEnd;
   document.getElementById('visible-count').textContent=hasFilter?`Filtrado: ${vg} eixos · ${vm} grupos`:'Exibindo todos — 9 eixos · 48 grupos';
   const badge=document.getElementById('search-badge');
   if(badge)badge.textContent=hasFilter?`${vm} grupo${vm!==1?'s':''} encontrado${vm!==1?'s':''}`:'Todos os itens';
@@ -1227,9 +1187,7 @@ function resetAllFilters(){
   // Marcar todos os status como checked
   document.querySelectorAll('#ms-status-menu input').forEach(el=>el.checked=true);
   onMsChange('status');
-  // Marcar todos os eixos como checked
-  document.querySelectorAll('#ms-group-menu input').forEach(el=>el.checked=true);
-  onMsChange('group');
+
   // Marcar todos os responsáveis como checked
   document.querySelectorAll('#ms-resp-menu input').forEach(el=>el.checked=true);
   onMsChange('resp');
@@ -1276,11 +1234,10 @@ function applyFilter(){
     WBS.forEach((e,gi)=>{
       const card=document.getElementById('gantt-card-'+gi);
       if(!card)return;
-      const eixoOut=f.group.length>0&&!f.group.includes(e.id);
       const hasVisible=f.status.length===0||(e.children||[]).some(g=>(g.tasks||[]).some(t=>f.status.includes(t.status||'A iniciar')));
       const respOut=f.resp.length>0&&!(e.children||[]).some(m=>grupoHasResp(m,f.resp));
-      card.style.display=(eixoOut||!hasVisible||respOut)?'none':'';
-      if(ganttOpen[gi]&&!eixoOut&&hasVisible&&!respOut)renderGanttForEixo(gi);
+      card.style.display=(!hasVisible||respOut)?'none':'';
+      if(ganttOpen[gi]&&hasVisible&&!respOut)renderGanttForEixo(gi);
     });
   }
   updateFilterChip();
@@ -2029,7 +1986,7 @@ function _updateMsLabel(id){
   const lbl=document.getElementById('ms-'+id+'-label');
   if(checked.length===0||checked.length===items.length){
     if(id==='resp'&&checked.length===0){lbl.textContent='Nenhum selecionado';}
-    else{lbl.textContent=id==='status'?'Todos os status':id==='resp'?'Todos os responsáveis':'Todos os eixos';}
+    else{lbl.textContent=id==='status'?'Todos os status':'Todos os responsáveis';}
     // Sync "Todos" checkbox
     const allChk=document.getElementById('ms-'+id+'-chk-all');
     if(allChk){allChk.checked=checked.length===items.length&&items.length>0;allChk.indeterminate=false;}
@@ -2288,7 +2245,7 @@ async function loadSheetsData() {
     if(hDate) hDate.textContent=`Referência: ${dateLabel} · Exposição de Longa Duração`;
     if(weekLabel){const ws=document.querySelector('[data-semana]');if(ws)ws.setAttribute('data-semana',weekLabel);}
     preprocessStatuses();
-    buildGroupFilter();buildRespFilter();buildLegend();renderKPIs();renderTree();
+    buildRespFilter();buildLegend();renderKPIs();renderTree();
     buildReqFilters();renderReqKPIs();renderReqs();
     ganttOpen=new Array(WBS.length).fill(false);
     ganttGroupExpanded={};ganttMarcoExpanded={};
