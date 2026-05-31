@@ -414,6 +414,7 @@
   
   .marco-band{display:flex;align-items:center;gap:10px;padding:12px 18px 12px 0;background:#F5FAF0;border-left:5px solid;flex-wrap:wrap;margin:12px 14px 0 20px;border-radius:8px 8px 0 0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
   .n2-check{width:16px;height:16px;flex-shrink:0;cursor:pointer;accent-color:#B8E85C;margin-left:auto}
+  .n2-check:disabled{opacity:.25;cursor:not-allowed;pointer-events:none}
   .n2-selected{outline:2px solid #B8E85C !important;outline-offset:-2px;}
   .n2-badge{display:none;align-items:center;padding:3px 10px;border-radius:5px;font-size:18px;font-weight:800;background:#1C2C0A;color:#B8E85C;border:1px solid #B8E85C;margin-left:8px;flex-shrink:0;letter-spacing:.5px}
   .mb-status{font-size:16px;font-weight:800;letter-spacing:.5px;padding:4px 11px;border-radius:4px;color:#FFF;white-space:nowrap;flex-shrink:0;margin-left:16px}
@@ -616,6 +617,8 @@
   </div><!-- /tab-eap -->
 <button id="n2-fab" onclick="toggleN2Filter()" style="display:none;position:fixed;bottom:82px;right:28px;z-index:1000;padding:11px 20px;border:none;border-radius:21px;font-size:16px;font-weight:700;cursor:pointer;background:#3D6218;color:#B8E85C;box-shadow:0 4px 16px rgba(0,0,0,.3);align-items:center;gap:8px">📋 Pauta N2 · 0</button>
 <button id="n2-clear-fab" onclick="clearN2Selection()" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
+<button id="n2-publish-fab" onclick="publishN2Pauta()" style="display:none;position:fixed;bottom:140px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#1A3A8A;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📤 Publicar pauta</button>
+<button id="n2-lock-fab" onclick="unlockN2Edit()" title="Desbloquear edição" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1001;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#5C3A8A;color:white;box-shadow:0 4px 12px rgba(0,0,0,.3)">🔓 Desbloquear</button>
 
   <div id="tab-reqs" class="tab-panel">
   <div class="req-card">
@@ -776,6 +779,7 @@ function hideConnErr(){const b=document.getElementById('conn-err-banner');if(b)b
 function retrySheets(){hideConnErr();showLoading();_isInitialLoad=true;loadSheetsData();}
 
 window.onload=function(){
+  initN2FromURL();
   const hdr=document.querySelector('.header');
   if(hdr) document.documentElement.style.setProperty('--header-h',hdr.offsetHeight+'px');
   showLoading();
@@ -794,6 +798,10 @@ function switchTab(name){
   var n2cfab=document.getElementById('n2-clear-fab');
   if(n2fab)n2fab.style.display=(name==='eap')?'flex':'none';
   if(n2cfab)n2cfab.style.display='none';
+  var n2pfab=document.getElementById('n2-publish-fab');
+  var n2lfab=document.getElementById('n2-lock-fab');
+  if(n2pfab)n2pfab.style.display='none';
+  if(n2lfab)n2lfab.style.display='none';
   var _bfoco=document.getElementById('btn-foco');
   if(_bfoco)_bfoco.style.display=(name==='eap')?'':'none';
   if(name==='eap'){updateN2Fab();}
@@ -1054,6 +1062,7 @@ function abrevNome(n){
 
 
 // ── PAUTA N2 ─────────────────────────────────────────────────────────────────
+  var _n2ViewMode=false;var _n2Unlocked=false;
   var n2FilterActive=false;
   function getN2Key(){return 'n2_pauta_'+new Date().getFullYear()+'-W'+String(getISOWeek(new Date())).padStart(2,'0');}
   function loadN2(){
@@ -1066,6 +1075,7 @@ function abrevNome(n){
   function n2Id(gi,mi,ti){return gi+':'+mi+':'+ti;}
   function toggleN2Marco(gi,mi,ti,ev){
     if(ev)ev.stopPropagation();
+    if(_n2ViewMode&&!_n2Unlocked)return;
     var arr=loadN2(),id=n2Id(gi,mi,ti),idx=arr.indexOf(id);
     if(idx===-1){arr.push(id);}else{arr.splice(idx,1);}
     saveN2(arr);
@@ -1081,11 +1091,16 @@ function abrevNome(n){
     var arr=loadN2(),fab=document.getElementById('n2-fab');
     if(!fab)return;
     var n=arr.length;
+    var locked=_n2ViewMode&&!_n2Unlocked;
     if(n2FilterActive){fab.textContent='✕ Ver todos · '+n;fab.style.background='#1A3A8A';fab.style.color='white';}
-    else{fab.textContent='📋 Pauta N2 · '+n;fab.style.background='#3D6218';fab.style.color='#B8E85C';}
-    var cfab=document.getElementById('n2-clear-fab');
+    else{fab.textContent='📋 Pauta N2 · '+n;fab.style.background=locked?'#5C3A8A':'#3D6218';fab.style.color='#B8E85C';}
     var onEap=document.getElementById('tab-eap')&&document.getElementById('tab-eap').classList.contains('active');
-    if(cfab)cfab.style.display=(n>0&&onEap)?'flex':'none';
+    var cfab=document.getElementById('n2-clear-fab');
+    var pfab=document.getElementById('n2-publish-fab');
+    var lfab=document.getElementById('n2-lock-fab');
+    if(cfab)cfab.style.display=(n>0&&onEap&&!locked)?'flex':'none';
+    if(pfab)pfab.style.display=(n>0&&onEap&&!locked)?'flex':'none';
+    if(lfab)lfab.style.display=(_n2ViewMode&&!_n2Unlocked&&onEap)?'flex':'none';
   }
   function clearN2Selection(){
     saveN2([]);n2FilterActive=false;
@@ -1112,6 +1127,76 @@ function abrevNome(n){
     }else{applyN2Filter();}
     updateN2Fab();
   }
+  function _n2Hash(s){
+    var h=0;for(var i=0;i<s.length;i++){h=Math.imul(31,h)+s.charCodeAt(i)|0;}
+    return Math.abs(h).toString(36);
+  }
+  function initN2FromURL(){
+    var p=new URLSearchParams(window.location.search);
+    var n2p=p.get('n2');
+    if(n2p===null)return;
+    _n2ViewMode=true;_n2Unlocked=false;
+    var ids=n2p?n2p.split(',').filter(Boolean):[];
+    saveN2(ids);
+  }
+  function _showN2Modal(url){
+    var overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.setAttribute('data-n2modal','1');
+    var box=document.createElement('div');
+    box.style.cssText='background:#1E2E0D;border:1.5px solid #4A7A1E;border-radius:14px;padding:16px 16px 12px;width:100%;max-width:314px;box-shadow:0 8px 40px rgba(0,0,0,.6)';
+    var title=document.createElement('div');
+    title.style.cssText='font-size:20px;font-weight:800;color:#B8E85C;margin-bottom:12px';
+    title.textContent='\u{1F4E4} Pauta N2 publicada!';
+    var desc=document.createElement('div');
+    desc.style.cssText='font-size:15px;color:#94A3B8;margin-bottom:22px;line-height:1.4';
+    desc.textContent='Compartilhe este link com a gerente. Quem abrir verá apenas a visualização travada.';
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;gap:10px;align-items:center';
+    var inp=document.createElement('input');
+    inp.readOnly=true;
+    inp.value=url;
+    inp.style.cssText='flex:1;background:#111;border:1px solid #3D6218;border-radius:8px;padding:12px 14px;color:#E2E8F0;font-size:14px;font-family:monospace;outline:none;min-width:0';
+    var copyBtn=document.createElement('button');
+    copyBtn.textContent='Copiar';
+    copyBtn.style.cssText='background:#3D6218;color:#B8E85C;border:none;border-radius:8px;padding:12px 24px;font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s';
+    copyBtn.onclick=function(){
+      inp.select();inp.setSelectionRange(0,99999);
+      function showCopied(){copyBtn.textContent='✓ Copiado';copyBtn.style.background='#16A34A';setTimeout(function(){copyBtn.textContent='Copiar';copyBtn.style.background='#3D6218';},2000);}
+      if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(inp.value).then(showCopied).catch(function(){try{document.execCommand('copy');}catch(ex){}showCopied();});}
+      else{try{document.execCommand('copy');}catch(ex){}showCopied();}
+    };
+    row.appendChild(inp);row.appendChild(copyBtn);
+    var foot=document.createElement('div');
+    foot.style.cssText='text-align:right;margin-top:20px';
+    var closeBtn=document.createElement('button');
+    closeBtn.textContent='Fechar';
+    closeBtn.style.cssText='background:transparent;border:1px solid #4A7A1E;color:#94A3B8;border-radius:8px;padding:10px 24px;font-size:15px;cursor:pointer';
+    closeBtn.onclick=function(){document.body.removeChild(overlay);};
+    foot.appendChild(closeBtn);
+    box.appendChild(title);box.appendChild(desc);box.appendChild(row);box.appendChild(foot);
+    overlay.appendChild(box);
+    overlay.addEventListener('click',function(e){if(e.target===overlay)document.body.removeChild(overlay);});
+    document.body.appendChild(overlay);
+  }
+  function publishN2Pauta(){
+    var arr=loadN2();
+    if(!arr.length){alert('Nenhum marco selecionado para publicar.');return;}
+    var pin=window.prompt('🔐 Digite o PIN para publicar a pauta:');
+    if(!pin)return;
+    var _base='https://pmo-creator.github.io/maz-dashboard/index.html';
+    var url=_base+'?n2='+arr.join(',')+'&ph='+_n2Hash(pin);
+    _showN2Modal(url);
+  }
+  function unlockN2Edit(){
+    var ph=new URLSearchParams(window.location.search).get('ph')||'';
+    var pin=window.prompt('🔓 Digite o PIN para editar a pauta:');
+    if(!pin)return;
+    if(ph&&_n2Hash(pin)!==ph){alert('PIN incorreto.');return;}
+    _n2Unlocked=true;
+    document.querySelectorAll('.n2-check').forEach(function(cb){cb.disabled=false;});
+    updateN2Fab();
+  }
   function initN2Checkboxes(){
     var arr=loadN2();
     arr.forEach(function(id){
@@ -1119,6 +1204,9 @@ function abrevNome(n){
       var gi=parseInt(p[0]),mi=parseInt(p[1]),ti=parseInt(p[2]);
       var cb=document.getElementById('n2c-'+gi+'-'+mi+'-'+ti);
       if(cb){cb.checked=true;var band=document.getElementById('mband-'+gi+'-'+mi+'-'+ti);if(band)band.classList.add('n2-selected');var badge=document.getElementById('n2badge-'+gi+'-'+mi+'-'+ti);if(badge)badge.style.display='inline-flex';}
+    });
+    document.querySelectorAll('.n2-check').forEach(function(cb){
+      cb.disabled=_n2ViewMode&&!_n2Unlocked;
     });
     updateN2Fab();
   }
@@ -1204,7 +1292,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
       html += `<input type="checkbox" class="n2-check" id="n2c-${gi}-${mi}-${ti}" onclick="toggleN2Marco(${gi},${mi},${ti},event)">`;
       html += `<span class="mb-status" style="background:${mc}">${sl_}</span>`;
       html += `<span class="marco-name">${escH(t.tarefa||'')}</span>`;
-      html += `<span class="n2-badge" id="n2badge-${gi}-${mi}-${ti}">N2</span>`;
+      html += `<span class="n2-badge" id="n2badge-${gi}-${mi}-${ti}" style="display:none">N2</span>`;
       if(dateStr) html += `<span class="mb-date">\uD83D\uDCC5 ${dateStr}</span>`;
       if(t.resp)  html += `<span class="mb-resp">\uD83D\uDC64 ${escH(abrevNome(t.resp))}</span>`;
       html += `</div>`;
