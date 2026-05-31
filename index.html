@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EAP – MAZ 2026 | Dashboard Interativo</title>
 <script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||window.innerWidth<=768){location.replace('mobile.html');}</script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/svg2pdf.js@2.2.3/dist/svg2pdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
 <style>
   :root{
@@ -659,11 +661,56 @@
         </div>
       </div>
       <button class="btn-collapse" onclick="collapseAllAreas()">▲ Recolher Tudo</button>
+    <button id="pdf-export-btn" onclick="openExportPDFWizard()" style="padding:8px 16px;background:#1A3A8A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-left:8px">&#128196; Exportar PDF</button>
     </div>
   </div>
   <div style="padding:0 18px 18px"><div id="areas-sections"></div></div>
   </div><!-- /tab-areas -->
 </div>
+<div id="pdf-export-modal" style="display:none;position:fixed;inset:0;background:rgba(15,28,5,0.88);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#2F4A18;border:1px solid rgba(138,196,58,0.35);border-radius:14px;padding:28px 32px;min-width:500px;max-width:620px;box-shadow:0 24px 64px rgba(0,0,0,0.55);max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <h2 id="pdf-wiz-title" style="margin:0;font-size:18px;color:#8AB870;font-weight:700;letter-spacing:.3px">Exportar PDF &#8212; Passo 1 de 4</h2>
+      <button onclick="closePDFWizard()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:#8AB870;line-height:1;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div id="pdf-step-1">
+      <p style="color:#8AB870;margin:0 0 12px;font-size:14px;font-weight:600">Selecione a &#225;rea:</p>
+      <div id="pdf-area-list" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:320px;overflow-y:auto"></div>
+    </div>
+    <div id="pdf-step-2" style="display:none">
+      <p style="color:#8AB870;margin:0 0 14px;font-size:14px;font-weight:600">Per&#237;odo do Gantt:</p>
+      <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+        <label style="font-size:14px;color:#C8E09A">De:&nbsp;<input type="date" id="pdf-fds" style="padding:7px 10px;border:1px solid rgba(138,196,58,0.45);border-radius:7px;font-size:14px;background:#1E2E0D;color:#D1E8B0;outline:none"></label>
+        <label style="font-size:14px;color:#C8E09A">At&#233;:&nbsp;<input type="date" id="pdf-fde" style="padding:7px 10px;border:1px solid rgba(138,196,58,0.45);border-radius:7px;font-size:14px;background:#1E2E0D;color:#D1E8B0;outline:none"></label>
+      </div>
+      <div style="display:flex;gap:24px">
+        <label style="font-size:14px;color:#C8E09A;cursor:pointer;display:flex;align-items:center;gap:7px"><input type="radio" name="pdf-view" value="monthly" style="accent-color:#8AC43A;width:16px;height:16px">Mensal</label>
+        <label style="font-size:14px;color:#C8E09A;cursor:pointer;display:flex;align-items:center;gap:7px"><input type="radio" name="pdf-view" value="weekly" style="accent-color:#8AC43A;width:16px;height:16px">Semanal</label>
+      </div>
+    </div>
+    <div id="pdf-step-3" style="display:none">
+      <p style="color:#8AB870;margin:0 0 14px;font-size:14px;font-weight:600">Tamanho e orienta&#231;&#227;o:</p>
+      <div style="display:flex;gap:24px;margin-bottom:16px">
+        <label style="font-size:14px;color:#C8E09A;cursor:pointer;display:flex;align-items:center;gap:7px"><input type="radio" name="pdf-fmt" value="a3" style="accent-color:#8AC43A;width:16px;height:16px">A3</label>
+        <label style="font-size:14px;color:#C8E09A;cursor:pointer;display:flex;align-items:center;gap:7px"><input type="radio" name="pdf-fmt" value="a4" style="accent-color:#8AC43A;width:16px;height:16px">A4</label>
+      </div>
+      <div style="display:flex;gap:24px">
+        <label style="font-size:14px;color:#C8E09A;cursor:pointer;display:flex;align-items:center;gap:7px"><input type="radio" name="pdf-orient" value="landscape" style="accent-color:#8AC43A;width:16px;height:16px">Paisagem (Landscape)</label>
+        <label style="font-size:14px;color:#C8E09A;cursor:pointer;display:flex;align-items:center;gap:7px"><input type="radio" name="pdf-orient" value="portrait" style="accent-color:#8AC43A;width:16px;height:16px">Retrato (Portrait)</label>
+      </div>
+    </div>
+    <div id="pdf-step-4" style="display:none">
+      <p style="color:#8AB870;margin:0 0 10px;font-size:14px;font-weight:600">Confirme os par&#226;metros:</p>
+      <div id="pdf-confirm-txt" style="background:#1E2E0D;border:1px solid rgba(138,196,58,0.3);border-radius:8px;padding:14px 16px;font-size:14px;color:#C8E09A;line-height:1.9"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:18px;border-top:1px solid rgba(138,196,58,0.15)">
+      <button id="pdf-btn-back" onclick="pdfWizBack()" style="display:none;padding:9px 22px;border:1px solid rgba(138,196,58,0.5);border-radius:8px;cursor:pointer;background:transparent;color:#8AB870;font-size:14px;font-weight:600;transition:all .2s">&#8592; Voltar</button>
+      <div></div>
+      <button id="pdf-btn-next" onclick="pdfWizNext()" style="padding:10px 30px;background:#8AC43A;color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;transition:all .2s">Pr&#243;ximo &#8594;</button>
+    </div>
+  </div>
+</div>
+
 
 <div class="footer">
   EAP – Estrutura Analítica de Projeto · IDG PMO · MAZ 2026 · Atualizado em 05/Mai/2026 · Dados: MAZ_CRONOGRAMA_2026_05Maio.xlsx
@@ -3090,5 +3137,325 @@ function renderAreaGantt(ai){
   wrap.addEventListener('mouseout',function(e){
     if(e.target.getAttribute('data-tipkey'))hideAreasTooltip();
   });
+}
+
+// ── EXPORT PDF ──────────────────────────────────────────────
+var _pdfW={step:1,ai:-1,fDS:'',fDE:'',view:'monthly',fmt:'a3',orient:'landscape'};
+
+function openExportPDFWizard(){
+  var _jsPDF=(window.jspdf&&window.jspdf.jsPDF)?window.jspdf.jsPDF:(window.jsPDF||null);
+  var _s2p=(window.svg2pdf&&typeof window.svg2pdf==='function')?window.svg2pdf
+    :(window.svg2pdf&&typeof window.svg2pdf.svg2pdf==='function')?window.svg2pdf.svg2pdf:null;
+  if(!_jsPDF||!_s2p){alert('Bibliotecas PDF nao carregadas. Recarregue a pagina.');return;}
+  _pdfW.step=1;_pdfW.ai=-1;
+  var fs=_getAreasFS();
+  _pdfW.fDS=fs.fDS||'';_pdfW.fDE=fs.fDE||'';
+  _pdfW.view=(typeof areasGanttMode!=='undefined'?areasGanttMode:'monthly');
+  var listEl=document.getElementById('pdf-area-list');
+  listEl.innerHTML='';
+  AREAS_DEF.forEach(function(a,i){
+    var btn=document.createElement('button');
+    btn.textContent=a.name;
+    btn.style.cssText='padding:10px 12px;border:2px solid rgba(138,196,58,0.3);border-radius:8px;cursor:pointer;background:#1E2E0D;color:#C8E09A;font-size:13px;text-align:left;width:100%;transition:all .15s';
+    btn.onclick=(function(idx,b){return function(){
+      listEl.querySelectorAll('button').forEach(function(x){x.style.borderColor='rgba(138,196,58,0.3)';x.style.background='#1E2E0D';x.style.color='#C8E09A';});
+      b.style.borderColor='#8AC43A';b.style.background='rgba(138,196,58,0.18)';b.style.color='#8AC43A';
+      _pdfW.ai=idx;
+    };})(i,btn);
+    listEl.appendChild(btn);
+  });
+  _pdfWizShow();
+  document.getElementById('pdf-export-modal').style.display='flex';
+}
+
+function _pdfWizShow(){
+  var s=_pdfW.step;
+  [1,2,3,4].forEach(function(n){
+    var el=document.getElementById('pdf-step-'+n);
+    if(el)el.style.display=(n===s?'block':'none');
+  });
+  var title=document.getElementById('pdf-wiz-title');
+  if(title)title.textContent='Exportar PDF — Passo '+s+' de 4';
+  var back=document.getElementById('pdf-btn-back');
+  if(back)back.style.display=(s>1?'inline-block':'none');
+  var nxt=document.getElementById('pdf-btn-next');
+  if(nxt){nxt.textContent=s===4?'Gerar PDF ↓':'Próximo →';nxt.style.background=s===4?'#6BA030':'#8AC43A';nxt.style.color='#000';}
+  if(s===2){
+    var fds=document.getElementById('pdf-fds');if(fds&&_pdfW.fDS)fds.value=_pdfW.fDS;
+    var fde=document.getElementById('pdf-fde');if(fde&&_pdfW.fDE)fde.value=_pdfW.fDE;
+    document.querySelectorAll('input[name="pdf-view"]').forEach(function(r){r.checked=(r.value===_pdfW.view);});
+  }
+  if(s===3){
+    document.querySelectorAll('input[name="pdf-fmt"]').forEach(function(r){r.checked=(r.value===_pdfW.fmt);});
+    document.querySelectorAll('input[name="pdf-orient"]').forEach(function(r){r.checked=(r.value===_pdfW.orient);});
+  }
+  if(s===4){
+    var aName=(AREAS_DEF[_pdfW.ai]||{}).name||'?';
+    var periodoStr=(_pdfW.fDS&&_pdfW.fDE)?(_pdfW.fDS+' a '+_pdfW.fDE):'Todo o período';
+    var ctxt=document.getElementById('pdf-confirm-txt');
+    if(ctxt)ctxt.innerHTML='<b>Área:</b> '+aName+'<br>'
+      +'<b>Período:</b> '+periodoStr+'<br>'
+      +'<b>Modo:</b> '+(_pdfW.view==='weekly'?'Semanal':'Mensal')+'<br>'
+      +'<b>Formato:</b> '+_pdfW.fmt.toUpperCase()+' '+(_pdfW.orient==='landscape'?'Paisagem':'Retrato');
+  }
+}
+
+function pdfWizNext(){
+  var s=_pdfW.step;
+  if(s===1){if(_pdfW.ai<0){alert('Selecione uma área.');return;}_pdfW.step=2;_pdfWizShow();return;}
+  if(s===2){
+    var fds2=document.getElementById('pdf-fds');_pdfW.fDS=fds2?fds2.value:'';
+    var fde2=document.getElementById('pdf-fde');_pdfW.fDE=fde2?fde2.value:'';
+    var vr=document.querySelector('input[name="pdf-view"]:checked');_pdfW.view=vr?vr.value:'monthly';
+    if(_pdfW.fDS&&!_pdfW.fDE){
+      var _autoEnd=new Date(_pdfW.fDS);_autoEnd.setDate(_autoEnd.getDate()+30);
+      var _ceMax=new Date('2027-06-30');
+      if(+_autoEnd>+_ceMax)_autoEnd=_ceMax;
+      _pdfW.fDE=_autoEnd.toISOString().slice(0,10);
+      if(fde2)fde2.value=_pdfW.fDE;
+    }
+    if(!_pdfW.fDS&&_pdfW.fDE){
+      var _autoSt=new Date(_pdfW.fDE);_autoSt.setDate(_autoSt.getDate()-30);
+      var _csMin=new Date('2026-01-01');
+      if(+_autoSt<+_csMin)_autoSt=_csMin;
+      _pdfW.fDS=_autoSt.toISOString().slice(0,10);
+      if(fds2)fds2.value=_pdfW.fDS;
+    }
+    _pdfW.step=3;_pdfWizShow();return;
+  }
+  if(s===3){
+    var fr=document.querySelector('input[name="pdf-fmt"]:checked');_pdfW.fmt=fr?fr.value:'a3';
+    var ori=document.querySelector('input[name="pdf-orient"]:checked');_pdfW.orient=ori?ori.value:'landscape';
+    _pdfW.step=4;_pdfWizShow();return;
+  }
+  if(s===4){_runExportPDF();return;}
+}
+
+function pdfWizBack(){if(_pdfW.step>1){_pdfW.step--;_pdfWizShow();}}
+
+function closePDFWizard(){
+  var m=document.getElementById('pdf-export-modal');if(m)m.style.display='none';
+}
+
+async function _runExportPDF(){
+  var btn=document.getElementById('pdf-btn-next');
+  if(btn){btn.textContent='Gerando…';btn.disabled=true;}
+  try{
+    var svgStr=_buildGanttSVGForExport(_pdfW.ai,_pdfW.fDS,_pdfW.fDE,_pdfW.view);
+    if(!svgStr){alert('Nenhuma tarefa no período selecionado.');return;}
+    var tmp=document.createElement('div');
+    tmp.style.cssText='position:absolute;left:-19999px;top:-19999px;visibility:hidden;overflow:hidden';
+    tmp.innerHTML=svgStr;
+    document.body.appendChild(tmp);
+    var svgEl=tmp.querySelector('svg');
+    var _jsPDF=(window.jspdf&&window.jspdf.jsPDF)?window.jspdf.jsPDF:(window.jsPDF||null);
+    var _s2p=(window.svg2pdf&&typeof window.svg2pdf==='function')?window.svg2pdf
+      :(window.svg2pdf&&typeof window.svg2pdf.svg2pdf==='function')?window.svg2pdf.svg2pdf:null;
+    var pdf=new _jsPDF({orientation:_pdfW.orient,unit:'mm',format:_pdfW.fmt});
+    var pgW=pdf.internal.pageSize.getWidth(),pgH=pdf.internal.pageSize.getHeight();
+    var vbW=+(svgEl.getAttribute('width')||5000),vbH=+(svgEl.getAttribute('height')||500);
+    var scale=Math.min(pgW/vbW,pgH/vbH);
+    var drawW=vbW*scale,drawH=vbH*scale;
+    var offX=(pgW-drawW)/2,offY=(pgH-drawH)/2;
+    await _s2p(svgEl,pdf,{x:offX,y:offY,width:drawW,height:drawH});
+    document.body.removeChild(tmp);
+    var aName=(AREAS_DEF[_pdfW.ai]||{}).name||'area';
+    var fname='Gantt_'+aName.replace(/\s+/g,'_').replace(/[^\w]/g,'')+'_'+(_pdfW.fDS||'completo')+'.pdf';
+    pdf.save(fname);
+    closePDFWizard();
+  }catch(e){
+    alert('Erro ao gerar PDF: '+e.message);
+    console.error(e);
+  }finally{
+    if(btn){btn.textContent='Gerar PDF ↓';btn.disabled=false;}
+  }
+}
+
+function _buildGanttSVGForExport(ai,fDS,fDE,viewMode){
+  var area=AREAS_DATA[ai];
+  if(!area)return null;
+  var rows=[];
+  area.marcos.forEach(function(m,mi){
+    var vs=m.subtasks.filter(function(t){return _areasInRange(t.start,t.end,fDS,fDE);});
+    if(!vs.length)return;
+    rows.push({type:'marco',data:m,mi:mi,visSubs:vs});
+    vs.forEach(function(t){rows.push({type:'tarefa',data:t,mi:mi});});
+  });
+  if(!rows.length)return null;
+  var isW=(viewMode==='weekly');
+  var LW=500,TW=4500;
+  var CS=new Date('2026-01-01'),CE=new Date('2027-06-30');
+  var MRH=62,TRH=46;
+  var HY=20,HM=28,HW=44;
+  var HH=HY+HM+HW;
+  var _rS0=fDS?new Date(fDS):CS,_rE0=fDE?new Date(fDE):CE;
+  var _dur=+_rE0-+_rS0,_buf=_dur*0.1;
+  var renderStart=new Date(Math.max(+CS,+_rS0-_buf)),renderEnd=new Date(Math.min(+CE,+_rE0+_buf));
+  var TOTMS=+renderEnd-+renderStart;
+  var LINE_H=20,TASK_PAD=16;
+  var rowHeights=rows.map(function(row){
+    if(row.type==='marco')return MRH;
+    var wds=(row.data.tarefa||'').split(' ');
+    var ls=[],cur='';
+    wds.forEach(function(w){
+      if((cur+' '+w).trim().length<=60){cur=(cur+' '+w).trim();}
+      else{if(cur)ls.push(cur);cur=w;}
+    });
+    if(cur)ls.push(cur);
+    if(!ls.length)ls=[''];
+    var hasS2=row.data.sharedAreas&&row.data.sharedAreas.length>0;
+    return Math.max(TRH,ls.length*LINE_H+(hasS2?LINE_H+6:0)+TASK_PAD);
+  });
+  var H=HH+rowHeights.reduce(function(s,h){return s+h;},0)+4;
+  function px(d){return Math.max(0,Math.min(TW,(+d-+renderStart)/TOTMS*TW));}
+  var MN=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var months=[];var md=new Date(renderStart.getFullYear(),renderStart.getMonth(),1);
+  while(+md<=+renderEnd){months.push(new Date(md));md=new Date(md.getFullYear(),md.getMonth()+1,1);}
+  var weeks=[];var wd2=new Date(renderStart);var dow2=wd2.getDay();
+  wd2.setDate(wd2.getDate()-(dow2===0?6:dow2-1));
+  while(+wd2<=+renderEnd){weeks.push(new Date(wd2));wd2.setDate(wd2.getDate()+7);}
+
+  var sLc='';
+  sLc+='<rect width="'+LW+'" height="'+H+'" fill="#FAFBFC"/>';
+  sLc+='<rect x="0" y="0" width="'+LW+'" height="'+HH+'" fill="#1E2E0D"/>';
+  sLc+='<text x="14" y="'+(HH/2+5)+'" font-size="16" fill="#8AB870" font-weight="700">Marco / Tarefa</text>';
+  sLc+='<text x="'+(LW-8)+'" y="'+(HH/2+5)+'" font-size="16" fill="#8AB870" text-anchor="end">Resp.</text>';
+  sLc+='<line x1="0" y1="'+HH+'" x2="'+LW+'" y2="'+HH+'" stroke="#8AC43A" stroke-width="2"/>';
+
+  var sRc='';
+  sRc+='<rect width="'+TW+'" height="'+H+'" fill="#FAFBFC"/>';
+  sRc+='<rect x="0" y="0" width="'+TW+'" height="'+HH+'" fill="#1E2E0D"/>';
+  sRc+='<line x1="0" y1="'+HH+'" x2="'+TW+'" y2="'+HH+'" stroke="#8AC43A" stroke-width="2"/>';
+
+  var yearBounds={};
+  months.forEach(function(m){
+    var yr=m.getFullYear();
+    if(!yearBounds[yr]){yearBounds[yr]={x1:px(m),x2:0};}
+    var nx=new Date(m.getFullYear(),m.getMonth()+1,1);
+    yearBounds[yr].x2=Math.min(px(nx),TW);
+  });
+  Object.keys(yearBounds).forEach(function(yr){
+    var yb=yearBounds[yr];
+    sRc+='<line x1="'+yb.x1.toFixed(1)+'" y1="0" x2="'+yb.x1.toFixed(1)+'" y2="'+HY+'" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>';
+    sRc+='<text x="'+((yb.x1+yb.x2)/2).toFixed(1)+'" y="14" font-size="16" fill="rgba(255,255,255,0.9)" font-weight="700" text-anchor="middle">'+yr+'</text>';
+  });
+  months.forEach(function(m,i){
+    var x1=px(m),x2=i+1<months.length?px(months[i+1]):TW;
+    sRc+='<line x1="'+x1.toFixed(1)+'" y1="'+HY+'" x2="'+x1.toFixed(1)+'" y2="'+(HY+HM)+'" stroke="rgba(138,196,58,0.45)" stroke-width="1.5"/>';
+    sRc+='<text x="'+((x1+x2)/2).toFixed(1)+'" y="'+(HY+HM-6)+'" font-size="16" fill="#8AB870" font-weight="700" text-anchor="middle">'+MN[m.getMonth()]+'</text>';
+  });
+  weeks.forEach(function(w,i){
+    var x1=px(w),x2=i+1<weeks.length?px(weeks[i+1]):TW;
+    var wEnd=new Date(w);wEnd.setDate(wEnd.getDate()+6);
+    var wEndC=(+wEnd>+CE)?new Date(+CE):wEnd;
+    var dS=String(w.getDate()).padStart(2,'0')+'/'+String(w.getMonth()+1).padStart(2,'0');
+    var dE=String(wEndC.getDate()).padStart(2,'0')+'/'+String(wEndC.getMonth()+1).padStart(2,'0');
+    sRc+='<line x1="'+x1.toFixed(1)+'" y1="'+(HY+HM)+'" x2="'+x1.toFixed(1)+'" y2="'+HH+'" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>';
+    var cx=((x1+x2)/2).toFixed(1);
+    if(isW){
+      if(x2-x1>26)sRc+='<text x="'+cx+'" y="'+(HY+HM+10)+'" font-size="14" fill="rgba(255,255,255,0.9)" text-anchor="middle" font-weight="700">'+dS+'</text>';
+      if(x2-x1>26)sRc+='<text x="'+cx+'" y="'+(HY+HM+32)+'" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">'+dE+'</text>';
+    } else {
+      if(x2-x1>26)sRc+='<text x="'+cx+'" y="'+(HH-4)+'" font-size="14" fill="rgba(255,255,255,0.7)" text-anchor="middle">'+dS+'</text>';
+    }
+  });
+
+  if(isW){
+    weeks.forEach(function(w,i){
+      var x1=px(w),x2=i+1<weeks.length?px(weeks[i+1]):TW,cw=x2-x1;
+      if(i%2===0)sRc+='<rect x="'+x1.toFixed(1)+'" y="'+HH+'" width="'+cw.toFixed(1)+'" height="'+(H-HH)+'" fill="rgba(59,130,246,0.07)"/>';
+    });
+  } else {
+    months.forEach(function(m,i){
+      var x1=px(m),x2=i+1<months.length?px(months[i+1]):TW,cw=x2-x1;
+      if(i%2===0)sRc+='<rect x="'+x1.toFixed(1)+'" y="'+HH+'" width="'+cw.toFixed(1)+'" height="'+(H-HH)+'" fill="rgba(0,0,0,0.025)"/>';
+    });
+  }
+
+
+
+  var cy2=HH;
+  rows.forEach(function(row,ridx){
+    var rh=rowHeights[ridx];var isM2=row.type==='marco';
+    sLc+='<rect x="0" y="'+cy2+'" width="'+LW+'" height="'+rh+'" fill="'+(isM2?'#C8E09A':'#FAFDF7')+'"/>';
+    if(ridx%2===1)sRc+='<rect x="0" y="'+cy2+'" width="'+TW+'" height="'+rh+'" fill="rgba(0,0,0,0.015)"/>';
+    if(!isM2)sRc+='<line x1="2" y1="'+(cy2+rh/2).toFixed(1)+'" x2="'+TW+'" y2="'+(cy2+rh/2).toFixed(1)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="10,6" opacity="0.55"/>';
+    cy2+=rh;
+  });
+
+  weeks.forEach(function(w){
+    var x1=px(w);
+    var wO=isW?'0.45':'0.2',wW=isW?'1.5':'1';
+    sRc+='<line x1="'+x1.toFixed(1)+'" y1="'+HH+'" x2="'+x1.toFixed(1)+'" y2="'+H+'" stroke="rgba(60,80,100,'+wO+')" stroke-width="'+wW+'" stroke-dasharray="5,4"/>';
+  });
+
+  var cy3=HH;
+  rows.forEach(function(row,ridx){
+    var rh=rowHeights[ridx];var isM3=row.type==='marco';
+    if(isM3){
+      var m2=row.data;var col2=sc(m2.status||'A iniciar');
+      sLc+='<rect x="0" y="'+cy3+'" width="4" height="'+rh+'" fill="'+col2+'"/>';
+      var nm=m2.name.length>52?m2.name.slice(0,50)+'…':m2.name;
+      sLc+='<text x="16" y="'+(cy3+rh/2+7).toFixed(1)+'" font-size="16" fill="#1A2E0A" font-weight="700">'+escSVG(nm)+'</text>';
+      var fr=m2.subtasks.length&&m2.subtasks[0].resp?m2.subtasks[0].resp:'';
+      if(fr){var rn=fr.length>14?fr.slice(0,13)+'…':fr;sLc+='<text x="'+(LW-10)+'" y="'+(cy3+rh/2+6).toFixed(1)+'" font-size="14" fill="#475569" text-anchor="end">'+escSVG(rn)+'</text>';}
+      if(m2.start&&m2.end){
+        var bx=px(new Date(m2.start)),bx2=px(new Date(m2.end)),bw=Math.max(8,bx2-bx);
+        var bh2=28,by2=cy3+(rh-bh2)/2;
+        sRc+='<rect x="'+bx.toFixed(1)+'" y="'+by2.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+bh2+'" fill="'+col2+'" rx="5" opacity="0.88"/>';
+        if(bw>60)sRc+='<text x="'+(bx+bw/2).toFixed(1)+'" y="'+(by2+bh2/2+5.5).toFixed(1)+'" font-size="15" fill="#FFF" font-weight="700" text-anchor="middle">'+escSVG(sl(m2.status||'A iniciar'))+'</text>';
+      }
+    } else {
+      var t2=row.data;var col3=sc(t2.status||'A iniciar');
+      var wds2=(t2.tarefa||'').split(' ');
+      var ls2=[],cur2='';
+      wds2.forEach(function(wrd){
+        if((cur2+' '+wrd).trim().length<=60){cur2=(cur2+' '+wrd).trim();}
+        else{if(cur2)ls2.push(cur2);cur2=wrd;}
+      });
+      if(cur2)ls2.push(cur2);
+      if(!ls2.length)ls2=[''];
+      var topY=cy3+10;
+      ls2.forEach(function(line,li){
+        sLc+='<text x="26" y="'+(topY+li*20+16).toFixed(1)+'" font-size="14" fill="#1E293B">'+escSVG(line)+'</text>';
+      });
+      var afterY=topY+ls2.length*20;
+      if(t2.sharedAreas&&t2.sharedAreas.length>0){
+        var tagTxt=t2.sharedAreas.length===1?'[+] tb em: '+t2.sharedAreas[0]:'[+] tb em '+t2.sharedAreas.length+' areas';
+        var tagW=Math.min(tagTxt.length*7.5+16,290);
+        sLc+='<rect x="24" y="'+afterY+'" width="'+tagW+'" height="24" rx="12" fill="#EDE9FE" stroke="#C4B5FD" stroke-width="1"/>';
+        sLc+='<text x="'+(24+tagW/2)+'" y="'+(afterY+16)+'" font-size="14" fill="#5B21B6" text-anchor="middle" font-weight="700">'+escSVG(tagTxt)+'</text>';
+      } else if(t2.resp){
+        var rn2=t2.resp.length>14?t2.resp.slice(0,13)+'…':t2.resp;
+        sLc+='<text x="'+(LW-22)+'" y="'+(cy3+rh/2+5).toFixed(1)+'" font-size="13" fill="#64748B" text-anchor="end">'+escSVG(rn2)+'</text>';
+      }
+      sLc+='<circle cx="'+(LW-10)+'" cy="'+(cy3+rh/2).toFixed(1)+'" r="6" fill="'+col3+'"/>';
+      if(t2.start&&t2.end){
+        var tS=new Date(t2.start),tE=new Date(t2.end);
+        var tbh=19,tby=cy3+(rh-tbh)/2;
+        weeks.forEach(function(tw,twi){
+          var twE=twi+1<weeks.length?weeks[twi+1]:CE;
+          var tsS=new Date(Math.max(+tS,+tw)),tsE=new Date(Math.min(+tE,+twE));
+          if(+tsS>=+tsE)return;
+          var tbx=px(tsS)+1.5,tbx2=px(tsE)-1.5,tbw=Math.max(3,tbx2-tbx);
+          sRc+='<rect x="'+tbx.toFixed(1)+'" y="'+tby.toFixed(1)+'" width="'+tbw.toFixed(1)+'" height="'+tbh+'" fill="'+col3+'" rx="4" opacity="0.92"/>';
+          if(tbw>60)sRc+='<text x="'+(tbx+tbw/2).toFixed(1)+'" y="'+(tby+tbh/2+4.5).toFixed(1)+'" font-size="13" fill="#FFF" font-weight="600" text-anchor="middle">'+escSVG(sl(t2.status||'A iniciar'))+'</text>';
+        });
+      }
+    }
+    var sep=isM3?'#B8D485':'#E2E8F0',sepW=isM3?'1.5':'0.8';
+    sLc+='<line x1="0" y1="'+(cy3+rh)+'" x2="'+LW+'" y2="'+(cy3+rh)+'" stroke="'+sep+'" stroke-width="'+sepW+'"/>';
+    sRc+='<line x1="0" y1="'+(cy3+rh)+'" x2="'+TW+'" y2="'+(cy3+rh)+'" stroke="'+sep+'" stroke-width="'+sepW+'"/>';
+    cy3+=rh;
+  });
+
+  var today2=new Date();var tx=px(today2).toFixed(1);
+  sRc+='<line x1="'+tx+'" y1="'+HH+'" x2="'+tx+'" y2="'+H+'" stroke="#FF2525" stroke-width="2.5" opacity="0.9"/>';
+  sLc+='<line x1="'+(LW-1).toFixed(1)+'" y1="0" x2="'+(LW-1).toFixed(1)+'" y2="'+H+'" stroke="#CBD5E1" stroke-width="1.5"/>';
+
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+(LW+TW)+' '+H+'" width="'+(LW+TW)+'" height="'+H+'" font-family="Helvetica,Arial,sans-serif">'
+    +'<g>'+sLc+'</g>'
+    +'<g transform="translate('+LW+',0)">'+sRc+'</g>'
+    +'</svg>';
 }
 </script>

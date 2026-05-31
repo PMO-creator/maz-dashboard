@@ -467,21 +467,40 @@ Permite selecionar marcos individuais para levar à reunião de diretoria (N2), 
 
 | Elemento | Detalhe |
 |---|---|
-| Funções JS | `toggleN2Marco`, `updateN2Fab`, `clearN2Selection`, `applyN2Filter`, `toggleN2Filter`, `initN2Checkboxes` |
+| Funções JS | `toggleN2Marco`, `updateN2Fab`, `clearN2Selection`, `applyN2Filter`, `toggleN2Filter`, `initN2Checkboxes`, `initN2FromURL`, `publishN2Pauta`, `unlockN2Edit`, `_n2Hash` |
 | Armazenamento | `var _n2Sel=[]` — in-memory, não localStorage |
+| Estado view-only | `var _n2ViewMode=false` — true quando aberto via link publicado |
+| Estado desbloqueado | `var _n2Unlocked=false` — true após PIN correto |
 | ID dos checkboxes | `n2c-{gi}-{mi}-{ti}` — 3 partes (eixo, grupo, marco) |
 | ID dos tiles | `mband-{gi}-{mi}-{ti}` — mesmo padrão |
-| ID dos badges | `n2badge-{gi}-{mi}-{ti}` |
+| ID dos badges | `n2badge-{gi}-{mi}-{ti}` — `display:none` por padrão |
 | Chave de seleção | `gi:mi:ti` (string com 3 partes separadas por `:`) |
 | Onde fica no template | `buildCommentPanel()` — dentro de `marco-band`, APÓS `chevron`, ANTES de `mb-status` |
 | CSS badge | `.n2-badge` — fundo `#1C2C0A`, fonte `#B8E85C`, 18px |
 | FAB principal | `id="n2-fab"` — fixo `bottom:82px right:28px`, só visível na aba EAP |
-| FAB limpar | `id="n2-clear-fab"` — fixo `bottom:24px right:28px`, só visível na aba EAP quando há seleções |
+| FAB limpar | `id="n2-clear-fab"` — só visível quando há seleções e não está em view-only |
+| FAB publicar | `id="n2-publish-fab"` — `bottom:140px right:28px`, fundo `#1A3A8A`, só visível quando há seleções e não está em view-only |
+| FAB desbloquear | `id="n2-lock-fab"` — `bottom:24px right:28px`, fundo `#5C3A8A`, só visível em view-only |
+
+### Compartilhamento via URL+PIN (commit 8d3268f)
+
+Formato da URL gerada:
+```
+https://pmo-creator.github.io/maz-dashboard/index.html?n2=ID1,ID2,...&ph=HASH
+```
+
+| Função | Responsabilidade |
+|---|---|
+| `initN2FromURL()` | Chamada no init. Lê `?n2=` da URL; se presente, ativa `_n2ViewMode=true` e carrega IDs. |
+| `publishN2Pauta()` | Pede PIN via `prompt()`, gera URL com `_n2Hash(pin)` no parâmetro `ph=`, abre modal de cópia. |
+| `unlockN2Edit()` | Pede PIN, compara `_n2Hash(pin)` com `?ph=` da URL. Se correto, seta `_n2Unlocked=true` e habilita checkboxes. |
+| `_n2Hash(s)` | Hash djb2-like simples. Não é criptografia forte — serve para ofuscar o PIN na URL. |
 
 ### Armadilha específica do N2
-- `initN2Checkboxes()` é chamado no final de `renderTree()` — re-checa o array `_n2Sel` e restaura o estado visual dos checkboxes e badges após qualquer re-render
+- `initN2Checkboxes()` é chamado no final de `renderTree()` — re-checa `_n2Sel` e restaura estado visual; também aplica `disabled` quando `_n2ViewMode && !_n2Unlocked`
 - Ao desligar o filtro N2 ("Ver todos"), `toggleN2Filter` chama `applyFilter()` (não apenas mostra/oculta DOM) para garantir que accordions e dropdown de visualização funcionem normalmente
+- O `n2-badge` começa com `display:none` no template — é `updateN2Fab()` que o exibe quando a chave entra em `_n2Sel`
 
 ---
 
-*Guia atualizado em 30/Mai/2026 — v13 — Dashboard MAZ 2026 · IDG PMO*
+*Guia atualizado em 31/Mai/2026 — v14 — Dashboard MAZ 2026 · IDG PMO*
