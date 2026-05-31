@@ -275,7 +275,24 @@ Eixo  = pior status dos seus grupos
 
 ---
 
-## 10. Snapshot de referência
+## 10. Feature: Pauta N2 (implementada em 30/Mai/2026)
+
+Funcionalidade de seleção de marcos para reunião de diretoria (N2), disponível na aba Status Report do `index.html`.
+
+**Comportamento:** usuário expande um grupo → clica "▸ X marcos" → checkboxes aparecem em cada tile → marcar checkbox seleciona o marco → badge "N2" aparece ao lado do nome → FAB "📋 Pauta N2 · N" mostra contagem e filtra ao clicar.
+
+**Pontos críticos para o doc-sync:**
+- Seleções são **in-memory** (`var _n2Sel=[]`), não localStorage — resetam a cada refresh
+- Checkboxes ficam no template `buildCommentPanel()`, entre a setinha e o badge de status
+- IDs seguem o padrão `gi:mi:ti` (3 partes) — diferente de qualquer outra feature do dashboard
+- FABs (`n2-fab`, `n2-clear-fab`) só aparecem na aba EAP
+- `initN2Checkboxes()` é chamado no final de `renderTree()` para restaurar estado visual
+
+**Funções JS:** `toggleN2Marco`, `updateN2Fab`, `clearN2Selection`, `applyN2Filter`, `toggleN2Filter`, `initN2Checkboxes`, `loadN2`, `saveN2`, `n2Id`, `getN2Key`
+
+---
+
+## 11. Snapshot de referência
 
 > O arquivo `_snapshot_index.html` (gerado pela skill `doc-sync` após cada execução bem-sucedida) é a versão do `index.html` usada como linha de base para o próximo diff.
 > Localização: `maz-dashboard\.claude\doc_sync\_snapshot_index.html`

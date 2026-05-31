@@ -1046,9 +1046,13 @@ function abrevNome(n){
 // ── PAUTA N2 ─────────────────────────────────────────────────────────────────
   var n2FilterActive=false;
   function getN2Key(){return 'n2_pauta_'+new Date().getFullYear()+'-W'+String(getISOWeek(new Date())).padStart(2,'0');}
-  var _n2Sel=[];
-  function loadN2(){return _n2Sel;}
-  function saveN2(arr){_n2Sel=arr.slice();}
+  function loadN2(){
+    try{return JSON.parse(localStorage.getItem(getN2Key())||'[]');}
+    catch(e){return [];}
+  }
+  function saveN2(arr){
+    try{localStorage.setItem(getN2Key(),JSON.stringify(arr));}catch(e){}
+  }
   function n2Id(gi,mi,ti){return gi+':'+mi+':'+ti;}
   function toggleN2Marco(gi,mi,ti,ev){
     if(ev)ev.stopPropagation();
@@ -1092,8 +1096,10 @@ function abrevNome(n){
   }
   function toggleN2Filter(){
     n2FilterActive=!n2FilterActive;
-    if(!n2FilterActive){applyFilter();}
-    else{applyN2Filter();}
+    if(!n2FilterActive){
+      document.querySelectorAll('[id^="mband-"]').forEach(function(b){b.style.display='';});
+      document.querySelectorAll('[id^="subtask-"]').forEach(function(b){b.style.display='';});
+    }else{applyN2Filter();}
     updateN2Fab();
   }
   function initN2Checkboxes(){
