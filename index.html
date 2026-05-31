@@ -72,18 +72,18 @@
   .container{max-width:1440px;margin:0 auto;padding:18px}
 
   /* KPI */
-  .kpi-row{display:grid;grid-template-columns:260px 1fr;gap:var(--gap);margin-bottom:var(--gap);align-items:stretch}
+  .kpi-row{display:grid;grid-template-columns:160px 1fr;gap:var(--gap);margin-bottom:var(--gap);align-items:stretch}
   /* Hero card — Taxa de Execução */
-  .kpi-hero{background:#B4DA82;border-radius:var(--radius);padding:28px 24px;box-shadow:0 2px 12px rgba(0,0,0,.18);border-left:5px solid var(--accentD);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-  .kpi-hero-label{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:rgba(0,0,0,.55);margin-bottom:10px;font-weight:700}
+  .kpi-hero{background:#B4DA82;border-radius:var(--radius);padding:17px 14px;box-shadow:0 2px 12px rgba(0,0,0,.18);border-left:4px solid var(--accentD);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+  .kpi-hero-label{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:rgba(0,0,0,.55);margin-bottom:8px;font-weight:700}
   .kpi-hero-value{font-size:48px;font-weight:800;line-height:1;color:var(--accent)}
-  .kpi-hero-sub{font-size:12px;color:rgba(0,0,0,.5);margin-top:10px;font-weight:500;letter-spacing:.4px}
+  .kpi-hero-sub{font-size:12px;color:rgba(0,0,0,.5);margin-top:8px;font-weight:500;letter-spacing:.4px}
   /* Mini grid — 6 status KPIs */
-  .kpi-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:14px}
-  .kpi-mini{background:var(--card);border-radius:var(--radius);padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid var(--accent)}
-  .kpi-mini-label{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:5px;font-weight:700}
+  .kpi-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:9px}
+  .kpi-mini{background:var(--card);border-radius:var(--radius);padding:9px 10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:3px solid var(--accent)}
+  .kpi-mini-label{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:3px;font-weight:700}
   .kpi-mini-value{font-size:24px;font-weight:800;line-height:1}
-  .kpi-mini-count{font-size:12px;color:var(--muted);margin-top:4px;font-weight:500}
+  .kpi-mini-count{font-size:12px;color:var(--muted);margin-top:3px;font-weight:500}
 
   /* CHARTS */
   .charts-row{display:grid;grid-template-columns:280px 1fr;gap:var(--gap);margin-bottom:var(--gap)}
@@ -270,7 +270,7 @@
   .no-results{padding:22px;text-align:center;color:var(--muted);font-size:12px}
 
   /* DATE FILTER ACTIVE BANNER */
-  .wbs-warning{display:none;padding:5px 12px;background:#DC2626;font-size:17px;font-weight:700;color:#fff;align-items:center;gap:10px;flex-wrap:wrap;cursor:pointer;position:relative;user-select:none;border-radius:8px;margin:10px 18px 0}
+  .wbs-warning{display:none;padding:2px 5px;background:#DC2626;font-size:14px;font-weight:700;color:#fff;align-items:center;gap:5px;flex-wrap:wrap;cursor:pointer;position:relative;user-select:none;border-radius:4px;margin:5px 8px 0}
   .wbs-warning.active{display:flex}
   .wbs-warning a{color:#fff;font-weight:700;text-decoration:underline;flex-shrink:0;font-size:14px}
   .wbs-warning a:hover{opacity:.85}
@@ -455,6 +455,13 @@
   .areas-ctrl-bar{background:var(--bg);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--accent);border-radius:var(--radius) var(--radius) 0 0;box-shadow:0 2px 12px rgba(0,0,0,.12);border-top:4px solid var(--accent);margin-bottom:12px;}
   .areas-ctrl-bar h2{font-size:22px;font-weight:700;color:#FFF;}
   .areas-ctrl-right{display:flex;gap:8px;align-items:center;}
+/* ── Modo Foco ── */
+.btn-foco{padding:7px 14px;border-radius:6px;border:1px solid rgba(255,255,255,.25);font-size:15px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.07);color:rgba(255,255,255,.75);transition:all .2s;white-space:nowrap}
+.btn-foco:disabled{opacity:.35;cursor:not-allowed}
+.btn-foco.active{background:#FF8C00;color:#000;border-color:#FF8C00;box-shadow:0 0 10px rgba(255,140,0,.4)}
+.btn-foco:not(:disabled):not(.active):hover{background:rgba(255,140,0,.2);color:#FFA500}
+.marco-foco-dimmed{opacity:.3;transition:opacity .25s}
+.foco-badge{font-size:11px;font-weight:700;color:#FFA500;background:rgba(255,140,0,.12);border:1px solid rgba(255,140,0,.35);border-radius:10px;padding:2px 8px;margin-left:8px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -518,7 +525,7 @@
     <input type="date" class="filter-date" id="filter-date-start">
     <span class="filter-date-label">Até</span>
     <input type="date" class="filter-date" id="filter-date-end">
-    <button class="btn-apply-date" onclick="applyFilter()">📅 Aplicar Filtro</button><button class="btn-clear-date" onclick="clearDates()">✕ Limpar</button>
+    <button class="btn-apply-date" onclick="applyFilter()">📅 Aplicar Filtro</button><button class="btn-foco" id="btn-foco" onclick="toggleModoEstrito()" disabled style="display:none" title="Mostrar apenas marcos/tarefas do período">📅 Marcos do Período</button><button class="btn-clear-date" onclick="clearDates()">✕ Limpar</button>
     <div class="refresh-area"><button class="btn-refresh" id="btn-refresh" onclick="loadSheetsData()">⟳ Atualizar</button><span class="refresh-label" id="refresh-label">Carregando...</span></div>
 </div>
 
@@ -702,6 +709,7 @@ const REQS = [];
 let rootOpen=true, groupOpen=new Array(WBS.length).fill(false), commentOpen={}, marcoOpen={}, reqOpen=true;
 let ganttMode='monthly'; // 'monthly' | 'weekly'
 let filterLevel='marco'; // 'marco' | 'tarefa'
+  var modoEstrito=false;
 
 // ── AUTO STATUS (data-driven, roda antes de tudo) ───────────────────────────
 function preprocessStatuses(){
@@ -786,6 +794,8 @@ function switchTab(name){
   var n2cfab=document.getElementById('n2-clear-fab');
   if(n2fab)n2fab.style.display=(name==='eap')?'flex':'none';
   if(n2cfab)n2cfab.style.display='none';
+  var _bfoco=document.getElementById('btn-foco');
+  if(_bfoco)_bfoco.style.display=(name==='eap')?'':'none';
   if(name==='eap'){updateN2Fab();}
   if(name==='areas'){buildAreasFilter();if(AREAS_DATA.length)renderAreasTab();}
 }
@@ -1020,7 +1030,7 @@ function matchesFilter(g, m, f){
   const q  = f.search;
   const tx = !q || g.name.toLowerCase().includes(q) ||
     (m ? (m.name.toLowerCase().includes(q)||(m.resp&&m.resp.toLowerCase().includes(q))) : g.children.some(c=>c.name.toLowerCase().includes(q)||(c.resp&&c.resp.toLowerCase().includes(q))));
-  const dt = !m ? true : dateInRange(m, f.dateStart, f.dateEnd);
+  const dt = !m ? true : (modoEstrito ? dateInRange(m, f.dateStart, f.dateEnd) : true);
   // Status bottom-up: filho manda
   const stLow=(f.status||[]).map(s=>s.toLowerCase());
   function stOk(v){ return !stLow.length||stLow.includes((v||'A iniciar').toLowerCase()); }
@@ -1234,7 +1244,9 @@ function renderTree(){
     const color=sc(g.status);
     const gName=hl(g.name,f.search);
 
+    const focoCount=(f.dateStart||f.dateEnd)&&!modoEstrito?vis.filter(m=>dateInRange(m,f.dateStart,f.dateEnd)).length:0;
     const mItems=vis.map((m,mi)=>{
+      const focoClass=(f.dateStart||f.dateEnd)&&!modoEstrito&&!dateInRange(m,f.dateStart,f.dateEnd)?' marco-foco-dimmed':'';
       const mc=sc(m.status);
       const hasC=!!(m.tasks&&m.tasks.length);
       const marcoCount=hasC?m.tasks.filter(t=>t.tipo==='marco').length||m.tasks.length:0;
@@ -1243,7 +1255,7 @@ function renderTree(){
       const cPanel=hasC?buildCommentPanel(gi,mi,m,f.status,f.resp):'';
       const dateStr=m.end?`até ${fmtBRshort(m.end)}`:(m.start?`de ${fmtBRshort(m.start)}`:'');
       const clickAttr=hasC?`onclick="toggleComment(${gi},${mi},event)"`:'';
-      return `<div class="marco-wrap" id="mwrap-${gi}-${mi}">
+      return `<div class="marco-wrap${focoClass}" id="mwrap-${gi}-${mi}">
         <div class="marco-item${hasC?' has-comment':''}" ${clickAttr}>
           <div class="marco-dot" style="background:${mc}"></div>
           <span class="marco-id">#${gi+1}.${mi+1}</span>
@@ -1263,7 +1275,7 @@ function renderTree(){
           <span class="group-toggle" id="gtoggle-${gi}" style="transform:rotate(${isOpen?0:-90}deg)">▼</span>
           <span class="group-id" style="background:${color}">${escH(g.id)}</span>
           <span class="eixo-name">${gName}</span>
-          <span class="group-count">${vis.length} grupos</span>
+          <span class="group-count">${vis.length} grupos</span>${focoCount>0?'<span class="foco-badge">● '+focoCount+' em foco</span>':''}
         </div>
       </div>
       <div class="marco-list" id="mlist-${gi}" style="max-height:${isOpen?'none':'0'}">${mItems}</div>
@@ -1404,6 +1416,9 @@ function resetAllFilters(){
   // Limpar datas
   document.getElementById('filter-date-start').value='';
   document.getElementById('filter-date-end').value='';
+  modoEstrito=false;
+  var _fb2=document.getElementById('btn-foco');
+  if(_fb2){_fb2.classList.remove('active');_fb2.disabled=true;}
   // Limpar busca
   document.getElementById('searchInput').value='';
   applyFilter();
@@ -1411,6 +1426,9 @@ function resetAllFilters(){
 function clearDates(){
   document.getElementById('filter-date-start').value='';
   document.getElementById('filter-date-end').value='';
+  modoEstrito=false;
+  var _fb=document.getElementById('btn-foco');
+  if(_fb){_fb.classList.remove('active');_fb.disabled=true;}
   hideDateError();
   applyFilter();
 }
@@ -1423,10 +1441,29 @@ function setFilterLevel(level){
   if(bt)bt.classList.toggle('active',level==='tarefa');
   applyFilter();
 }
+function toggleModoEstrito(){
+  modoEstrito=!modoEstrito;
+  var btn=document.getElementById('btn-foco');
+  if(btn)btn.classList.toggle('active',modoEstrito);
+  applyFilter();
+}
+function updatePeriodoBtn(){
+  var btn=document.getElementById('btn-foco');
+  if(!btn)return;
+  var ds=document.getElementById('filter-date-start').value||'';
+  var de=document.getElementById('filter-date-end').value||'';
+  var hasDate=!!(ds||de);
+  btn.disabled=!hasDate;
+  var lbl=filterLevel==='tarefa'?'Tarefas do Período':'Marcos do Período';
+  btn.textContent='📅 '+lbl;
+  if(!hasDate&&modoEstrito){modoEstrito=false;btn.classList.remove('active');}
+}
+
 function applyFilter(){
   const f=getFilters();
   if(f.dateStart&&f.dateEnd&&f.dateStart>f.dateEnd){showDateError();return;}
   hideDateError();
+  updatePeriodoBtn();
   const _rpAllA=[...document.querySelectorAll('#ms-resp-menu input:not([id$="-chk-all"])')];
   const noResp=_rpAllA.filter(el=>el.checked).length===0;
   renderTree();
