@@ -33,6 +33,13 @@ maz-dashboard/                  ← PASTA ÚNICA (git repo + tudo)
   00. Apoio/                    → Logos e banners
 ```
 
+## Ambiente local
+
+- **Caminho local do repo:** `C:\Users\gagui\GitHub\maz-dashboard`
+- **⚠️ Não usar OneDrive** — o OneDrive corrompe a pasta `.git` ao sincronizar arquivos internos do git
+- **Branches:**
+  - `main` → produção (GitHub Pages) — protegido, exige PR para merge
+  - `dev` → branch de trabalho padrão — todas as edições vão aqui
 ## Regras de trabalho
 
 1. **Leia ONBOARDING.md antes de qualquer tarefa técnica** — ele tem mapeamento
