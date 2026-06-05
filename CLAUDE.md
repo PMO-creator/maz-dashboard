@@ -40,6 +40,7 @@ maz-dashboard/                  ← PASTA ÚNICA (git repo + tudo)
 - **Branches:**
   - `main` → produção (GitHub Pages) — protegido, exige PR para merge
   - `dev` → branch de trabalho padrão — todas as edições vão aqui
+
 ## Regras de trabalho
 
 1. **Leia ONBOARDING.md antes de qualquer tarefa técnica** — ele tem mapeamento
