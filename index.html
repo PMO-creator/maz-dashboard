@@ -3289,8 +3289,9 @@ function _buildGanttSVGForExport(ai,fDS,fDE,viewMode){
   var HY=20,HM=28,HW=44;
   var HH=HY+HM+HW;
   var _rS0=fDS?new Date(fDS):CS,_rE0=fDE?new Date(fDE):CE;
-  var _dur=+_rE0-+_rS0,_buf=_dur*0.1;
-  var renderStart=new Date(Math.max(+CS,+_rS0-_buf)),renderEnd=new Date(Math.min(+CE,+_rE0+_buf));
+  var _3w=21*24*60*60*1000;
+  var renderStart=new Date(Math.max(+CS,+_rS0-_3w));
+  var renderEnd=new Date(Math.min(+CE,+_rE0+_3w));
   var TOTMS=+renderEnd-+renderStart;
   var LINE_H=20,TASK_PAD=16;
   var rowHeights=rows.map(function(row){
