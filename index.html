@@ -674,8 +674,9 @@
       <button onclick="closePDFWizard()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:#8AB870;line-height:1;display:flex;align-items:center;justify-content:center">&times;</button>
     </div>
     <div id="pdf-step-1">
-      <p style="color:#8AB870;margin:0 0 12px;font-size:14px;font-weight:600">Selecione a &#225;rea:</p>
-      <div id="pdf-area-list" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:320px;overflow-y:auto"></div>
+      <p style="color:#8AB870;margin:0 0 8px;font-size:14px;font-weight:600">Selecione as &#225;reas <span id="pdf-area-count" style="color:#8AC43A;font-size:12px;font-weight:400"></span>:</p>
+      <div style="display:flex;gap:8px;margin-bottom:10px"><button onclick="pdfSelAll()" style="padding:5px 14px;border:1px solid rgba(138,196,58,0.45);border-radius:6px;cursor:pointer;background:transparent;color:#8AC43A;font-size:12px;font-weight:600">Selecionar todas</button><button onclick="pdfSelClear()" style="padding:5px 14px;border:1px solid rgba(138,196,58,0.2);border-radius:6px;cursor:pointer;background:transparent;color:#8AB870;font-size:12px">Limpar</button></div>
+      <div id="pdf-area-list" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:300px;overflow-y:auto"></div>
     </div>
     <div id="pdf-step-2" style="display:none">
       <p style="color:#8AB870;margin:0 0 14px;font-size:14px;font-weight:600">Per&#237;odo do Gantt:</p>
@@ -691,6 +692,8 @@
     <div id="pdf-step-3" style="display:none">
       <p style="color:#8AB870;margin:0 0 14px;font-size:14px;font-weight:600">Tamanho e orienta&#231;&#227;o:</p>
       <div style="display:flex;gap:24px;margin-bottom:16px">
+        <label style="font-size:14px;color:#C8E09A;cursor:pointer;display:flex;align-items:center;gap:7px"><input type="radio" name="pdf-fmt" value="a1" style="accent-color:#8AC43A;width:16px;height:16px">A1</label>
+        <label style="font-size:14px;color:#C8E09A;cursor:pointer;display:flex;align-items:center;gap:7px"><input type="radio" name="pdf-fmt" value="a2" style="accent-color:#8AC43A;width:16px;height:16px">A2</label>
         <label style="font-size:14px;color:#C8E09A;cursor:pointer;display:flex;align-items:center;gap:7px"><input type="radio" name="pdf-fmt" value="a3" style="accent-color:#8AC43A;width:16px;height:16px">A3</label>
         <label style="font-size:14px;color:#C8E09A;cursor:pointer;display:flex;align-items:center;gap:7px"><input type="radio" name="pdf-fmt" value="a4" style="accent-color:#8AC43A;width:16px;height:16px">A4</label>
       </div>
@@ -3140,27 +3143,30 @@ function renderAreaGantt(ai){
 }
 
 // ── EXPORT PDF ──────────────────────────────────────────────
-var _pdfW={step:1,ai:-1,fDS:'',fDE:'',view:'monthly',fmt:'a3',orient:'landscape'};
+var _pdfW={step:1,areas:[],fDS:'',fDE:'',view:'monthly',fmt:'a3',orient:'landscape'};
 
 function openExportPDFWizard(){
   var _jsPDF=(window.jspdf&&window.jspdf.jsPDF)?window.jspdf.jsPDF:(window.jsPDF||null);
   var _s2p=(window.svg2pdf&&typeof window.svg2pdf==='function')?window.svg2pdf
     :(window.svg2pdf&&typeof window.svg2pdf.svg2pdf==='function')?window.svg2pdf.svg2pdf:null;
   if(!_jsPDF||!_s2p){alert('Bibliotecas PDF nao carregadas. Recarregue a pagina.');return;}
-  _pdfW.step=1;_pdfW.ai=-1;
+  _pdfW.step=1;_pdfW.areas=[];
   var fs=_getAreasFS();
   _pdfW.fDS=fs.fDS||'';_pdfW.fDE=fs.fDE||'';
   _pdfW.view=(typeof areasGanttMode!=='undefined'?areasGanttMode:'monthly');
   var listEl=document.getElementById('pdf-area-list');
   listEl.innerHTML='';
+  var _cntEl=document.getElementById('pdf-area-count');if(_cntEl)_cntEl.textContent='';
   AREAS_DEF.forEach(function(a,i){
     var btn=document.createElement('button');
     btn.textContent=a.name;
-    btn.style.cssText='padding:10px 12px;border:2px solid rgba(138,196,58,0.3);border-radius:8px;cursor:pointer;background:#1E2E0D;color:#C8E09A;font-size:13px;text-align:left;width:100%;transition:all .15s';
+    btn.dataset.aidx=String(i);
+    btn.style.cssText='padding:10px 12px;border:2px solid rgba(138,196,58,0.3);border-radius:8px;cursor:pointer;background:#1E2E0D;color:#C8E09A;font-size:13px;text-align:left;width:100%;transition:all .15s;font-weight:normal';
     btn.onclick=(function(idx,b){return function(){
-      listEl.querySelectorAll('button').forEach(function(x){x.style.borderColor='rgba(138,196,58,0.3)';x.style.background='#1E2E0D';x.style.color='#C8E09A';});
-      b.style.borderColor='#8AC43A';b.style.background='rgba(138,196,58,0.18)';b.style.color='#8AC43A';
-      _pdfW.ai=idx;
+      var pos=_pdfW.areas.indexOf(idx);
+      if(pos===-1){_pdfW.areas.push(idx);b.style.borderColor='#8AC43A';b.style.background='rgba(138,196,58,0.18)';b.style.color='#8AC43A';b.style.fontWeight='700';}
+      else{_pdfW.areas.splice(pos,1);b.style.borderColor='rgba(138,196,58,0.3)';b.style.background='#1E2E0D';b.style.color='#C8E09A';b.style.fontWeight='normal';}
+      var c=document.getElementById('pdf-area-count');if(c)c.textContent=_pdfW.areas.length?'('+_pdfW.areas.length+' selecionada'+(_pdfW.areas.length>1?'s':'')+')':'';
     };})(i,btn);
     listEl.appendChild(btn);
   });
@@ -3190,10 +3196,11 @@ function _pdfWizShow(){
     document.querySelectorAll('input[name="pdf-orient"]').forEach(function(r){r.checked=(r.value===_pdfW.orient);});
   }
   if(s===4){
-    var aName=(AREAS_DEF[_pdfW.ai]||{}).name||'?';
+    var _sortedA=(_pdfW.areas||[]).slice().sort(function(a,b){return a-b;});
+    var aNames=_sortedA.map(function(i){return (AREAS_DEF[i]||{}).name||'?';});
     var periodoStr=(_pdfW.fDS&&_pdfW.fDE)?(_pdfW.fDS+' a '+_pdfW.fDE):'Todo o período';
     var ctxt=document.getElementById('pdf-confirm-txt');
-    if(ctxt)ctxt.innerHTML='<b>Área:</b> '+aName+'<br>'
+    if(ctxt)ctxt.innerHTML='<b>Áreas ('+aNames.length+' página'+(aNames.length>1?'s':'')+'):</b> '+aNames.join(', ')+'<br>'
       +'<b>Período:</b> '+periodoStr+'<br>'
       +'<b>Modo:</b> '+(_pdfW.view==='weekly'?'Semanal':'Mensal')+'<br>'
       +'<b>Formato:</b> '+_pdfW.fmt.toUpperCase()+' '+(_pdfW.orient==='landscape'?'Paisagem':'Retrato');
@@ -3202,7 +3209,7 @@ function _pdfWizShow(){
 
 function pdfWizNext(){
   var s=_pdfW.step;
-  if(s===1){if(_pdfW.ai<0){alert('Selecione uma área.');return;}_pdfW.step=2;_pdfWizShow();return;}
+  if(s===1){if(!_pdfW.areas||_pdfW.areas.length===0){alert('Selecione ao menos uma área.');return;}_pdfW.step=2;_pdfWizShow();return;}
   if(s===2){
     var fds2=document.getElementById('pdf-fds');_pdfW.fDS=fds2?fds2.value:'';
     var fde2=document.getElementById('pdf-fde');_pdfW.fDE=fde2?fde2.value:'';
@@ -3236,31 +3243,66 @@ function pdfWizBack(){if(_pdfW.step>1){_pdfW.step--;_pdfWizShow();}}
 function closePDFWizard(){
   var m=document.getElementById('pdf-export-modal');if(m)m.style.display='none';
 }
+function pdfSelAll(){
+  _pdfW.areas=AREAS_DEF.map(function(_,i){return i;});
+  document.querySelectorAll('#pdf-area-list button').forEach(function(b){
+    b.style.borderColor='#8AC43A';b.style.background='rgba(138,196,58,0.18)';b.style.color='#8AC43A';b.style.fontWeight='700';
+  });
+  var c=document.getElementById('pdf-area-count');if(c)c.textContent='('+_pdfW.areas.length+' selecionadas)';
+}
+function pdfSelClear(){
+  _pdfW.areas=[];
+  document.querySelectorAll('#pdf-area-list button').forEach(function(b){
+    b.style.borderColor='rgba(138,196,58,0.3)';b.style.background='#1E2E0D';b.style.color='#C8E09A';b.style.fontWeight='normal';
+  });
+  var c=document.getElementById('pdf-area-count');if(c)c.textContent='';
+}
 
 async function _runExportPDF(){
   var btn=document.getElementById('pdf-btn-next');
   if(btn){btn.textContent='Gerando…';btn.disabled=true;}
   try{
-    var svgStr=_buildGanttSVGForExport(_pdfW.ai,_pdfW.fDS,_pdfW.fDE,_pdfW.view);
-    if(!svgStr){alert('Nenhuma tarefa no período selecionado.');return;}
-    var tmp=document.createElement('div');
-    tmp.style.cssText='position:absolute;left:-19999px;top:-19999px;visibility:hidden;overflow:hidden';
-    tmp.innerHTML=svgStr;
-    document.body.appendChild(tmp);
-    var svgEl=tmp.querySelector('svg');
     var _jsPDF=(window.jspdf&&window.jspdf.jsPDF)?window.jspdf.jsPDF:(window.jsPDF||null);
     var _s2p=(window.svg2pdf&&typeof window.svg2pdf==='function')?window.svg2pdf
       :(window.svg2pdf&&typeof window.svg2pdf.svg2pdf==='function')?window.svg2pdf.svg2pdf:null;
+    var sortedAreas=(_pdfW.areas||[]).slice().sort(function(a,b){return a-b;});
+    if(!sortedAreas.length){alert('Nenhuma área selecionada.');return;}
     var pdf=new _jsPDF({orientation:_pdfW.orient,unit:'mm',format:_pdfW.fmt});
     var pgW=pdf.internal.pageSize.getWidth(),pgH=pdf.internal.pageSize.getHeight();
-    var vbW=+(svgEl.getAttribute('width')||5000),vbH=+(svgEl.getAttribute('height')||500);
-    var scale=Math.min(pgW/vbW,pgH/vbH);
-    var drawW=vbW*scale,drawH=vbH*scale;
-    var offX=(pgW-drawW)/2,offY=(pgH-drawH)/2;
-    await _s2p(svgEl,pdf,{x:offX,y:offY,width:drawW,height:drawH});
-    document.body.removeChild(tmp);
-    var aName=(AREAS_DEF[_pdfW.ai]||{}).name||'area';
-    var fname='Gantt_'+aName.replace(/\s+/g,'_').replace(/[^\w]/g,'')+'_'+(_pdfW.fDS||'completo')+'.pdf';
+    var bandH=10,sepH=5,gapH=4,margin=4;
+    var curY=margin,firstArea=true,prevColor=null,anyPage=false;
+    var hexRGB=function(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];};
+    for(var _pi=0;_pi<sortedAreas.length;_pi++){
+      var ai=sortedAreas[_pi];
+      var svgStr=_buildGanttSVGForExport(ai,_pdfW.fDS,_pdfW.fDE,_pdfW.view,_pdfW.fmt);
+      if(!svgStr)continue;
+      var tmp=document.createElement('div');
+      tmp.style.cssText='position:absolute;left:-19999px;top:-19999px;visibility:hidden;overflow:hidden';
+      tmp.innerHTML=svgStr;
+      document.body.appendChild(tmp);
+      var svgEl=tmp.querySelector('svg');
+      var svgW=+(svgEl.getAttribute('width')||5400);
+      var vbH=+(svgEl.getAttribute('height')||500);
+      var drawW=pgW,drawH=vbH*(pgW/svgW);
+      var areaColor=(AREAS_DEF[ai]||{}).color||'#2F4A18';
+      var aName=(AREAS_DEF[ai]||{}).name||'Area';
+      var curSep=firstArea?0:sepH;
+      var sectionH=curSep+bandH+drawH+gapH;
+      if(!firstArea&&curY+sectionH>pgH-3){pdf.addPage();curY=margin;curSep=0;sectionH=bandH+drawH+gapH;}
+      if(curSep>0&&prevColor){var pc=hexRGB(prevColor);pdf.setFillColor(pc[0],pc[1],pc[2]);pdf.rect(0,curY,pgW,curSep,'F');curY+=curSep;}
+      var ac=hexRGB(areaColor);pdf.setFillColor(ac[0],ac[1],ac[2]);pdf.rect(0,curY,pgW,bandH,'F');
+      pdf.setFontSize(11);pdf.setFont(undefined,'bold');pdf.setTextColor(255,255,255);
+      pdf.text(aName,5,curY+bandH-2.5);
+      curY+=bandH;
+      await _s2p(svgEl,pdf,{x:0,y:curY,width:drawW,height:drawH});
+      document.body.removeChild(tmp);
+      curY+=drawH+gapH;firstArea=false;prevColor=areaColor;anyPage=true;
+    }
+    if(!anyPage){alert('Nenhuma tarefa no período selecionado para as áreas escolhidas.');return;}
+    var firstName=(AREAS_DEF[sortedAreas[0]]||{}).name||'area';
+    var fname=sortedAreas.length===1
+      ?'Gantt_'+firstName.replace(/\s+/g,'_').replace(/[^\w]/g,'')+'_'+(_pdfW.fDS||'completo')+'.pdf'
+      :'Gantt_multiplas_areas_'+sortedAreas.length+'_'+(_pdfW.fDS||'completo')+'.pdf';
     pdf.save(fname);
     closePDFWizard();
   }catch(e){
@@ -3271,7 +3313,7 @@ async function _runExportPDF(){
   }
 }
 
-function _buildGanttSVGForExport(ai,fDS,fDE,viewMode){
+function _buildGanttSVGForExport(ai,fDS,fDE,viewMode,fmt){
   var area=AREAS_DATA[ai];
   if(!area)return null;
   var rows=[];
@@ -3283,29 +3325,31 @@ function _buildGanttSVGForExport(ai,fDS,fDE,viewMode){
   });
   if(!rows.length)return null;
   var isW=(viewMode==='weekly');
-  var LW=500,TW=4500;
+  var fmtLW={'a1':1800,'a2':1280,'a3':900,'a4':640};
+  var fmtTW={'a1':9000,'a2':6400,'a3':4500,'a4':3200};
+  var LW=fmtLW[fmt||'a3']||900,TW=fmtTW[fmt||'a3']||4500;
   var CS=new Date('2026-01-01'),CE=new Date('2027-06-30');
-  var MRH=62,TRH=46;
-  var HY=20,HM=28,HW=44;
+  var MRH=170,TRH=126;
+  var HY=56,HM=78,HW=122;
   var HH=HY+HM+HW;
   var _rS0=fDS?new Date(fDS):CS,_rE0=fDE?new Date(fDE):CE;
-  var _3w=21*24*60*60*1000;
-  var renderStart=new Date(Math.max(+CS,+_rS0-_3w));
-  var renderEnd=new Date(Math.min(+CE,+_rE0+_3w));
+  var _buf=14*24*60*60*1000;
+  var renderStart=new Date(Math.max(+CS,+_rS0-_buf));
+  var renderEnd=new Date(Math.min(+CE,+_rE0+_buf));
   var TOTMS=+renderEnd-+renderStart;
-  var LINE_H=20,TASK_PAD=16;
+  var LINE_H=56,TASK_PAD=44;
   var rowHeights=rows.map(function(row){
     if(row.type==='marco')return MRH;
     var wds=(row.data.tarefa||'').split(' ');
     var ls=[],cur='';
     wds.forEach(function(w){
-      if((cur+' '+w).trim().length<=60){cur=(cur+' '+w).trim();}
+      if((cur+' '+w).trim().length<=34){cur=(cur+' '+w).trim();}
       else{if(cur)ls.push(cur);cur=w;}
     });
     if(cur)ls.push(cur);
     if(!ls.length)ls=[''];
     var hasS2=row.data.sharedAreas&&row.data.sharedAreas.length>0;
-    return Math.max(TRH,ls.length*LINE_H+(hasS2?LINE_H+6:0)+TASK_PAD);
+    return Math.max(TRH,ls.length*LINE_H+(hasS2?LINE_H+10:0)+TASK_PAD);
   });
   var H=HH+rowHeights.reduce(function(s,h){return s+h;},0)+4;
   function px(d){return Math.max(0,Math.min(TW,(+d-+renderStart)/TOTMS*TW));}
@@ -3319,14 +3363,14 @@ function _buildGanttSVGForExport(ai,fDS,fDE,viewMode){
   var sLc='';
   sLc+='<rect width="'+LW+'" height="'+H+'" fill="#FAFBFC"/>';
   sLc+='<rect x="0" y="0" width="'+LW+'" height="'+HH+'" fill="#1E2E0D"/>';
-  sLc+='<text x="14" y="'+(HH/2+5)+'" font-size="16" fill="#8AB870" font-weight="700">Marco / Tarefa</text>';
-  sLc+='<text x="'+(LW-8)+'" y="'+(HH/2+5)+'" font-size="16" fill="#8AB870" text-anchor="end">Resp.</text>';
-  sLc+='<line x1="0" y1="'+HH+'" x2="'+LW+'" y2="'+HH+'" stroke="#8AC43A" stroke-width="2"/>';
+  sLc+='<text x="16" y="'+(HH/2+14)+'" font-size="44" fill="#8AB870" font-weight="700">Marco / Tarefa</text>';
+  sLc+='<text x="'+(LW-14)+'" y="'+(HH/2+14)+'" font-size="44" fill="#8AB870" text-anchor="end">Resp.</text>';
+  sLc+='<line x1="0" y1="'+HH+'" x2="'+LW+'" y2="'+HH+'" stroke="#8AC43A" stroke-width="3"/>';
 
   var sRc='';
   sRc+='<rect width="'+TW+'" height="'+H+'" fill="#FAFBFC"/>';
   sRc+='<rect x="0" y="0" width="'+TW+'" height="'+HH+'" fill="#1E2E0D"/>';
-  sRc+='<line x1="0" y1="'+HH+'" x2="'+TW+'" y2="'+HH+'" stroke="#8AC43A" stroke-width="2"/>';
+  sRc+='<line x1="0" y1="'+HH+'" x2="'+TW+'" y2="'+HH+'" stroke="#8AC43A" stroke-width="3"/>';
 
   var yearBounds={};
   months.forEach(function(m){
@@ -3337,13 +3381,13 @@ function _buildGanttSVGForExport(ai,fDS,fDE,viewMode){
   });
   Object.keys(yearBounds).forEach(function(yr){
     var yb=yearBounds[yr];
-    sRc+='<line x1="'+yb.x1.toFixed(1)+'" y1="0" x2="'+yb.x1.toFixed(1)+'" y2="'+HY+'" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>';
-    sRc+='<text x="'+((yb.x1+yb.x2)/2).toFixed(1)+'" y="14" font-size="16" fill="rgba(255,255,255,0.9)" font-weight="700" text-anchor="middle">'+yr+'</text>';
+    sRc+='<line x1="'+yb.x1.toFixed(1)+'" y1="0" x2="'+yb.x1.toFixed(1)+'" y2="'+HY+'" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>';
+    sRc+='<text x="'+((yb.x1+yb.x2)/2).toFixed(1)+'" y="38" font-size="44" fill="rgba(255,255,255,0.9)" font-weight="700" text-anchor="middle">'+yr+'</text>';
   });
   months.forEach(function(m,i){
     var x1=px(m),x2=i+1<months.length?px(months[i+1]):TW;
-    sRc+='<line x1="'+x1.toFixed(1)+'" y1="'+HY+'" x2="'+x1.toFixed(1)+'" y2="'+(HY+HM)+'" stroke="rgba(138,196,58,0.45)" stroke-width="1.5"/>';
-    sRc+='<text x="'+((x1+x2)/2).toFixed(1)+'" y="'+(HY+HM-6)+'" font-size="16" fill="#8AB870" font-weight="700" text-anchor="middle">'+MN[m.getMonth()]+'</text>';
+    sRc+='<line x1="'+x1.toFixed(1)+'" y1="'+HY+'" x2="'+x1.toFixed(1)+'" y2="'+(HY+HM)+'" stroke="rgba(138,196,58,0.45)" stroke-width="2"/>';
+    sRc+='<text x="'+((x1+x2)/2).toFixed(1)+'" y="'+(HY+HM-16)+'" font-size="44" fill="#8AB870" font-weight="700" text-anchor="middle">'+MN[m.getMonth()]+'</text>';
   });
   weeks.forEach(function(w,i){
     var x1=px(w),x2=i+1<weeks.length?px(weeks[i+1]):TW;
@@ -3351,13 +3395,13 @@ function _buildGanttSVGForExport(ai,fDS,fDE,viewMode){
     var wEndC=(+wEnd>+CE)?new Date(+CE):wEnd;
     var dS=String(w.getDate()).padStart(2,'0')+'/'+String(w.getMonth()+1).padStart(2,'0');
     var dE=String(wEndC.getDate()).padStart(2,'0')+'/'+String(wEndC.getMonth()+1).padStart(2,'0');
-    sRc+='<line x1="'+x1.toFixed(1)+'" y1="'+(HY+HM)+'" x2="'+x1.toFixed(1)+'" y2="'+HH+'" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>';
+    sRc+='<line x1="'+x1.toFixed(1)+'" y1="'+(HY+HM)+'" x2="'+x1.toFixed(1)+'" y2="'+HH+'" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>';
     var cx=((x1+x2)/2).toFixed(1);
     if(isW){
-      if(x2-x1>26)sRc+='<text x="'+cx+'" y="'+(HY+HM+10)+'" font-size="14" fill="rgba(255,255,255,0.9)" text-anchor="middle" font-weight="700">'+dS+'</text>';
-      if(x2-x1>26)sRc+='<text x="'+cx+'" y="'+(HY+HM+32)+'" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">'+dE+'</text>';
+      if(x2-x1>50)sRc+='<text x="'+cx+'" y="'+(HY+HM+38)+'" font-size="42" fill="rgba(255,255,255,0.9)" text-anchor="middle" font-weight="700">'+dS+'</text>';
+      if(x2-x1>50)sRc+='<text x="'+cx+'" y="'+(HY+HM+96)+'" font-size="40" fill="rgba(255,255,255,0.65)" text-anchor="middle">'+dE+'</text>';
     } else {
-      if(x2-x1>26)sRc+='<text x="'+cx+'" y="'+(HH-4)+'" font-size="14" fill="rgba(255,255,255,0.7)" text-anchor="middle">'+dS+'</text>';
+      if(x2-x1>50)sRc+='<text x="'+cx+'" y="'+(HH-18)+'" font-size="42" fill="rgba(255,255,255,0.75)" text-anchor="middle">'+dS+'</text>';
     }
   });
 
@@ -3373,21 +3417,19 @@ function _buildGanttSVGForExport(ai,fDS,fDE,viewMode){
     });
   }
 
-
-
   var cy2=HH;
   rows.forEach(function(row,ridx){
     var rh=rowHeights[ridx];var isM2=row.type==='marco';
     sLc+='<rect x="0" y="'+cy2+'" width="'+LW+'" height="'+rh+'" fill="'+(isM2?'#C8E09A':'#FAFDF7')+'"/>';
     if(ridx%2===1)sRc+='<rect x="0" y="'+cy2+'" width="'+TW+'" height="'+rh+'" fill="rgba(0,0,0,0.015)"/>';
-    if(!isM2)sRc+='<line x1="2" y1="'+(cy2+rh/2).toFixed(1)+'" x2="'+TW+'" y2="'+(cy2+rh/2).toFixed(1)+'" stroke="#64748B" stroke-width="1" stroke-dasharray="10,6" opacity="0.55"/>';
+    if(!isM2)sRc+='<line x1="2" y1="'+(cy2+rh/2).toFixed(1)+'" x2="'+TW+'" y2="'+(cy2+rh/2).toFixed(1)+'" stroke="#64748B" stroke-width="1.5" stroke-dasharray="14,8" opacity="0.5"/>';
     cy2+=rh;
   });
 
   weeks.forEach(function(w){
     var x1=px(w);
-    var wO=isW?'0.45':'0.2',wW=isW?'1.5':'1';
-    sRc+='<line x1="'+x1.toFixed(1)+'" y1="'+HH+'" x2="'+x1.toFixed(1)+'" y2="'+H+'" stroke="rgba(60,80,100,'+wO+')" stroke-width="'+wW+'" stroke-dasharray="5,4"/>';
+    var wO=isW?'0.45':'0.2',wW=isW?'2':'1.5';
+    sRc+='<line x1="'+x1.toFixed(1)+'" y1="'+HH+'" x2="'+x1.toFixed(1)+'" y2="'+H+'" stroke="rgba(60,80,100,'+wO+')" stroke-width="'+wW+'" stroke-dasharray="6,5"/>';
   });
 
   var cy3=HH;
@@ -3395,64 +3437,64 @@ function _buildGanttSVGForExport(ai,fDS,fDE,viewMode){
     var rh=rowHeights[ridx];var isM3=row.type==='marco';
     if(isM3){
       var m2=row.data;var col2=sc(m2.status||'A iniciar');
-      sLc+='<rect x="0" y="'+cy3+'" width="4" height="'+rh+'" fill="'+col2+'"/>';
-      var nm=m2.name.length>52?m2.name.slice(0,50)+'…':m2.name;
-      sLc+='<text x="16" y="'+(cy3+rh/2+7).toFixed(1)+'" font-size="16" fill="#1A2E0A" font-weight="700">'+escSVG(nm)+'</text>';
+      sLc+='<rect x="0" y="'+cy3+'" width="6" height="'+rh+'" fill="'+col2+'"/>';
+      var nm=m2.name.length>32?m2.name.slice(0,30)+'…':m2.name;
+      sLc+='<text x="20" y="'+(cy3+rh/2+14).toFixed(1)+'" font-size="44" fill="#1A2E0A" font-weight="700">'+escSVG(nm)+'</text>';
       var fr=m2.subtasks.length&&m2.subtasks[0].resp?m2.subtasks[0].resp:'';
-      if(fr){var rn=fr.length>14?fr.slice(0,13)+'…':fr;sLc+='<text x="'+(LW-10)+'" y="'+(cy3+rh/2+6).toFixed(1)+'" font-size="14" fill="#475569" text-anchor="end">'+escSVG(rn)+'</text>';}
+      if(fr){var rn=fr.length>14?fr.slice(0,13)+'…':fr;sLc+='<text x="'+(LW-16)+'" y="'+(cy3+rh/2+12).toFixed(1)+'" font-size="41" fill="#475569" text-anchor="end">'+escSVG(rn)+'</text>';}
       if(m2.start&&m2.end){
-        var bx=px(new Date(m2.start)),bx2=px(new Date(m2.end)),bw=Math.max(8,bx2-bx);
-        var bh2=28,by2=cy3+(rh-bh2)/2;
-        sRc+='<rect x="'+bx.toFixed(1)+'" y="'+by2.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+bh2+'" fill="'+col2+'" rx="5" opacity="0.88"/>';
-        if(bw>60)sRc+='<text x="'+(bx+bw/2).toFixed(1)+'" y="'+(by2+bh2/2+5.5).toFixed(1)+'" font-size="15" fill="#FFF" font-weight="700" text-anchor="middle">'+escSVG(sl(m2.status||'A iniciar'))+'</text>';
+        var bx=px(new Date(m2.start)),bx2=px(new Date(m2.end)),bw=Math.max(10,bx2-bx);
+        var bh2=70,by2=cy3+(rh-bh2)/2;
+        sRc+='<rect x="'+bx.toFixed(1)+'" y="'+by2.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+bh2+'" fill="'+col2+'" rx="6" opacity="0.88"/>';
+        if(bw>100)sRc+='<text x="'+(bx+bw/2).toFixed(1)+'" y="'+(by2+bh2/2+14).toFixed(1)+'" font-size="43" fill="#FFF" font-weight="700" text-anchor="middle">'+escSVG(sl(m2.status||'A iniciar'))+'</text>';
       }
     } else {
       var t2=row.data;var col3=sc(t2.status||'A iniciar');
       var wds2=(t2.tarefa||'').split(' ');
       var ls2=[],cur2='';
       wds2.forEach(function(wrd){
-        if((cur2+' '+wrd).trim().length<=60){cur2=(cur2+' '+wrd).trim();}
+        if((cur2+' '+wrd).trim().length<=34){cur2=(cur2+' '+wrd).trim();}
         else{if(cur2)ls2.push(cur2);cur2=wrd;}
       });
       if(cur2)ls2.push(cur2);
       if(!ls2.length)ls2=[''];
-      var topY=cy3+10;
+      var topY=cy3+16;
       ls2.forEach(function(line,li){
-        sLc+='<text x="26" y="'+(topY+li*20+16).toFixed(1)+'" font-size="14" fill="#1E293B">'+escSVG(line)+'</text>';
+        sLc+='<text x="30" y="'+(topY+li*LINE_H+38).toFixed(1)+'" font-size="42" fill="#1E293B">'+escSVG(line)+'</text>';
       });
-      var afterY=topY+ls2.length*20;
+      var afterY=topY+ls2.length*LINE_H;
       if(t2.sharedAreas&&t2.sharedAreas.length>0){
         var tagTxt=t2.sharedAreas.length===1?'[+] tb em: '+t2.sharedAreas[0]:'[+] tb em '+t2.sharedAreas.length+' areas';
-        var tagW=Math.min(tagTxt.length*7.5+16,290);
-        sLc+='<rect x="24" y="'+afterY+'" width="'+tagW+'" height="24" rx="12" fill="#EDE9FE" stroke="#C4B5FD" stroke-width="1"/>';
-        sLc+='<text x="'+(24+tagW/2)+'" y="'+(afterY+16)+'" font-size="14" fill="#5B21B6" text-anchor="middle" font-weight="700">'+escSVG(tagTxt)+'</text>';
+        var tagW=Math.min(tagTxt.length*18+24,600);
+        sLc+='<rect x="28" y="'+afterY+'" width="'+tagW+'" height="60" rx="18" fill="#EDE9FE" stroke="#C4B5FD" stroke-width="1.5"/>';
+        sLc+='<text x="'+(28+tagW/2)+'" y="'+(afterY+42)+'" font-size="40" fill="#5B21B6" text-anchor="middle" font-weight="700">'+escSVG(tagTxt)+'</text>';
       } else if(t2.resp){
         var rn2=t2.resp.length>14?t2.resp.slice(0,13)+'…':t2.resp;
-        sLc+='<text x="'+(LW-22)+'" y="'+(cy3+rh/2+5).toFixed(1)+'" font-size="13" fill="#64748B" text-anchor="end">'+escSVG(rn2)+'</text>';
+        sLc+='<text x="'+(LW-28)+'" y="'+(cy3+rh/2+14).toFixed(1)+'" font-size="40" fill="#64748B" text-anchor="end">'+escSVG(rn2)+'</text>';
       }
-      sLc+='<circle cx="'+(LW-10)+'" cy="'+(cy3+rh/2).toFixed(1)+'" r="6" fill="'+col3+'"/>';
+      sLc+='<circle cx="'+(LW-14)+'" cy="'+(cy3+rh/2).toFixed(1)+'" r="12" fill="'+col3+'"/>';
       if(t2.start&&t2.end){
         var tS=new Date(t2.start),tE=new Date(t2.end);
-        var tbh=19,tby=cy3+(rh-tbh)/2;
+        var tbh=46,tby=cy3+(rh-tbh)/2;
         weeks.forEach(function(tw,twi){
           var twE=twi+1<weeks.length?weeks[twi+1]:CE;
           var tsS=new Date(Math.max(+tS,+tw)),tsE=new Date(Math.min(+tE,+twE));
           if(+tsS>=+tsE)return;
-          var tbx=px(tsS)+1.5,tbx2=px(tsE)-1.5,tbw=Math.max(3,tbx2-tbx);
-          sRc+='<rect x="'+tbx.toFixed(1)+'" y="'+tby.toFixed(1)+'" width="'+tbw.toFixed(1)+'" height="'+tbh+'" fill="'+col3+'" rx="4" opacity="0.92"/>';
-          if(tbw>60)sRc+='<text x="'+(tbx+tbw/2).toFixed(1)+'" y="'+(tby+tbh/2+4.5).toFixed(1)+'" font-size="13" fill="#FFF" font-weight="600" text-anchor="middle">'+escSVG(sl(t2.status||'A iniciar'))+'</text>';
+          var tbx=px(tsS)+2,tbx2=px(tsE)-2,tbw=Math.max(4,tbx2-tbx);
+          sRc+='<rect x="'+tbx.toFixed(1)+'" y="'+tby.toFixed(1)+'" width="'+tbw.toFixed(1)+'" height="'+tbh+'" fill="'+col3+'" rx="5" opacity="0.92"/>';
+          if(tbw>100)sRc+='<text x="'+(tbx+tbw/2).toFixed(1)+'" y="'+(tby+tbh/2+13).toFixed(1)+'" font-size="41" fill="#FFF" font-weight="600" text-anchor="middle">'+escSVG(sl(t2.status||'A iniciar'))+'</text>';
         });
       }
     }
-    var sep=isM3?'#B8D485':'#E2E8F0',sepW=isM3?'1.5':'0.8';
+    var sep=isM3?'#B8D485':'#E2E8F0',sepW=isM3?'2':'1';
     sLc+='<line x1="0" y1="'+(cy3+rh)+'" x2="'+LW+'" y2="'+(cy3+rh)+'" stroke="'+sep+'" stroke-width="'+sepW+'"/>';
     sRc+='<line x1="0" y1="'+(cy3+rh)+'" x2="'+TW+'" y2="'+(cy3+rh)+'" stroke="'+sep+'" stroke-width="'+sepW+'"/>';
     cy3+=rh;
   });
 
   var today2=new Date();var tx=px(today2).toFixed(1);
-  sRc+='<line x1="'+tx+'" y1="'+HH+'" x2="'+tx+'" y2="'+H+'" stroke="#FF2525" stroke-width="2.5" opacity="0.9"/>';
-  sLc+='<line x1="'+(LW-1).toFixed(1)+'" y1="0" x2="'+(LW-1).toFixed(1)+'" y2="'+H+'" stroke="#CBD5E1" stroke-width="1.5"/>';
+  sRc+='<line x1="'+tx+'" y1="'+HH+'" x2="'+tx+'" y2="'+H+'" stroke="#FF2525" stroke-width="4" opacity="0.9"/>';
+  sLc+='<line x1="'+(LW-1).toFixed(1)+'" y1="0" x2="'+(LW-1).toFixed(1)+'" y2="'+H+'" stroke="#CBD5E1" stroke-width="2"/>';
 
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+(LW+TW)+' '+H+'" width="'+(LW+TW)+'" height="'+H+'" font-family="Helvetica,Arial,sans-serif">'
     +'<g>'+sLc+'</g>'
