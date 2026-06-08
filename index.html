@@ -7,6 +7,7 @@
 <script>if(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||window.innerWidth<=768){location.replace('mobile.html');}</script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/svg2pdf.js@2.2.3/dist/svg2pdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js" integrity="sha384-Cck14aA9cifjYolcnjebXRfWGkz5ltHMBiG4px/j8GS+xQcb7OhNQWZYyWjQ+UwQ" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
 <style>
   :root{
@@ -620,6 +621,7 @@
 <button id="n2-fab" onclick="toggleN2Filter()" style="display:none;position:fixed;bottom:82px;right:28px;z-index:1000;padding:11px 20px;border:none;border-radius:21px;font-size:16px;font-weight:700;cursor:pointer;background:#3D6218;color:#B8E85C;box-shadow:0 4px 16px rgba(0,0,0,.3);align-items:center;gap:8px">📋 Pauta N2 · 0</button>
 <button id="n2-clear-fab" onclick="clearN2Selection()" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
 <button id="n2-publish-fab" onclick="publishN2Pauta()" style="display:none;position:fixed;bottom:140px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#1A3A8A;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📤 Publicar pauta</button>
+<button id="n2-ppt-fab" onclick="exportN2PPT()" style="display:none;position:fixed;bottom:200px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#065F46;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📊 Exportar PPT</button>
 <button id="n2-lock-fab" onclick="unlockN2Edit()" title="Desbloquear edição" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1001;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#5C3A8A;color:white;box-shadow:0 4px 12px rgba(0,0,0,.3)">🔓 Desbloquear</button>
 
   <div id="tab-reqs" class="tab-panel">
@@ -1147,9 +1149,9 @@ function abrevNome(n){
     var onEap=document.getElementById('tab-eap')&&document.getElementById('tab-eap').classList.contains('active');
     var cfab=document.getElementById('n2-clear-fab');
     var pfab=document.getElementById('n2-publish-fab');
-    var lfab=document.getElementById('n2-lock-fab');
+    var lfab=document.getElementById('n2-lock-fab');var pptfab=document.getElementById('n2-ppt-fab');
     if(cfab)cfab.style.display=(n>0&&onEap&&!locked)?'flex':'none';
-    if(pfab)pfab.style.display=(n>0&&onEap&&!locked)?'flex':'none';
+    if(pfab)pfab.style.display=(n>0&&onEap&&!locked)?'flex':'none';if(pptfab)pptfab.style.display=(n>0&&onEap&&!locked)?'flex':'none';
     if(lfab)lfab.style.display=(_n2ViewMode&&!_n2Unlocked&&onEap)?'flex':'none';
   }
   function clearN2Selection(){
@@ -1237,6 +1239,222 @@ function abrevNome(n){
     var _base='https://pmo-creator.github.io/maz-dashboard/index.html';
     var url=_base+'?n2='+arr.join(',')+'&ph='+_n2Hash(pin);
     _showN2Modal(url);
+  }
+  function exportN2PPT(){
+    var arr=loadN2();
+    if(!arr.length){alert('Nenhum marco selecionado para exportar.');return;}
+    if(typeof PptxGenJS==='undefined'){alert('Biblioteca de PPT não carregada. Verifique a conexão e recarregue a página.');return;}
+
+    // Usa os filtros ATIVOS para replicar exatamente o que está visível no dashboard
+    var currentFilters=getFilters();
+    var sfArr=currentFilters.status||[];
+    var sfLow=sfArr.map(function(s){return s.toLowerCase();});
+    function sfOk(v){return !sfLow.length||sfLow.indexOf((v||'A iniciar').toLowerCase())>=0;}
+
+    var selected=new Set(arr);
+    var byEixo=[];
+    WBS.forEach(function(eixo,gi){
+      var vis=eixo.children.filter(function(m){return matchesFilter(eixo,m,currentFilters);});
+      if(currentFilters.resp&&currentFilters.resp.length>0)vis=vis.filter(function(m){return grupoHasResp(m,currentFilters.resp);});
+      var grupoItems=[];
+      vis.forEach(function(grupo,mi){
+        var tasks=grupo.tasks||[];
+        var visTasks=sfLow.length===0?tasks:tasks.filter(function(t){return sfOk(t.status);});
+        var marcoItems=[];
+        visTasks.forEach(function(task,ti){
+          if(task.tipo==='marco'){
+            var id=gi+':'+mi+':'+ti;
+            if(selected.has(id)){
+              var allSubs=task.subtasks||[];
+              var filteredSubs=(sfLow.length===0||filterLevel==='marco')?allSubs:allSubs.filter(function(s){return sfOk(s.status);});
+              var rfActive=currentFilters.resp&&currentFilters.resp.length>0;
+              if(rfActive&&!(task.resp&&currentFilters.resp.indexOf(task.resp)>=0))
+                filteredSubs=filteredSubs.filter(function(s){return s.resp&&currentFilters.resp.indexOf(s.resp)>=0;});
+              marcoItems.push({task:task,subtasks:filteredSubs});
+            }
+          }
+        });
+        if(marcoItems.length)grupoItems.push({grupo:grupo,marcos:marcoItems});
+      });
+      if(grupoItems.length)byEixo.push({eixo:eixo,grupos:grupoItems});
+    });
+    if(!byEixo.length){alert('Nenhum marco encontrado com os filtros atuais.');return;}
+
+    // Cores via objeto STATUS do dashboard
+    function stColor(s){return (STATUS[s]||STATUS['A iniciar']).color.replace('#','');}
+    function stLabel(s){return (STATUS[s]||STATUS['A iniciar']).label;}
+
+    // Estimativa de linhas (conservadora) para dimensionar caixas dinamicamente
+    function estLines(text,charsPerLine){
+      return Math.max(1,Math.ceil(((text||'').length)/charsPerLine));
+    }
+    // chars/linha para cada tamanho de fonte / largura aproximada
+    var CPL14=51;   // 16pt em ~7.3" (nome do marco)
+    var CPL11=69;   // 13pt em ~7.6" (nome da tarefa)
+    var CPL10=108;  // 12pt em ~12" (progresso/encaminhamento)
+    // altura por linha (polegadas)
+    var LH14=0.32; var LH11=0.27; var LH10=0.25;
+
+    // Constantes de layout
+    var W=13.33,H=7.5,ML=0.3,CW=W-ML-0.3;
+    var SAFE_BOTTOM=H-0.48;
+    var BG='1E2E0D',BG2='2F4A18',ACCENT='8AC43A',ACCENTD='4A7A1E';
+    var TEXT_DARK='1A2E0A',TEXT_LIGHT='E2E8F0',MUTED='94A3B8';
+    var NP='NÃO PREENCHIDO';
+
+    var now=new Date();
+    var MBR=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    var DBR=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+    var dateFull=DBR[now.getDay()]+', '+now.getDate()+' de '+MBR[now.getMonth()]+'. de '+now.getFullYear();
+    var dateShort=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
+
+    var pptx=new PptxGenJS();
+    pptx.layout='LAYOUT_WIDE';pptx.author='IDG PMO';pptx.subject='Pauta N2 — MAZ 2026';
+    var logoEl=document.querySelector('.header-logo');
+    var logoData=logoEl?logoEl.src:null;
+
+    function addFooter(sl){
+      sl.addShape('rect',{x:0,y:H-0.32,w:W,h:0.32,fill:{color:ACCENTD},line:{type:'none'}});
+      sl.addText('IDG PMO · MAZ 2026',{x:ML,y:H-0.30,w:CW/2,h:0.28,fontSize:13,bold:true,color:TEXT_DARK,fontFace:'Calibri'});
+      sl.addText(dateShort,{x:ML+CW/2,y:H-0.30,w:CW/2,h:0.28,fontSize:13,color:TEXT_DARK,align:'right',fontFace:'Calibri'});
+    }
+
+    // === SLIDE DE CAPA ===
+    var cover=pptx.addSlide();cover.background={color:BG};addFooter(cover);
+    if(logoData){try{cover.addImage({data:logoData,x:W/2-1.8,y:0.7,w:3.6,h:1.35});}catch(e){}}
+    cover.addShape('rect',{x:ML+1.5,y:2.3,w:CW-3,h:0.05,fill:{color:ACCENT},line:{type:'none'}});
+    cover.addText('Reunião N2',{x:ML,y:2.5,w:CW,h:1.1,fontSize:58,bold:true,color:ACCENT,align:'center',fontFace:'Calibri'});
+    cover.addText('Pauta — Museu das Amazônias 2026',{x:ML,y:3.72,w:CW,h:0.75,fontSize:30,color:TEXT_LIGHT,align:'center',fontFace:'Calibri'});
+    cover.addText(dateFull,{x:ML,y:4.6,w:CW,h:0.44,fontSize:20,color:MUTED,align:'center',fontFace:'Calibri'});
+    var totalItems=byEixo.reduce(function(s,e){return s+e.grupos.reduce(function(ss,g){return ss+g.marcos.length;},0);},0);
+    cover.addText(totalItems+' item'+(totalItems!==1?'s':'')+' selecionado'+(totalItems!==1?'s':''),{x:ML,y:5.16,w:CW,h:0.38,fontSize:18,color:MUTED,align:'center',fontFace:'Calibri'});
+
+    // === SLIDES DE CONTEÚDO ===
+    byEixo.forEach(function(eixoData){
+      var eixo=eixoData.eixo,grupos=eixoData.grupos;
+      var slide=null,y=0;
+
+      function addEixoSlide(cont){
+        slide=pptx.addSlide();slide.background={color:BG};addFooter(slide);y=0.2;
+        // Header do eixo — fontes NÃO aumentadas
+        slide.addShape('rect',{x:ML,y:y,w:CW,h:0.54,fill:{color:BG2},line:{color:ACCENTD,width:1}});
+        slide.addShape('rect',{x:ML+0.1,y:y+0.09,w:0.38,h:0.36,fill:{color:ACCENTD},line:{type:'none'}});
+        slide.addText(eixo.id,{x:ML+0.1,y:y+0.09,w:0.38,h:0.36,fontSize:14,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
+        slide.addText(eixo.name.toUpperCase()+(cont?' (cont.)':''),{x:ML+0.58,y:y+0.09,w:CW-0.7,h:0.36,fontSize:17,bold:true,color:'FFFFFF',valign:'middle',fontFace:'Calibri'});
+        y+=0.68;
+      }
+      function ensureSpace(neededH){if(!slide||y+neededH>SAFE_BOTTOM)addEixoSlide(!!slide);}
+
+      addEixoSlide(false);
+
+      grupos.forEach(function(grupoData){
+        var grupo=grupoData.grupo,marcos=grupoData.marcos;
+        var grupoH=0.36;
+        ensureSpace(grupoH);
+        // FIX 1: cor branca + negrito no nome do grupo
+        slide.addShape('rect',{x:ML+0.1,y:y,w:CW-0.2,h:grupoH,fill:{color:'264D0A'},line:{type:'none'}});
+        slide.addText(grupo.name,{x:ML+0.2,y:y,w:CW-0.4,h:grupoH,fontSize:15,bold:true,color:'FFFFFF',valign:'middle',fontFace:'Calibri'});
+        y+=grupoH+0.04;
+
+        marcos.forEach(function(marcoData){
+          var marco=marcoData.task;
+          var tasksToShow=marcoData.subtasks.length>0?marcoData.subtasks:[marco];
+          var mc=stColor(marco.status),ml_=stLabel(marco.status);
+          var ds=marco.start?fmtBRshort(marco.start):'',de=marco.end?fmtBRshort(marco.end):'';
+          var dateStr=[ds,de].filter(Boolean).join('→');
+
+          // FIX 2: altura dinâmica do marco band baseada no tamanho do nome
+          var marcoNameLines=estLines(marco.tarefa,CPL14);
+          var marcoNameH=Math.max(0.32,marcoNameLines*LH14);
+          var marcoBandH=Math.max(0.58,marcoNameH+0.26); // 0.13 topo + conteudo + 0.13 base
+
+          ensureSpace(marcoBandH+0.06);
+          slide.addShape('rect',{x:ML+0.1,y:y,w:CW-0.2,h:marcoBandH,fill:{color:'F5FAF0'},line:{color:mc,width:3}});
+          // Status badge (topo-alinhado)
+          slide.addShape('rect',{x:ML+0.2,y:y+0.13,w:1.7,h:0.32,fill:{color:mc},line:{type:'none'}});
+          slide.addText(ml_,{x:ML+0.2,y:y+0.13,w:1.7,h:0.32,fontSize:13,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
+          // N2 badge
+          slide.addShape('rect',{x:ML+2.02,y:y+0.15,w:0.40,h:0.28,fill:{color:BG},line:{color:ACCENT,width:1}});
+          slide.addText('N2',{x:ML+2.02,y:y+0.15,w:0.40,h:0.28,fontSize:12,bold:true,color:ACCENT,align:'center',valign:'middle',fontFace:'Calibri'});
+          // Nome do marco com altura calculada
+          slide.addText(marco.tarefa||'',{x:ML+2.54,y:y+0.13,w:CW-5.1,h:marcoNameH,fontSize:16,bold:true,color:TEXT_DARK,valign:'top',wrap:true,fontFace:'Calibri'});
+          // Datas e responsável (topo-alinhados)
+          if(dateStr)slide.addText('📅 '+dateStr,{x:ML+CW-2.4,y:y+0.13,w:1.4,h:0.32,fontSize:13,color:'1E293B',valign:'middle',fontFace:'Calibri'});
+          if(marco.resp)slide.addText('👤 '+abrevNome(marco.resp),{x:ML+CW-0.9,y:y+0.13,w:0.88,h:0.32,fontSize:12,color:'1E293B',valign:'top',wrap:true,lineSpacingMultiple:0.85,fontFace:'Calibri'});
+          y+=marcoBandH+0.06;
+
+          // Task cards
+          tasksToShow.forEach(function(task){
+            var tc=stColor(task.status),tl=stLabel(task.status);
+            var tds=task.start?fmtBRshort(task.start):'',tde=task.end?fmtBRshort(task.end):'';
+            var tdateStr=[tds,tde].filter(Boolean).join('→');
+
+            // FIX 3: sempre mostra Progresso e Encaminhamentos
+            var progTxt=(task.progresso&&task.progresso.trim())?task.progresso.trim():'';
+            var encTxt=(task.encaminhamento&&task.encaminhamento.trim())?task.encaminhamento.trim():'';
+            var isAtrasado=(task.status||'').toLowerCase().indexOf('atraso')>=0;
+            var progVal=progTxt||NP;
+            var encVal=encTxt||NP;
+            var progEmpty=!progTxt, encEmpty=!encTxt;
+            var progColor=progEmpty?'DC2626':TEXT_DARK;
+            var encColor=encEmpty?'DC2626':TEXT_DARK;
+            var progValOpts={fontSize:12,color:progColor};if(progEmpty){progValOpts.bold=true;}
+            var encValOpts={fontSize:12,color:encColor};if(encEmpty){encValOpts.bold=true;}
+
+            // FIX 2: alturas dinâmicas para nome, progresso e encaminhamento
+            var taskNameLines=estLines(task.tarefa,CPL11);
+            var taskNameH=Math.max(0.30,taskNameLines*LH11);
+            var topH=Math.max(0.44,taskNameH+0.14); // 0.07 topo + nome + 0.07 base
+
+            var progLines=estLines('Progresso: '+progVal,CPL10);
+            var progH=Math.max(0.28,progLines*LH10+0.10);
+
+            var encLines=estLines('Encaminhamentos: '+encVal,CPL10);
+            var encH=Math.max(0.28,encLines*LH10+0.10);
+
+            var taskH=topH+progH+encH;
+            ensureSpace(taskH+0.08);
+
+            // Card de fundo
+            slide.addShape('rect',{x:ML+0.2,y:y,w:CW-0.3,h:taskH,fill:{color:'F7FAFF'},line:{color:'DDE8F5',width:1}});
+            // Borda lateral colorida
+            slide.addShape('rect',{x:ML+0.2,y:y,w:0.06,h:taskH,fill:{color:tc},line:{type:'none'}});
+            // Status badge da tarefa
+            slide.addShape('rect',{x:ML+0.34,y:y+0.07,w:1.5,h:0.30,fill:{color:tc},line:{type:'none'}});
+            slide.addText(tl,{x:ML+0.34,y:y+0.07,w:1.5,h:0.30,fontSize:12,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
+            // Nome da tarefa com altura calculada
+            slide.addText(task.tarefa||'',{x:ML+1.94,y:y+0.07,w:CW-4.8,h:taskNameH,fontSize:13,color:TEXT_DARK,valign:'top',wrap:true,fontFace:'Calibri'});
+            // Datas e resp
+            if(tdateStr)slide.addText('📅 '+tdateStr,{x:ML+CW-2.4,y:y+0.07,w:1.4,h:0.30,fontSize:12,color:'1E293B',valign:'middle',fontFace:'Calibri'});
+            if(task.resp)slide.addText('👤 '+abrevNome(task.resp),{x:ML+CW-0.9,y:y+0.07,w:0.88,h:0.30,fontSize:11,color:'1E293B',valign:'top',wrap:true,lineSpacingMultiple:0.85,fontFace:'Calibri'});
+
+            // Linha separadora entre header e campos
+            slide.addShape('rect',{x:ML+0.26,y:y+topH,w:CW-0.38,h:0.01,fill:{color:'DDE8F5'},line:{type:'none'}});
+
+            // Progresso (sempre presente)
+            slide.addText(
+              [{text:'Progresso: ',options:{bold:true,fontSize:12,color:'374151'}},{text:(progEmpty?'⚠️ ':'')+progVal,options:progValOpts}],
+              {x:ML+0.34,y:y+topH+0.02,w:CW-0.52,h:progH-0.02,fontFace:'Calibri',wrap:true}
+            );
+            // Linha separadora
+            slide.addShape('rect',{x:ML+0.26,y:y+topH+progH,w:CW-0.38,h:0.01,fill:{color:'DDE8F5'},line:{type:'none'}});
+
+            // Encaminhamentos (sempre presente)
+            slide.addText(
+              [{text:'Encaminhamentos: ',options:{bold:true,fontSize:12,color:'374151'}},{text:(encEmpty?'⚠️ ':'')+encVal,options:encValOpts}],
+              {x:ML+0.34,y:y+topH+progH+0.02,w:CW-0.52,h:encH-0.02,fontFace:'Calibri',wrap:true}
+            );
+
+            y+=taskH+0.09;
+          });
+          y+=0.1;
+        });
+        y+=0.16;
+      });
+    });
+
+    var fname='Pauta_N2_'+now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'.pptx';
+    pptx.writeFile({fileName:fname});
   }
   function unlockN2Edit(){
     var ph=new URLSearchParams(window.location.search).get('ph')||'';
@@ -2673,6 +2891,7 @@ async function loadSheetsData() {
   try {
     const {wbsRows, wbsColors, reqsRows, reqsOk} = await Promise.race([fetchAll(), timeout]);
     _rawWBSRows=wbsRows;
+    _detectAreaCols(wbsRows);
     const {wbs:newWBS,weekLabel,badRows:_wbsBad}=_parseWBS(wbsRows, wbsColors||[]);
     WBS.length=0; newWBS.forEach(e=>WBS.push(e));updateWBSWarning(_wbsBad);
     if(reqsRows){ const newREQS=_parseREQS(reqsRows); REQS.length=0; newREQS.forEach(r=>REQS.push(r)); }
@@ -2717,7 +2936,7 @@ async function loadSheetsData() {
 // ABA AREAS v4
 var AREAS_DEF=[
   {idx:49,name:'Foyer',color:'#8e44ad'},
-  {idx:50,name:'Área 0 (Pingueira)',color:'#16a085'},
+  {idx:50,name:'Área 0 (Pinguela)',color:'#16a085'},
   {idx:51,name:'Área 1 (Diversidade)',color:'#2980b9'},
   {idx:52,name:'Área 2 (Oralidade e Tecnologias)',color:'#FF2525'},
   {idx:53,name:'Área 3 (Aturá e Feira)',color:'#8AC43A'},
@@ -2740,13 +2959,22 @@ function _isAreaChecked(val){
   var v=(val||'').toString().trim().toUpperCase();
   return v==='TRUE'||v==='VERDADEIRO'||v==='1'||v==='X'||v==='SIM';
 }
+function _detectAreaCols(rows){
+  if(!rows||rows.length<2)return;
+  var hdr=rows[1];
+  var foyer=-1;
+  for(var i=0;i<hdr.length;i++){
+    if((hdr[i]||'').toString().trim().toUpperCase()==='FOYER'){foyer=i;break;}
+  }
+  if(foyer<0){console.warn('AREAS: coluna FOYER nao encontrada, usando indices fixos');return;}
+  AREAS_DEF.forEach(function(a,ai){a.idx=foyer+ai;});
+}
 function _buildAreasData(){
-  var EIXO='MONTAGEM DE EXPO DE LONGA';
+  // Itera todos os eixos: tarefas de area estao distribuidas em multiplos eixos (ex: COMPRAS, PROJETO EXPOGRAFICO)
   var buckets=AREAS_DEF.map(function(a){
     return{areaIdx:a.idx,areaName:a.name,areaColor:a.color,marcos:[],totalTasks:0,doneTasks:0,status:'A iniciar'};
   });
   WBS.forEach(function(eixo){
-    if(eixo.name!==EIXO)return;
     (eixo.children||[]).forEach(function(grupo){
       (grupo.tasks||[]).forEach(function(marco){
         var subs=marco.tipo==='marco'?(marco.subtasks||[]):[marco];
