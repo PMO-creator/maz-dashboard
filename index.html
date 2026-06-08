@@ -1679,8 +1679,10 @@ function toggleGroup(gi){
   groupOpen[gi]=!groupOpen[gi];
   const tog=document.getElementById('gtoggle-'+gi);const ml=document.getElementById('mlist-'+gi);
   if(!ml)return;
-  if(groupOpen[gi]){tog.style.transform='';ml.style.maxHeight=ml.scrollHeight+'px';setTimeout(()=>{if(groupOpen[gi])ml.style.maxHeight='none';},350);}
-  else{
+  if(groupOpen[gi]){
+    if(n2FilterActive){ml.querySelectorAll('[id^="mband-"],[id^="subtask-"]').forEach(function(b){b.style.display='';});}
+    tog.style.transform='';ml.style.maxHeight=ml.scrollHeight+'px';setTimeout(()=>{if(groupOpen[gi])ml.style.maxHeight='none';},350);
+  }else{
     // Fechar: limpar commentOpen e marcoOpen de todos os filhos deste eixo
     Object.keys(commentOpen).forEach(k=>{if(k.startsWith(gi+'_'))delete commentOpen[k];});
     Object.keys(marcoOpen).forEach(k=>{if(k.startsWith(gi+'_'))delete marcoOpen[k];});
@@ -1689,6 +1691,7 @@ function toggleGroup(gi){
     ml.querySelectorAll('[id^="mchev-"]').forEach(el=>{ el.style.transform='rotate(-90deg)'; });
     tog.style.transform='rotate(-90deg)';ml.style.maxHeight=ml.scrollHeight+'px';
     requestAnimationFrame(()=>ml.style.maxHeight='0px');
+    if(n2FilterActive){var _n2a=loadN2();ml.querySelectorAll('[id^="mband-"]').forEach(function(b){var id=b.id.replace('mband-','').replace(/-/g,':');if(_n2a.indexOf(id)===-1)b.style.display='none';});}
   }
 }
 function toggleComment(gi,mi,ev){
