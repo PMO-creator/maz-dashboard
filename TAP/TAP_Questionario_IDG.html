@@ -102,6 +102,21 @@ textarea{resize:vertical;min-height:90px;}
 .btn-next:hover{background:var(--primary-light);transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,58,107,.3);}
 .btn-gen{background:linear-gradient(135deg,#15803d,#16a34a);color:white;border:none;padding:14px 34px;border-radius:10px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:10px;box-shadow:0 4px 16px rgba(22,163,74,.35);}
 .btn-gen:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(22,163,74,.45);}
+.btn-save{background:white;color:var(--primary-light);border:1.5px solid var(--primary-light);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-save:hover{background:#eef2ff;}
+.toast{position:fixed;bottom:28px;right:28px;background:#1e293b;color:white;padding:12px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .35s;pointer-events:none;display:flex;align-items:center;gap:8px;}
+.toast.show{opacity:1;}
+.restore-banner{background:#fffbeb;border:1.5px solid #fbbf24;border-radius:10px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:13px;color:#92400e;}
+.restore-banner strong{font-size:14px;color:#78350f;}
+.restore-banner .rb-btns{display:flex;gap:10px;flex-shrink:0;}
+.btn-export{background:white;color:#7c3aed;border:1.5px solid #7c3aed;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:6px;position:relative;}
+.btn-export:hover{background:#f5f3ff;}
+.btn-tooltip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:10px 14px;border-radius:9px;font-size:12px;font-weight:400;width:230px;text-align:left;line-height:1.5;z-index:999;white-space:normal;pointer-events:none;opacity:0;transition:opacity .2s;box-shadow:0 4px 16px rgba(0,0,0,.25);}
+.btn-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1e293b;}
+.btn-export:hover .btn-tooltip,.btn-export:focus .btn-tooltip{opacity:1;}
+.rb-btn-yes{background:#d97706;color:white;border:none;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.rb-btn-yes:hover{background:#b45309;}
+.rb-btn-no{background:white;color:#92400e;border:1.5px solid #fbbf24;padding:8px 16px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit;}
 
 /* DIVIDER */
 hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
@@ -230,6 +245,15 @@ hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
 
   <div class="main">
 
+    <!-- RESTORE BANNER -->
+    <div id="restore-banner" class="restore-banner" style="display:none">
+      <div><strong>📋 Rascunho encontrado</strong><br>Você tem um preenchimento salvo. Deseja continuar de onde parou?</div>
+      <div class="rb-btns">
+        <button class="rb-btn-yes" onclick="restoreDraft()">Sim, restaurar</button>
+        <button class="rb-btn-no" onclick="dismissDraft()">Descartar</button>
+      </div>
+    </div>
+
     <!-- SEC 1: Identificação -->
     <div class="section active" id="s1">
       <div class="card">
@@ -267,7 +291,7 @@ hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
           </div>
         </div>
       </div>
-      <div class="nav"><div></div><button class="btn-next" onclick="go(1,2)">Próximo →</button></div>
+      <div class="nav"><div></div><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-export" onclick="exportarHTML()">📥 Draft<span class="btn-tooltip">Baixa este HTML com todos os dados embutidos.<br><br>✔ Funciona offline<br>✔ Abre em qualquer browser<br>✔ Ao reabrir, oferece restaurar de onde parou<br><br>Ideal para salvar e continuar depois em outro dispositivo.</span></button><button class="btn-next" onclick="go(1,2)">Próximo →</button></div>
     </div>
 
     <!-- SEC 2: Objetivo e Abrangência -->
@@ -301,7 +325,7 @@ hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
           </div>
         </div>
       </div>
-      <div class="nav"><button class="btn-prev" onclick="go(2,1)">← Anterior</button><button class="btn-next" onclick="go(2,3)">Próximo →</button></div>
+      <div class="nav"><button class="btn-prev" onclick="go(2,1)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-export" onclick="exportarHTML()">📥 Draft<span class="btn-tooltip">Baixa este HTML com todos os dados embutidos.<br><br>✔ Funciona offline<br>✔ Abre em qualquer browser<br>✔ Ao reabrir, oferece restaurar de onde parou<br><br>Ideal para salvar e continuar depois em outro dispositivo.</span></button><button class="btn-next" onclick="go(2,3)">Próximo →</button></div>
     </div>
 
     <!-- SEC 3: Situação Atual e Justificativa -->
@@ -330,7 +354,7 @@ hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
           </div>
         </div>
       </div>
-      <div class="nav"><button class="btn-prev" onclick="go(3,2)">← Anterior</button><button class="btn-next" onclick="go(3,4)">Próximo →</button></div>
+      <div class="nav"><button class="btn-prev" onclick="go(3,2)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-export" onclick="exportarHTML()">📥 Draft<span class="btn-tooltip">Baixa este HTML com todos os dados embutidos.<br><br>✔ Funciona offline<br>✔ Abre em qualquer browser<br>✔ Ao reabrir, oferece restaurar de onde parou<br><br>Ideal para salvar e continuar depois em outro dispositivo.</span></button><button class="btn-next" onclick="go(3,4)">Próximo →</button></div>
     </div>
 
     <!-- SEC 4: Financeiro e Interfaces -->
@@ -368,7 +392,7 @@ hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
           <div class="fg"><label>Outras Interfaces</label><input type="text" id="f-outras-iface" placeholder="Ex: Parceiros externos, patrocinadores, fornecedores estratégicos..."></div>
         </div>
       </div>
-      <div class="nav"><button class="btn-prev" onclick="go(4,3)">← Anterior</button><button class="btn-next" onclick="go(4,5)">Próximo →</button></div>
+      <div class="nav"><button class="btn-prev" onclick="go(4,3)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-export" onclick="exportarHTML()">📥 Draft<span class="btn-tooltip">Baixa este HTML com todos os dados embutidos.<br><br>✔ Funciona offline<br>✔ Abre em qualquer browser<br>✔ Ao reabrir, oferece restaurar de onde parou<br><br>Ideal para salvar e continuar depois em outro dispositivo.</span></button><button class="btn-next" onclick="go(4,5)">Próximo →</button></div>
     </div>
 
     <!-- SEC 5: Stakeholders -->
@@ -394,7 +418,7 @@ hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
           <button class="btn-add" onclick="addRow('stake')">+ Adicionar Parte Interessada</button>
         </div>
       </div>
-      <div class="nav"><button class="btn-prev" onclick="go(5,4)">← Anterior</button><button class="btn-next" onclick="go(5,6)">Próximo →</button></div>
+      <div class="nav"><button class="btn-prev" onclick="go(5,4)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-export" onclick="exportarHTML()">📥 Draft<span class="btn-tooltip">Baixa este HTML com todos os dados embutidos.<br><br>✔ Funciona offline<br>✔ Abre em qualquer browser<br>✔ Ao reabrir, oferece restaurar de onde parou<br><br>Ideal para salvar e continuar depois em outro dispositivo.</span></button><button class="btn-next" onclick="go(5,6)">Próximo →</button></div>
     </div>
 
     <!-- SEC 6: Marcos -->
@@ -419,7 +443,7 @@ hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
           <button class="btn-add" onclick="addRow('marco')">+ Adicionar Marco</button>
         </div>
       </div>
-      <div class="nav"><button class="btn-prev" onclick="go(6,5)">← Anterior</button><button class="btn-next" onclick="go(6,7)">Próximo →</button></div>
+      <div class="nav"><button class="btn-prev" onclick="go(6,5)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-export" onclick="exportarHTML()">📥 Draft<span class="btn-tooltip">Baixa este HTML com todos os dados embutidos.<br><br>✔ Funciona offline<br>✔ Abre em qualquer browser<br>✔ Ao reabrir, oferece restaurar de onde parou<br><br>Ideal para salvar e continuar depois em outro dispositivo.</span></button><button class="btn-next" onclick="go(6,7)">Próximo →</button></div>
     </div>
 
     <!-- SEC 7: Equipe -->
@@ -444,7 +468,7 @@ hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
           <button class="btn-add" onclick="addRow('equipe')">+ Adicionar Membro</button>
         </div>
       </div>
-      <div class="nav"><button class="btn-prev" onclick="go(7,6)">← Anterior</button><button class="btn-next" onclick="go(7,8)">Próximo →</button></div>
+      <div class="nav"><button class="btn-prev" onclick="go(7,6)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-export" onclick="exportarHTML()">📥 Draft<span class="btn-tooltip">Baixa este HTML com todos os dados embutidos.<br><br>✔ Funciona offline<br>✔ Abre em qualquer browser<br>✔ Ao reabrir, oferece restaurar de onde parou<br><br>Ideal para salvar e continuar depois em outro dispositivo.</span></button><button class="btn-next" onclick="go(7,8)">Próximo →</button></div>
     </div>
 
     <!-- SEC 8: Riscos -->
@@ -470,7 +494,7 @@ hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
           <button class="btn-add" onclick="addRow('risco')">+ Adicionar Risco</button>
         </div>
       </div>
-      <div class="nav"><button class="btn-prev" onclick="go(8,7)">← Anterior</button><button class="btn-next" onclick="go(8,9)">Próximo →</button></div>
+      <div class="nav"><button class="btn-prev" onclick="go(8,7)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-export" onclick="exportarHTML()">📥 Draft<span class="btn-tooltip">Baixa este HTML com todos os dados embutidos.<br><br>✔ Funciona offline<br>✔ Abre em qualquer browser<br>✔ Ao reabrir, oferece restaurar de onde parou<br><br>Ideal para salvar e continuar depois em outro dispositivo.</span></button><button class="btn-next" onclick="go(8,9)">Próximo →</button></div>
     </div>
 
     <!-- SEC 9: Considerações -->
@@ -487,7 +511,7 @@ hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
           <div class="fg"><label>Observações Adicionais</label><textarea id="f-obs" rows="3" placeholder="Qualquer informação relevante não contemplada nos campos anteriores..."></textarea></div>
         </div>
       </div>
-      <div class="nav"><button class="btn-prev" onclick="go(9,8)">← Anterior</button><button class="btn-next" onclick="go(9,10)">Próximo →</button></div>
+      <div class="nav"><button class="btn-prev" onclick="go(9,8)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-export" onclick="exportarHTML()">📥 Draft<span class="btn-tooltip">Baixa este HTML com todos os dados embutidos.<br><br>✔ Funciona offline<br>✔ Abre em qualquer browser<br>✔ Ao reabrir, oferece restaurar de onde parou<br><br>Ideal para salvar e continuar depois em outro dispositivo.</span></button><button class="btn-next" onclick="go(9,10)">Próximo →</button></div>
     </div>
 
     <!-- SEC 10: Revisão e Gerar -->
@@ -506,6 +530,7 @@ hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
       </div>
       <div class="nav">
         <button class="btn-prev" onclick="go(10,9)">← Anterior</button>
+        <button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-export" onclick="exportarHTML()">📥 Draft<span class="btn-tooltip">Baixa este HTML com todos os dados embutidos.<br><br>✔ Funciona offline<br>✔ Abre em qualquer browser<br>✔ Ao reabrir, oferece restaurar de onde parou<br><br>Ideal para salvar e continuar depois em outro dispositivo.</span></button>
         <button class="btn-gen" onclick="generate()">📄 Gerar TAP Completo</button>
       </div>
     </div>
@@ -559,17 +584,37 @@ function show(n){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// Required fields per section (IDs of inputs/textareas/selects)
+const REQUIRED = {
+  1: ['f-nome','f-data','f-gerente'],
+  2: ['f-objetivo'],
+  3: ['f-situacao','f-justificativa'],
+  4: ['f-inicio','f-fim']
+  // sections 5-9 have no required fields → always completable
+};
+
+function sectionComplete(n){
+  const reqs = REQUIRED[n];
+  if(!reqs) return true; // no required fields
+  return reqs.every(id=>{
+    const el=document.getElementById(id);
+    return el && el.value && el.value.trim().length > 0;
+  });
+}
+
 function go(from,to){
-  done.add(from);
+  if(sectionComplete(from)) done.add(from);
+  else done.delete(from);
   if(to===10) fillReview();
   show(to);
 }
 
 function jump(n){
-  if(n===1||n<=cur||done.has(n-1)){
-    if(n===10) fillReview();
-    show(n);
-  }
+  // refresh completion status of current section before leaving
+  if(sectionComplete(cur)) done.add(cur);
+  else done.delete(cur);
+  if(n===10) fillReview();
+  show(n);
 }
 
 // ============================================================
@@ -991,11 +1036,141 @@ function buildDoc(d){
 }
 
 // ============================================================
+// SALVAR / RESTAURAR RASCUNHO
+// ============================================================
+const DRAFT_KEY = 'tap_idg_draft';
+
+function salvarRascunho(){
+  const d = collect();
+  // persist current step and done-set
+  const state = {
+    data: d,
+    cur: cur,
+    done: [...done],
+    ts: new Date().toISOString()
+  };
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(state));
+  showToast('💾 Rascunho salvo!');
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+function restoreDraft(){
+  const banner = document.getElementById('restore-banner');
+  const state = banner._state || (()=>{const r=localStorage.getItem(DRAFT_KEY);return r?JSON.parse(r):null;})();
+  if(!state) return;
+  applyData(state.data);
+  // restore navigation state
+  state.done.forEach(n=>done.add(n));
+  show(state.cur || 1);
+  document.getElementById('restore-banner').style.display='none';
+  showToast('✅ Rascunho restaurado!');
+}
+
+function dismissDraft(){
+  localStorage.removeItem(DRAFT_KEY);
+  document.getElementById('restore-banner').style.display='none';
+}
+
+function applyData(d){
+  function sv(id,val){const e=document.getElementById(id);if(e&&val!==undefined)e.value=val;}
+  function setCheck(name,vals){
+    document.querySelectorAll('input[name="'+name+'"]').forEach(e=>{e.checked=vals.includes(e.value);});
+  }
+  function setRadio(name,val){
+    const el=document.querySelector('input[name="'+name+'"][value="'+val+'"]');
+    if(el)el.checked=true;
+  }
+  function fillTable(tbodyId,rows,cols){
+    const tb=document.getElementById(tbodyId);
+    if(!tb||!rows||!rows.length)return;
+    // remove existing rows except the first two (pre-filled)
+    while(tb.rows.length>0)tb.deleteRow(0);
+    rows.forEach(()=>addRow(tbodyId.replace('tb-','')));
+    const trs=[...tb.querySelectorAll('tr')];
+    rows.forEach((row,i)=>{
+      if(!trs[i])return;
+      cols.forEach((col,ci)=>{
+        const inp=trs[i].querySelectorAll('td')[ci]?.querySelector('input,select');
+        if(inp&&row[col]!==undefined)inp.value=row[col];
+      });
+    });
+  }
+  if(d.id){sv('f-nome',d.id.nome);sv('f-codigo',d.id.codigo);sv('f-data',d.id.data);sv('f-versao',d.id.versao);sv('f-gerente',d.id.gerente);sv('f-sponsor',d.id.sponsor);sv('f-diretoria',d.id.diretoria);sv('f-tipo',d.id.tipo);}
+  if(d.obj){sv('f-objetivo',d.obj.objetivo);sv('f-entregas',d.obj.entregas);sv('f-in',d.obj.escopoIn);sv('f-out',d.obj.escopoOut);sv('f-local',d.obj.local);if(d.obj.complexidade)setRadio('complexidade',d.obj.complexidade);}
+  if(d.ctx){sv('f-situacao',d.ctx.situacao);sv('f-justificativa',d.ctx.justificativa);sv('f-alinhamento',d.ctx.alinhamento);sv('f-definicoes',d.ctx.definicoes);}
+  if(d.fin){sv('f-inicio',d.fin.inicio);sv('f-fim',d.fin.fim);sv('f-orcamento',d.fin.orcamento);sv('f-fonte',d.fin.fonte);if(d.fin.ifaces)setCheck('iface',d.fin.ifaces);sv('f-outras-iface',d.fin.outrasIfaces);}
+  if(d.stake)fillTable('tb-stake',d.stake,['nome','papel','area','influencia','tipo','email']);
+  if(d.marcos)fillTable('tb-marco',d.marcos,['descricao','prazo','responsavel','fase','status']);
+  if(d.equipe)fillTable('tb-equipe',d.equipe,['nome','cargo','area','dedicacao','email']);
+  if(d.riscos)fillTable('tb-risco',d.riscos,['descricao','probabilidade','impacto','nivel','mitigacao','responsavel']);
+  if(d.cons){sv('f-premissas',d.cons.premissas);sv('f-restricoes',d.cons.restricoes);sv('f-depend',d.cons.depend);sv('f-obs',d.cons.obs);}
+}
+
+function exportarHTML(){
+  const state = {
+    data: collect(),
+    cur: cur,
+    done: [...done],
+    ts: new Date().toISOString()
+  };
+  const json = JSON.stringify(state);
+  // embed data into a copy of this HTML
+  const src = document.documentElement.outerHTML;
+  const marked = src.replace(
+    '// DRAFT_EMBEDDED_PLACEHOLDER',
+    'window.__DRAFT__=' + json + ';'
+  );
+  const blob = new Blob([marked], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const nm = (document.getElementById('f-nome')?.value || 'TAP').replace(/[^a-zA-Z0-9_-]/g,'_');
+  a.download = 'TAP_' + nm + '_rascunho.html';
+  a.click();
+  showToast('📥 HTML salvo com dados embutidos!');
+}
+
+// DRAFT_EMBEDDED_PLACEHOLDER
+
+// ============================================================
 // INIT
 // ============================================================
 document.getElementById('f-data').value=new Date().toISOString().split('T')[0];
 ['stake','stake','marco','marco','marco','equipe','equipe','risco','risco'].forEach(addRow);
 renderSteps();
+
+// Live validation: refresh step indicators when required fields change
+Object.entries(REQUIRED).forEach(([sec, ids])=>{
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('input', ()=>{
+      if(sectionComplete(Number(sec))) done.add(Number(sec));
+      else done.delete(Number(sec));
+      renderSteps();
+    });
+  });
+});
+
+// Check for existing draft (embedded or localStorage)
+(function(){
+  const embedded = window.__DRAFT__;
+  const stored = localStorage.getItem(DRAFT_KEY);
+  const state = embedded || (stored ? JSON.parse(stored) : null);
+  if(state && state.data && Object.values(state.data.id||{}).some(v=>v)){
+    const ts = state.ts ? new Date(state.ts).toLocaleString('pt-BR') : '';
+    const banner = document.getElementById('restore-banner');
+    banner.querySelector('strong').textContent = '📋 Rascunho encontrado' + (ts ? ' · salvo em ' + ts : '');
+    banner.style.display = 'flex';
+    // pre-load the data silently so "restore" just shows it
+    banner._state = state;
+  }
+})();
 </script>
+<div id="toast" class="toast">💾 Rascunho salvo!</div>
 </body>
 </html>
