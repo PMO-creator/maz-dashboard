@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questionário TAP — IDG PMO</title>
+<style>
+:root {
+  --primary: #1a3a6b;
+  --primary-light: #2c5299;
+  --accent: #c0392b;
+  --bg: #f4f6fa;
+  --white: #ffffff;
+  --text: #1e2430;
+  --text-muted: #6b7280;
+  --border: #d1d5db;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* HEADER */
+.header{background:var(--primary);color:white;padding:18px 40px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
+.header-logo{font-size:26px;font-weight:800;letter-spacing:3px;}
+.header-divider{width:2px;height:36px;background:rgba(255,255,255,0.3);}
+.header-info{font-size:14px;}
+.header-info strong{display:block;font-size:15px;}
+.header-info span{opacity:0.75;font-size:12px;}
+
+/* PROGRESS */
+.progress-bar{background:white;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 2px 4px rgba(0,0,0,0.05);}
+.steps{display:flex;overflow-x:auto;padding:0 20px;}
+.step{flex:1;min-width:70px;text-align:center;padding:10px 6px;font-size:11px;color:var(--text-muted);cursor:pointer;border-bottom:3px solid transparent;transition:.2s;white-space:nowrap;user-select:none;}
+.step.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:700;}
+.step.done{color:var(--success);border-bottom-color:var(--success);}
+.step-n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--border);color:white;font-weight:700;font-size:10px;margin-bottom:3px;}
+.step.active .step-n{background:var(--primary);}
+.step.done .step-n{background:var(--success);}
+
+/* MAIN */
+.main{max-width:880px;margin:36px auto;padding:0 20px 80px;}
+
+/* SECTION */
+.section{display:none;animation:fadeIn .3s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:white;border-radius:14px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:22px;}
+.card-head{background:var(--primary);color:white;padding:20px 28px;display:flex;align-items:center;gap:14px;}
+.card-num{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;}
+.card-head-title{font-size:17px;font-weight:700;}
+.card-head-sub{font-size:12px;opacity:.8;margin-top:2px;}
+.card-body{padding:28px;}
+
+/* FORM */
+.fg{margin-bottom:20px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:620px){.row2,.row3{grid-template-columns:1fr;}}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:var(--text);}
+label .req{color:var(--danger);margin-left:2px;}
+label .hint{display:block;font-weight:400;font-size:11px;color:var(--text-muted);margin-top:2px;}
+input[type=text],input[type=number],input[type=date],input[type=email],select,textarea{
+  width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:13px;font-family:inherit;color:var(--text);background:#fafbfc;
+  outline:none;transition:.2s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(44,82,153,.1);background:white;}
+textarea{resize:vertical;min-height:90px;}
+
+/* CHECKBOXES */
+.checks{display:flex;flex-wrap:wrap;gap:8px;}
+.check-chip{display:flex;align-items:center;gap:7px;padding:7px 13px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;background:#fafbfc;transition:.2s;}
+.check-chip:hover{border-color:var(--primary-light);background:#eef2ff;}
+.check-chip input{accent-color:var(--primary);width:14px;height:14px;cursor:pointer;}
+.check-chip:has(input:checked){border-color:var(--primary);background:#eef2ff;color:var(--primary);font-weight:600;}
+
+/* RADIO */
+.radios{display:flex;gap:10px;flex-wrap:wrap;}
+.radio-chip{display:flex;align-items:center;gap:7px;padding:8px 16px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;transition:.2s;}
+.radio-chip:has(input:checked){border-color:var(--primary);background:#eef2ff;color:var(--primary);font-weight:600;}
+.radio-chip input{accent-color:var(--primary);}
+
+/* DYNAMIC TABLE */
+.dtable{width:100%;border-collapse:collapse;margin-bottom:10px;}
+.dtable th{background:var(--bg);padding:9px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:2px solid var(--border);}
+.dtable td{padding:7px 5px;vertical-align:top;border-bottom:1px solid #f0f0f0;}
+.dtable input,.dtable select{padding:7px 9px;font-size:12px;border-radius:6px;}
+.btn-del{background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;padding:4px 7px;border-radius:5px;transition:.2s;}
+.btn-del:hover{background:#fee2e2;}
+.btn-add{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1.5px dashed var(--primary-light);border-radius:8px;background:none;color:var(--primary);cursor:pointer;font-size:12px;font-weight:600;transition:.2s;font-family:inherit;}
+.btn-add:hover{background:#eef2ff;border-style:solid;}
+
+/* NAV */
+.nav{display:flex;justify-content:space-between;align-items:center;padding:12px 0 4px;}
+.btn-prev{background:white;color:var(--primary);border:2px solid var(--primary);padding:11px 26px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;}
+.btn-prev:hover{background:#eef2ff;}
+.btn-next{background:var(--primary);color:white;border:none;padding:11px 26px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;}
+.btn-next:hover{background:var(--primary-light);transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,58,107,.3);}
+.btn-gen{background:linear-gradient(135deg,#15803d,#16a34a);color:white;border:none;padding:14px 34px;border-radius:10px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:10px;box-shadow:0 4px 16px rgba(22,163,74,.35);}
+.btn-gen:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(22,163,74,.45);}
+.btn-save{background:white;color:var(--primary-light);border:1.5px solid var(--primary-light);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-save:hover{background:#eef2ff;}
+.toast{position:fixed;bottom:28px;right:28px;background:#1e293b;color:white;padding:12px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .35s;pointer-events:none;display:flex;align-items:center;gap:8px;}
+.toast.show{opacity:1;}
+.restore-banner{background:#fffbeb;border:1.5px solid #fbbf24;border-radius:10px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:13px;color:#92400e;}
+.restore-banner strong{font-size:14px;color:#78350f;}
+.restore-banner .rb-btns{display:flex;gap:10px;flex-shrink:0;}
+.rb-btn-yes{background:#d97706;color:white;border:none;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.rb-btn-yes:hover{background:#b45309;}
+.rb-btn-no{background:white;color:#92400e;border:1.5px solid #fbbf24;padding:8px 16px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal-box{background:white;border-radius:14px;padding:32px 36px;max-width:400px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.2);text-align:center;}
+.modal-icon{font-size:40px;margin-bottom:12px;}
+.modal-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.modal-body{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:24px;}
+.modal-btns{display:flex;gap:12px;justify-content:center;}
+.modal-btn-cancel{background:white;color:var(--text);border:1.5px solid var(--border);padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.modal-btn-cancel:hover{background:var(--bg);}
+.modal-btn-confirm{background:var(--danger);color:white;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+.modal-btn-confirm:hover{background:#b91c1c;}
+.btn-clear{background:white;color:var(--danger);border:1.5px solid var(--danger);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-clear:hover{background:#fee2e2;}
+
+/* DIVIDER */
+hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
+
+/* REVIEW */
+.rev-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.rev-item{background:var(--bg);border-radius:8px;padding:12px 15px;}
+.rev-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);font-weight:700;margin-bottom:3px;}
+.rev-val{font-size:13px;font-weight:500;}
+
+/* FINAL CARD */
+.final-box{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #86efac;border-radius:14px;padding:30px;text-align:center;margin-bottom:22px;}
+.final-icon{font-size:44px;margin-bottom:10px;}
+.final-ttl{font-size:21px;font-weight:800;color:#15803d;margin-bottom:6px;}
+.final-txt{color:#166534;font-size:13px;line-height:1.6;}
+
+/* ===== OUTPUT ===== */
+#output{display:none;}
+.out-tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:24px;align-items:center;}
+.out-tab{padding:12px 22px;cursor:pointer;font-weight:700;font-size:14px;border-bottom:3px solid transparent;margin-bottom:-2px;color:var(--text-muted);transition:.2s;}
+.out-tab.active{color:var(--primary);border-bottom-color:var(--primary);}
+.out-view{display:none;}
+.out-view.active{display:block;}
+
+/* DASHBOARD */
+.dash-header{background:linear-gradient(135deg,#1a3a6b 0%,#2c5299 100%);color:white;border-radius:14px;padding:30px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;}
+.dash-pname{font-size:24px;font-weight:800;margin-bottom:6px;line-height:1.2;}
+.dash-meta{font-size:13px;opacity:.85;display:flex;flex-direction:column;gap:4px;}
+.dash-badges{display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0;}
+.dbadge{background:rgba(255,255,255,.18);padding:5px 13px;border-radius:18px;font-size:12px;font-weight:600;backdrop-filter:blur(4px);white-space:nowrap;}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px;}
+.kpi{background:white;border-radius:10px;padding:18px 20px;box-shadow:var(--shadow);border-left:4px solid var(--primary);}
+.kpi.green{border-left-color:var(--success);}
+.kpi.amber{border-left-color:var(--warning);}
+.kpi.red{border-left-color:var(--danger);}
+.kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);font-weight:700;margin-bottom:7px;}
+.kpi-val{font-size:22px;font-weight:800;font-family:'Segoe UI',sans-serif;}
+.kpi-sub{font-size:11px;color:var(--text-muted);margin-top:3px;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+@media(max-width:680px){.g2{grid-template-columns:1fr;}}
+.panel{background:white;border-radius:10px;box-shadow:var(--shadow);overflow:hidden;}
+.panel-h{background:var(--bg);padding:13px 20px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);}
+.panel-b{padding:18px;}
+.panel.full{grid-column:1/-1;}
+
+.ms-list{list-style:none;}
+.ms-item{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);}
+.ms-item:last-child{border-bottom:none;}
+.ms-dot{width:11px;height:11px;border-radius:50%;background:var(--primary);margin-top:4px;flex-shrink:0;}
+.ms-name{font-weight:600;font-size:13px;}
+.ms-meta{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.ms-resp{font-size:11px;color:var(--primary);font-weight:600;margin-top:1px;}
+
+.badge{display:inline-block;padding:3px 10px;border-radius:11px;font-size:11px;font-weight:700;text-transform:uppercase;}
+.b-alto{background:#fee2e2;color:#991b1b;}
+.b-medio{background:#fef3c7;color:#92400e;}
+.b-baixo{background:#dcfce7;color:#166534;}
+.b-neutro{background:#e5e7eb;color:#374151;}
+
+.dtab{width:100%;border-collapse:collapse;font-size:12px;}
+.dtab th{background:var(--bg);padding:9px 11px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:2px solid var(--border);}
+.dtab td{padding:9px 11px;border-bottom:1px solid var(--border);}
+.dtab tr:hover td{background:#f9fafb;}
+
+/* DOCUMENT */
+.doc-wrap{max-width:800px;margin:0 auto;}
+.doc-actions{display:flex;gap:10px;justify-content:flex-end;margin-bottom:16px;}
+.btn-print{background:var(--primary);color:white;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
+.btn-print:hover{background:var(--primary-light);}
+.doc{background:white;border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:13px;line-height:1.7;}
+.doc-topbar{background:var(--primary);color:white;padding:18px 30px;display:flex;justify-content:space-between;align-items:center;}
+.doc-org{font-size:22px;font-weight:800;letter-spacing:2px;}
+.doc-meta-top{text-align:right;font-size:11px;opacity:.9;}
+.doc-title{background:var(--bg);text-align:center;padding:22px 30px;border-bottom:2px solid var(--border);}
+.doc-type-lbl{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:5px;}
+.doc-pname{font-size:22px;font-weight:800;color:var(--primary);margin-bottom:3px;}
+.doc-pcode{font-size:12px;color:var(--text-muted);}
+.doc-infogrid{display:grid;grid-template-columns:1fr 1fr;}
+.doc-cell{padding:13px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.doc-cell:nth-child(even){border-right:none;}
+.doc-cell-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:700;margin-bottom:3px;}
+.doc-cell-val{font-size:13px;font-weight:600;}
+.doc-sec{padding:18px 30px;border-bottom:1px solid var(--border);}
+.doc-sec-ttl{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:9px;padding-bottom:5px;border-bottom:2px solid var(--primary);display:inline-block;}
+.doc-txt{font-size:13px;line-height:1.75;white-space:pre-line;}
+.doc-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;}
+.doc-table th{background:var(--primary);color:white;padding:8px 11px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.doc-table td{padding:8px 11px;border-bottom:1px solid var(--border);}
+.doc-table tr:nth-child(even) td{background:var(--bg);}
+.doc-footer{padding:22px 30px;display:grid;grid-template-columns:1fr 1fr;gap:30px;}
+.doc-sig{text-align:center;padding-top:42px;border-top:1px solid var(--text);}
+.doc-sig-name{font-weight:700;font-size:13px;}
+.doc-sig-role{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.doc-bottom{padding:12px 30px;background:var(--bg);text-align:center;font-size:10px;color:var(--text-muted);}
+
+@media print{
+  .progress-bar,.nav,.doc-actions,.out-tabs,.header,#form-section{display:none!important;}
+  #output{display:block!important;}
+  #dash-view{display:none!important;}
+  #doc-view{display:block!important;}
+  .out-view{display:block!important;}
+  body{background:white;}
+  .doc{border:none;box-shadow:none;}
+  .doc-wrap{max-width:100%;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">IDG</div>
+  <div class="header-divider"></div>
+  <div class="header-info">
+    <strong>PMO — Questionário TAP</strong>
+    <span>Termo de Abertura do Projeto · Instituto de Desenvolvimento e Gestão</span>
+  </div>
+</div>
+
+<!-- ======= FORM ======= -->
+<div id="form-section">
+  <div class="progress-bar">
+    <div class="steps" id="steps-bar">
+    <div class="step active " onclick="jump(1)">
+      <div class="step-n">1</div><div>Identificação</div>
+    </div>
+    <div class="step  " onclick="jump(2)">
+      <div class="step-n">2</div><div>Objetivo</div>
+    </div>
+    <div class="step  " onclick="jump(3)">
+      <div class="step-n">3</div><div>Contexto</div>
+    </div>
+    <div class="step  " onclick="jump(4)">
+      <div class="step-n">4</div><div>Finanças</div>
+    </div>
+    <div class="step  " onclick="jump(5)">
+      <div class="step-n">5</div><div>Stakeholders</div>
+    </div>
+    <div class="step  " onclick="jump(6)">
+      <div class="step-n">6</div><div>Marcos</div>
+    </div>
+    <div class="step  " onclick="jump(7)">
+      <div class="step-n">7</div><div>Equipe</div>
+    </div>
+    <div class="step  " onclick="jump(8)">
+      <div class="step-n">8</div><div>Riscos</div>
+    </div>
+    <div class="step  " onclick="jump(9)">
+      <div class="step-n">9</div><div>Considerações</div>
+    </div>
+    <div class="step  " onclick="jump(10)">
+      <div class="step-n">10</div><div>Gerar TAP</div>
+    </div></div>
+  </div>
+
+  <div class="main">
+
+    <!-- RESTORE BANNER -->
+    <div id="restore-banner" class="restore-banner" style="display:none">
+      <div><strong>📋 Rascunho encontrado</strong><br>Você tem um preenchimento salvo. Deseja continuar de onde parou?</div>
+      <div class="rb-btns">
+        <button class="rb-btn-yes" onclick="restoreDraft()">Sim, restaurar</button>
+        <button class="rb-btn-no" onclick="dismissDraft()">Descartar</button>
+      </div>
+    </div>
+
+    <!-- SEC 1: Identificação -->
+    <div class="section active" id="s1">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-num">1</div>
+          <div><div class="card-head-title">Identificação do Projeto</div><div class="card-head-sub">Dados básicos para registro formal no PMO</div></div>
+        </div>
+        <div class="card-body">
+          <div class="row2">
+            <div class="fg"><label>Nome do Projeto <span class="req">*</span></label><input type="text" id="f-nome" placeholder="Ex: Museu das Amazônias — Exposição Permanente"></div>
+            <div class="fg"><label>Código do Projeto<span class="hint">Padrão: IDG-PRJ-AAAA-NNN</span></label><input type="text" id="f-codigo" placeholder="IDG-PRJ-2026-001"></div>
+          </div>
+          <div class="row2">
+            <div class="fg"><label>Data de Elaboração <span class="req">*</span></label><input type="date" id="f-data" value="2026-06-23"></div>
+            <div class="fg"><label>Versão do Documento</label><input type="text" id="f-versao" placeholder="1.0"></div>
+          </div>
+          <div class="row2">
+            <div class="fg"><label>Gerente do Projeto <span class="req">*</span></label><input type="text" id="f-gerente" placeholder="Nome completo"></div>
+            <div class="fg"><label>Patrocinador (Sponsor)</label><input type="text" id="f-sponsor" placeholder="Nome do patrocinador / Diretor"></div>
+          </div>
+          <div class="row2">
+            <div class="fg"><label>Diretoria Responsável</label><input type="text" id="f-diretoria" placeholder="Ex: Diretoria de Projetos"></div>
+            <div class="fg"><label>Tipo / Categoria</label>
+              <select id="f-tipo">
+                <option value="">Selecione...</option>
+                <option>Exposição Cultural</option>
+                <option>Exposição Expositória</option>
+                <option>Projeto Institucional</option>
+                <option>Projeto de Infraestrutura</option>
+                <option>Projeto de TI/Tecnologia</option>
+                <option>Projeto Educativo</option>
+                <option>Outro</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav"><div></div><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-clear" onclick="limparFormulario()">🗑️ Limpar</button><button class="btn-next" onclick="go(1,2)">Próximo →</button></div>
+    </div>
+
+    <!-- SEC 2: Objetivo e Abrangência -->
+    <div class="section" id="s2">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-num">2</div>
+          <div><div class="card-head-title">Objetivo e Abrangência</div><div class="card-head-sub">O que o projeto entrega e quais são seus limites</div></div>
+        </div>
+        <div class="card-body">
+          <div class="fg">
+            <label>Objetivo Principal do Projeto <span class="req">*</span><span class="hint">O que será entregue e qual valor gera para a organização</span></label>
+            <textarea id="f-objetivo" rows="4" placeholder="Ex: Desenvolver e implementar a exposição permanente do Museu das Amazônias, criando um espaço imersivo e educativo que..."></textarea>
+          </div>
+          <div class="fg">
+            <label>Principais Entregas<span class="hint">Liste as entregas concretas e mensuráveis esperadas ao fim do projeto</span></label>
+            <textarea id="f-entregas" rows="4" placeholder="1. Galeria principal com 12 módulos expositivos
+2. Acervo digitalizado e catalogado
+3. Programa educativo para escolas..."></textarea>
+          </div>
+          <hr>
+          <div class="fg"><label>Dentro do Escopo — o que o projeto INCLUI</label><textarea id="f-in" rows="3" placeholder="Descreva as fases, atividades e entregas que fazem parte deste projeto..."></textarea></div>
+          <div class="fg"><label>Fora do Escopo — o que o projeto EXCLUI<span class="hint">Delimitar o não-escopo evita expectativas equivocadas</span></label><textarea id="f-out" rows="3" placeholder="Ex: Reformas em áreas externas ao museu, eventos de inauguração, captação de acervo futuro..."></textarea></div>
+          <div class="row2">
+            <div class="fg"><label>Localização / Sede</label><input type="text" id="f-local" placeholder="Ex: São Paulo, SP — Museu das Amazônias"></div>
+            <div class="fg"><label>Complexidade Estimada</label>
+              <div class="radios">
+                <label class="radio-chip"><input type="radio" name="complexidade" value="Baixa"> Baixa</label>
+                <label class="radio-chip"><input type="radio" name="complexidade" value="Média"> Média</label>
+                <label class="radio-chip"><input type="radio" name="complexidade" value="Alta"> Alta</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav"><button class="btn-prev" onclick="go(2,1)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-clear" onclick="limparFormulario()">🗑️ Limpar</button><button class="btn-next" onclick="go(2,3)">Próximo →</button></div>
+    </div>
+
+    <!-- SEC 3: Situação Atual e Justificativa -->
+    <div class="section" id="s3">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-num">3</div>
+          <div><div class="card-head-title">Situação Atual e Justificativa</div><div class="card-head-sub">Contexto que motivou a criação do projeto</div></div>
+        </div>
+        <div class="card-body">
+          <div class="fg">
+            <label>Descrição da Situação Atual <span class="req">*</span><span class="hint">Qual o estado atual? Qual problema ou oportunidade este projeto endereça?</span></label>
+            <textarea id="f-situacao" rows="4" placeholder="Descreva o contexto atual, problemas identificados ou oportunidades mapeadas..."></textarea>
+          </div>
+          <div class="fg">
+            <label>Justificativa para Realização <span class="req">*</span><span class="hint">Por que é necessário agora? Qual o impacto de NÃO realizá-lo?</span></label>
+            <textarea id="f-justificativa" rows="4" placeholder="Ex: A ausência de uma exposição permanente resulta em perda de visitantes, receita e impacto educativo..."></textarea>
+          </div>
+          <div class="fg">
+            <label>Alinhamento Estratégico<span class="hint">Como se conecta aos objetivos estratégicos do IDG?</span></label>
+            <textarea id="f-alinhamento" rows="3" placeholder="Ex: Alinhado ao Plano Estratégico 2025–2030 do IDG, Eixo 2: Expansão Cultural..."></textarea>
+          </div>
+          <div class="fg">
+            <label>Definições Técnicas e Operacionais Relevantes<span class="hint">Termos, conceitos ou requisitos técnicos específicos deste projeto</span></label>
+            <textarea id="f-definicoes" rows="3" placeholder="Ex: Metodologia aplicada (Waterfall/Ágil), tecnologias envolvidas, padrões técnicos..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="nav"><button class="btn-prev" onclick="go(3,2)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-clear" onclick="limparFormulario()">🗑️ Limpar</button><button class="btn-next" onclick="go(3,4)">Próximo →</button></div>
+    </div>
+
+    <!-- SEC 4: Financeiro e Interfaces -->
+    <div class="section" id="s4">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-num">4</div>
+          <div><div class="card-head-title">Financeiro, Cronograma e Interfaces</div><div class="card-head-sub">Orçamento, prazos e áreas envolvidas</div></div>
+        </div>
+        <div class="card-body">
+          <div class="row2">
+            <div class="fg"><label>Data de Início Prevista <span class="req">*</span></label><input type="date" id="f-inicio"></div>
+            <div class="fg"><label>Data de Conclusão Prevista <span class="req">*</span></label><input type="date" id="f-fim"></div>
+          </div>
+          <div class="row2">
+            <div class="fg"><label>Orçamento Total Estimado (R$)<span class="hint">Pode ser refinado no planejamento detalhado</span></label><input type="number" id="f-orcamento" placeholder="0,00" min="0" step="1"></div>
+            <div class="fg"><label>Fonte de Recursos</label><input type="text" id="f-fonte" placeholder="Ex: Lei de Incentivo Federal, Recurso Próprio, Patrocínio..."></div>
+          </div>
+          <hr>
+          <div class="fg">
+            <label>Interfaces Envolvidas<span class="hint">Selecione todas as áreas que interagem com este projeto</span></label>
+            <div class="checks">
+              <label class="check-chip"><input type="checkbox" name="iface" value="Compras e Contratações"> Compras e Contratações</label>
+              <label class="check-chip"><input type="checkbox" name="iface" value="Financeiro"> Financeiro</label>
+              <label class="check-chip"><input type="checkbox" name="iface" value="Orçamento"> Orçamento</label>
+              <label class="check-chip"><input type="checkbox" name="iface" value="Jurídico"> Jurídico</label>
+              <label class="check-chip"><input type="checkbox" name="iface" value="Compliance"> Compliance</label>
+              <label class="check-chip"><input type="checkbox" name="iface" value="Captação de Recursos"> Captação de Recursos</label>
+              <label class="check-chip"><input type="checkbox" name="iface" value="TI / Tecnologia"> TI / Tecnologia</label>
+              <label class="check-chip"><input type="checkbox" name="iface" value="Comunicação"> Comunicação</label>
+              <label class="check-chip"><input type="checkbox" name="iface" value="Recursos Humanos"> RH</label>
+              <label class="check-chip"><input type="checkbox" name="iface" value="Operações"> Operações</label>
+            </div>
+          </div>
+          <div class="fg"><label>Outras Interfaces</label><input type="text" id="f-outras-iface" placeholder="Ex: Parceiros externos, patrocinadores, fornecedores estratégicos..."></div>
+        </div>
+      </div>
+      <div class="nav"><button class="btn-prev" onclick="go(4,3)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-clear" onclick="limparFormulario()">🗑️ Limpar</button><button class="btn-next" onclick="go(4,5)">Próximo →</button></div>
+    </div>
+
+    <!-- SEC 5: Stakeholders -->
+    <div class="section" id="s5">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-num">5</div>
+          <div><div class="card-head-title">Partes Interessadas (Stakeholders)</div><div class="card-head-sub">Mapeamento completo dos envolvidos</div></div>
+        </div>
+        <div class="card-body">
+          <table class="dtable" id="t-stake">
+            <thead><tr>
+              <th style="width:22%">Nome</th>
+              <th style="width:18%">Papel / Cargo</th>
+              <th style="width:18%">Área / Organização</th>
+              <th style="width:14%">Influência</th>
+              <th style="width:14%">Tipo</th>
+              <th style="width:14%">Contato</th>
+              <th style="width:5%"></th>
+            </tr></thead>
+            <tbody id="tb-stake"><tr>
+      <td><input type="text" placeholder="Nome"></td>
+      <td><input type="text" placeholder="Papel/Cargo"></td>
+      <td><input type="text" placeholder="Área/Org."></td>
+      <td><select><option>Alta</option><option>Média</option><option>Baixa</option></select></td>
+      <td><select><option>Interno</option><option>Externo</option><option>Parceiro</option></select></td>
+      <td><input type="email" placeholder="e-mail"></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td></tr><tr>
+      <td><input type="text" placeholder="Nome"></td>
+      <td><input type="text" placeholder="Papel/Cargo"></td>
+      <td><input type="text" placeholder="Área/Org."></td>
+      <td><select><option>Alta</option><option>Média</option><option>Baixa</option></select></td>
+      <td><select><option>Interno</option><option>Externo</option><option>Parceiro</option></select></td>
+      <td><input type="email" placeholder="e-mail"></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td></tr></tbody>
+          </table>
+          <button class="btn-add" onclick="addRow('stake')">+ Adicionar Parte Interessada</button>
+        </div>
+      </div>
+      <div class="nav"><button class="btn-prev" onclick="go(5,4)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-clear" onclick="limparFormulario()">🗑️ Limpar</button><button class="btn-next" onclick="go(5,6)">Próximo →</button></div>
+    </div>
+
+    <!-- SEC 6: Marcos -->
+    <div class="section" id="s6">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-num">6</div>
+          <div><div class="card-head-title">Marcos Principais (Milestones)</div><div class="card-head-sub">Cronograma de alto nível com entregas e datas-chave</div></div>
+        </div>
+        <div class="card-body">
+          <table class="dtable" id="t-marco">
+            <thead><tr>
+              <th style="width:30%">Descrição do Marco</th>
+              <th style="width:15%">Prazo Previsto</th>
+              <th style="width:18%">Responsável</th>
+              <th style="width:15%">Fase</th>
+              <th style="width:14%">Status</th>
+              <th style="width:8%"></th>
+            </tr></thead>
+            <tbody id="tb-marco"><tr>
+      <td><input type="text" placeholder="Descrição do marco"></td>
+      <td><input type="date"></td>
+      <td><input type="text" placeholder="Responsável"></td>
+      <td><select><option>Iniciação</option><option>Planejamento</option><option>Execução</option><option>Controle</option><option>Encerramento</option></select></td>
+      <td><select><option>A Iniciar</option><option>Em Andamento</option><option>Concluído</option><option>Atrasado</option><option>Em Risco</option></select></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td></tr><tr>
+      <td><input type="text" placeholder="Descrição do marco"></td>
+      <td><input type="date"></td>
+      <td><input type="text" placeholder="Responsável"></td>
+      <td><select><option>Iniciação</option><option>Planejamento</option><option>Execução</option><option>Controle</option><option>Encerramento</option></select></td>
+      <td><select><option>A Iniciar</option><option>Em Andamento</option><option>Concluído</option><option>Atrasado</option><option>Em Risco</option></select></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td></tr><tr>
+      <td><input type="text" placeholder="Descrição do marco"></td>
+      <td><input type="date"></td>
+      <td><input type="text" placeholder="Responsável"></td>
+      <td><select><option>Iniciação</option><option>Planejamento</option><option>Execução</option><option>Controle</option><option>Encerramento</option></select></td>
+      <td><select><option>A Iniciar</option><option>Em Andamento</option><option>Concluído</option><option>Atrasado</option><option>Em Risco</option></select></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td></tr></tbody>
+          </table>
+          <button class="btn-add" onclick="addRow('marco')">+ Adicionar Marco</button>
+        </div>
+      </div>
+      <div class="nav"><button class="btn-prev" onclick="go(6,5)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-clear" onclick="limparFormulario()">🗑️ Limpar</button><button class="btn-next" onclick="go(6,7)">Próximo →</button></div>
+    </div>
+
+    <!-- SEC 7: Equipe -->
+    <div class="section" id="s7">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-num">7</div>
+          <div><div class="card-head-title">Equipe do Projeto</div><div class="card-head-sub">Composição, papéis e alocação da equipe</div></div>
+        </div>
+        <div class="card-body">
+          <table class="dtable" id="t-equipe">
+            <thead><tr>
+              <th style="width:26%">Nome</th>
+              <th style="width:24%">Cargo / Papel no Projeto</th>
+              <th style="width:22%">Área / Diretoria</th>
+              <th style="width:14%">Dedicação</th>
+              <th style="width:14%">E-mail</th>
+              <th style="width:5%"></th>
+            </tr></thead>
+            <tbody id="tb-equipe"><tr>
+      <td><input type="text" placeholder="Nome completo"></td>
+      <td><input type="text" placeholder="Cargo/Papel no projeto"></td>
+      <td><input type="text" placeholder="Área/Diretoria"></td>
+      <td><select><option>100%</option><option>75%</option><option>50%</option><option>25%</option><option>Parcial</option></select></td>
+      <td><input type="email" placeholder="e-mail"></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td></tr><tr>
+      <td><input type="text" placeholder="Nome completo"></td>
+      <td><input type="text" placeholder="Cargo/Papel no projeto"></td>
+      <td><input type="text" placeholder="Área/Diretoria"></td>
+      <td><select><option>100%</option><option>75%</option><option>50%</option><option>25%</option><option>Parcial</option></select></td>
+      <td><input type="email" placeholder="e-mail"></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td></tr></tbody>
+          </table>
+          <button class="btn-add" onclick="addRow('equipe')">+ Adicionar Membro</button>
+        </div>
+      </div>
+      <div class="nav"><button class="btn-prev" onclick="go(7,6)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-clear" onclick="limparFormulario()">🗑️ Limpar</button><button class="btn-next" onclick="go(7,8)">Próximo →</button></div>
+    </div>
+
+    <!-- SEC 8: Riscos -->
+    <div class="section" id="s8">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-num">8</div>
+          <div><div class="card-head-title">Riscos Identificados</div><div class="card-head-sub">Mapeamento inicial — aprofundamento com Compliance na Iniciação</div></div>
+        </div>
+        <div class="card-body">
+          <table class="dtable" id="t-risco">
+            <thead><tr>
+              <th style="width:28%">Descrição do Risco</th>
+              <th style="width:11%">Probabil.</th>
+              <th style="width:11%">Impacto</th>
+              <th style="width:11%">Nível</th>
+              <th style="width:24%">Ação de Mitigação</th>
+              <th style="width:12%">Responsável</th>
+              <th style="width:5%"></th>
+            </tr></thead>
+            <tbody id="tb-risco"><tr>
+      <td><input type="text" placeholder="Descreva o risco"></td>
+      <td><select><option>Alta</option><option>Média</option><option>Baixa</option></select></td>
+      <td><select><option>Alto</option><option>Médio</option><option>Baixo</option></select></td>
+      <td><select><option>Alto</option><option>Médio</option><option>Baixo</option></select></td>
+      <td><input type="text" placeholder="Ação de mitigação"></td>
+      <td><input type="text" placeholder="Responsável"></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td></tr><tr>
+      <td><input type="text" placeholder="Descreva o risco"></td>
+      <td><select><option>Alta</option><option>Média</option><option>Baixa</option></select></td>
+      <td><select><option>Alto</option><option>Médio</option><option>Baixo</option></select></td>
+      <td><select><option>Alto</option><option>Médio</option><option>Baixo</option></select></td>
+      <td><input type="text" placeholder="Ação de mitigação"></td>
+      <td><input type="text" placeholder="Responsável"></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td></tr></tbody>
+          </table>
+          <button class="btn-add" onclick="addRow('risco')">+ Adicionar Risco</button>
+        </div>
+      </div>
+      <div class="nav"><button class="btn-prev" onclick="go(8,7)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-clear" onclick="limparFormulario()">🗑️ Limpar</button><button class="btn-next" onclick="go(8,9)">Próximo →</button></div>
+    </div>
+
+    <!-- SEC 9: Considerações -->
+    <div class="section" id="s9">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-num">9</div>
+          <div><div class="card-head-title">Considerações Relevantes</div><div class="card-head-sub">Premissas, restrições, dependências e observações</div></div>
+        </div>
+        <div class="card-body">
+          <div class="fg"><label>Premissas<span class="hint">O que se assume como verdadeiro para o planejamento</span></label><textarea id="f-premissas" rows="3" placeholder="Ex: Orçamento aprovado; equipe disponível em período integral; licenças já obtidas..."></textarea></div>
+          <div class="fg"><label>Restrições<span class="hint">Limitações de prazo, orçamento, recursos ou regulatórias</span></label><textarea id="f-restricoes" rows="3" placeholder="Ex: Prazo imóvel vinculado a evento institucional; orçamento fixo sem suplementação..."></textarea></div>
+          <div class="fg"><label>Dependências<span class="hint">O que este projeto depende para ser executado</span></label><textarea id="f-depend" rows="3" placeholder="Ex: Aprovação do projeto arquitetônico; contratação de curador; entrega de equipamentos AV..."></textarea></div>
+          <div class="fg"><label>Observações Adicionais</label><textarea id="f-obs" rows="3" placeholder="Qualquer informação relevante não contemplada nos campos anteriores..."></textarea></div>
+        </div>
+      </div>
+      <div class="nav"><button class="btn-prev" onclick="go(9,8)">← Anterior</button><button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-clear" onclick="limparFormulario()">🗑️ Limpar</button><button class="btn-next" onclick="go(9,10)">Próximo →</button></div>
+    </div>
+
+    <!-- SEC 10: Revisão e Gerar -->
+    <div class="section" id="s10">
+      <div class="final-box">
+        <div class="final-icon">✅</div>
+        <div class="final-ttl">Questionário Concluído!</div>
+        <div class="final-txt">Revise o resumo abaixo e clique em <strong>Gerar TAP Completo</strong> para obter o documento formal e o dashboard executivo.</div>
+      </div>
+      <div class="card">
+        <div class="card-head" style="background:#374151;">
+          <div class="card-num" style="background:rgba(255,255,255,.2)">✓</div>
+          <div><div class="card-head-title">Resumo do Preenchimento</div><div class="card-head-sub">Verifique antes de gerar</div></div>
+        </div>
+        <div class="card-body"><div class="rev-grid" id="review"></div></div>
+      </div>
+      <div class="nav">
+        <button class="btn-prev" onclick="go(10,9)">← Anterior</button>
+        <button class="btn-save" onclick="salvarRascunho()">💾 Salvar</button><button class="btn-clear" onclick="limparFormulario()">🗑️ Limpar</button>
+        <button class="btn-gen" onclick="generate()">📄 Gerar TAP Completo</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /form-section -->
+
+<!-- ======= OUTPUT ======= -->
+<div id="output">
+  <div class="main" style="padding-top:16px">
+    <div class="out-tabs">
+      <div class="out-tab active" onclick="tab('dash')">📊 Dashboard Executivo</div>
+      <div class="out-tab" onclick="tab('doc')">📄 Documento TAP</div>
+      <div style="flex:1"></div>
+      <button class="btn-prev" style="padding:7px 14px;font-size:12px" onclick="backToForm()">← Editar</button>
+    </div>
+    <div class="out-view active" id="dash-view"></div>
+    <div class="out-view" id="doc-view">
+      <div class="doc-wrap">
+        <div class="doc-actions">
+          <button class="btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
+        </div>
+        <div class="doc" id="doc-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STEPS
+// ============================================================
+const STEPS = [
+  {n:1,lbl:'Identificação'},{n:2,lbl:'Objetivo'},{n:3,lbl:'Contexto'},
+  {n:4,lbl:'Finanças'},{n:5,lbl:'Stakeholders'},{n:6,lbl:'Marcos'},
+  {n:7,lbl:'Equipe'},{n:8,lbl:'Riscos'},{n:9,lbl:'Considerações'},{n:10,lbl:'Gerar TAP'}
+];
+let cur=1; const done=new Set();
+
+function renderSteps(){
+  document.getElementById('steps-bar').innerHTML = STEPS.map(s=>`
+    <div class="step ${s.n===cur?'active':''} ${done.has(s.n)&&s.n!==cur?'done':''}" onclick="jump(${s.n})">
+      <div class="step-n">${done.has(s.n)&&s.n!==cur?'✓':s.n}</div><div>${s.lbl}</div>
+    </div>`).join('');
+}
+
+function show(n){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  cur=n; renderSteps();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Required fields per section (IDs of inputs/textareas/selects)
+const REQUIRED = {
+  1: ['f-nome','f-data','f-gerente'],
+  2: ['f-objetivo'],
+  3: ['f-situacao','f-justificativa'],
+  4: ['f-inicio','f-fim']
+  // sections 5-9 have no required fields → always completable
+};
+
+function sectionComplete(n){
+  const reqs = REQUIRED[n];
+  if(!reqs) return true; // no required fields
+  return reqs.every(id=>{
+    const el=document.getElementById(id);
+    return el && el.value && el.value.trim().length > 0;
+  });
+}
+
+function go(from,to){
+  if(sectionComplete(from)) done.add(from);
+  else done.delete(from);
+  if(to===10) fillReview();
+  show(to);
+}
+
+function jump(n){
+  // refresh completion status of current section before leaving
+  if(sectionComplete(cur)) done.add(cur);
+  else done.delete(cur);
+  if(n===10) fillReview();
+  show(n);
+}
+
+// ============================================================
+// DYNAMIC ROWS
+// ============================================================
+const rowDefs = {
+  stake:{
+    tbody:'tb-stake',
+    tpl:()=>`
+      <td><input type="text" placeholder="Nome"></td>
+      <td><input type="text" placeholder="Papel/Cargo"></td>
+      <td><input type="text" placeholder="Área/Org."></td>
+      <td><select><option>Alta</option><option>Média</option><option>Baixa</option></select></td>
+      <td><select><option>Interno</option><option>Externo</option><option>Parceiro</option></select></td>
+      <td><input type="email" placeholder="e-mail"></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td>`
+  },
+  marco:{
+    tbody:'tb-marco',
+    tpl:()=>`
+      <td><input type="text" placeholder="Descrição do marco"></td>
+      <td><input type="date"></td>
+      <td><input type="text" placeholder="Responsável"></td>
+      <td><select><option>Iniciação</option><option>Planejamento</option><option>Execução</option><option>Controle</option><option>Encerramento</option></select></td>
+      <td><select><option>A Iniciar</option><option>Em Andamento</option><option>Concluído</option><option>Atrasado</option><option>Em Risco</option></select></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td>`
+  },
+  equipe:{
+    tbody:'tb-equipe',
+    tpl:()=>`
+      <td><input type="text" placeholder="Nome completo"></td>
+      <td><input type="text" placeholder="Cargo/Papel no projeto"></td>
+      <td><input type="text" placeholder="Área/Diretoria"></td>
+      <td><select><option>100%</option><option>75%</option><option>50%</option><option>25%</option><option>Parcial</option></select></td>
+      <td><input type="email" placeholder="e-mail"></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td>`
+  },
+  risco:{
+    tbody:'tb-risco',
+    tpl:()=>`
+      <td><input type="text" placeholder="Descreva o risco"></td>
+      <td><select><option>Alta</option><option>Média</option><option>Baixa</option></select></td>
+      <td><select><option>Alto</option><option>Médio</option><option>Baixo</option></select></td>
+      <td><select><option>Alto</option><option>Médio</option><option>Baixo</option></select></td>
+      <td><input type="text" placeholder="Ação de mitigação"></td>
+      <td><input type="text" placeholder="Responsável"></td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove()">✕</button></td>`
+  }
+};
+
+function addRow(type){
+  const def = rowDefs[type];
+  const tr = document.createElement('tr');
+  tr.innerHTML = def.tpl();
+  document.getElementById(def.tbody).appendChild(tr);
+}
+
+// ============================================================
+// DATA COLLECTION
+// ============================================================
+function gv(id){const el=document.getElementById(id);return el?el.value:'';}
+function getChecks(name){return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(e=>e.value);}
+function getRadio(name){const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:'';}
+function getRows(tbodyId,cols){
+  return [...document.querySelectorAll(`#${tbodyId} tr`)].map(tr=>{
+    const cells=[...tr.querySelectorAll('td')];
+    const obj={};
+    cols.forEach((c,i)=>{if(cells[i]){const inp=cells[i].querySelector('input,select');obj[c]=inp?inp.value:'';}});
+    return obj;
+  }).filter(o=>Object.values(o).some(v=>v&&v.trim&&v.trim()));
+}
+
+function collect(){
+  return {
+    id:{
+      nome:gv('f-nome'),codigo:gv('f-codigo'),data:gv('f-data'),versao:gv('f-versao'),
+      gerente:gv('f-gerente'),sponsor:gv('f-sponsor'),diretoria:gv('f-diretoria'),tipo:gv('f-tipo')
+    },
+    obj:{
+      objetivo:gv('f-objetivo'),entregas:gv('f-entregas'),
+      escopoIn:gv('f-in'),escopoOut:gv('f-out'),
+      local:gv('f-local'),complexidade:getRadio('complexidade')
+    },
+    ctx:{
+      situacao:gv('f-situacao'),justificativa:gv('f-justificativa'),
+      alinhamento:gv('f-alinhamento'),definicoes:gv('f-definicoes')
+    },
+    fin:{
+      inicio:gv('f-inicio'),fim:gv('f-fim'),
+      orcamento:gv('f-orcamento'),fonte:gv('f-fonte'),
+      ifaces:getChecks('iface'),outrasIfaces:gv('f-outras-iface')
+    },
+    stake:getRows('tb-stake',['nome','papel','area','influencia','tipo','email']),
+    marcos:getRows('tb-marco',['descricao','prazo','responsavel','fase','status']),
+    equipe:getRows('tb-equipe',['nome','cargo','area','dedicacao','email']),
+    riscos:getRows('tb-risco',['descricao','probabilidade','impacto','nivel','mitigacao','responsavel']),
+    cons:{
+      premissas:gv('f-premissas'),restricoes:gv('f-restricoes'),
+      depend:gv('f-depend'),obs:gv('f-obs')
+    }
+  };
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fd(s){if(!s)return'—';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;}
+function fmoney(v){if(!v)return'—';return'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2});}
+function dur(a,b){
+  if(!a||!b)return'—';
+  const d=Math.round((new Date(b)-new Date(a))/(86400000));
+  if(d<0)return'Datas inválidas';
+  if(d>=365)return`${(d/365).toFixed(1)} anos`;
+  if(d>=30)return`${Math.round(d/30)} meses`;
+  return`${d} dias`;
+}
+function riskBadge(n){
+  if(!n)return'';
+  const c=n.toLowerCase();
+  if(c.includes('alt'))return'b-alto';
+  if(c.includes('méd')||c.includes('med'))return'b-medio';
+  return'b-baixo';
+}
+function statusBadge(s){
+  if(!s)return'';
+  if(s==='Concluído')return'b-baixo';
+  if(s==='Atrasado')return'b-alto';
+  if(s==='Em Andamento')return'b-medio';
+  if(s==='Em Risco')return'b-alto';
+  return'b-neutro';
+}
+
+// ============================================================
+// REVIEW
+// ============================================================
+function fillReview(){
+  const d=collect();
+  const R=(l,v)=>`<div class="rev-item"><div class="rev-lbl">${l}</div><div class="rev-val">${v||'<span style="color:#9ca3af;font-style:italic">Não informado</span>'}</div></div>`;
+  document.getElementById('review').innerHTML=[
+    R('Projeto',d.id.nome),R('Código',d.id.codigo),
+    R('Gerente',d.id.gerente),R('Patrocinador',d.id.sponsor),
+    R('Início',fd(d.fin.inicio)),R('Conclusão',fd(d.fin.fim)),
+    R('Orçamento',fmoney(d.fin.orcamento)),R('Duração',dur(d.fin.inicio,d.fin.fim)),
+    R('Stakeholders',d.stake.length+' cadastrados'),R('Marcos',d.marcos.length+' marcos'),
+    R('Equipe',d.equipe.length+' membros'),R('Riscos',d.riscos.length+' mapeados'),
+  ].join('');
+}
+
+// ============================================================
+// GENERATE
+// ============================================================
+function generate(){
+  const d=collect();
+  document.getElementById('form-section').style.display='none';
+  document.getElementById('output').style.display='block';
+  buildDash(d);
+  buildDoc(d);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function backToForm(){
+  document.getElementById('form-section').style.display='block';
+  document.getElementById('output').style.display='none';
+  show(cur);
+}
+
+function tab(t){
+  document.querySelectorAll('.out-tab').forEach((el,i)=>el.classList.toggle('active',(t==='dash'&&i===0)||(t==='doc'&&i===1)));
+  document.getElementById('dash-view').classList.toggle('active',t==='dash');
+  document.getElementById('doc-view').classList.toggle('active',t==='doc');
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function buildDash(d){
+  const rAltos=d.riscos.filter(r=>r.nivel&&r.nivel.toLowerCase().includes('alt')).length;
+  const today=new Date().toLocaleDateString('pt-BR');
+
+  let h=`
+  <div class="dash-header">
+    <div>
+      <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">TAP — Termo de Abertura do Projeto</div>
+      <div class="dash-pname">${d.id.nome||'Projeto sem nome'}</div>
+      <div class="dash-meta">
+        <span>📋 ${d.id.codigo||'—'}</span>
+        <span>👤 ${d.id.gerente||'—'}</span>
+        <span>🏢 ${d.id.diretoria||'IDG'}</span>
+        ${d.id.sponsor?`<span>🎯 Sponsor: ${d.id.sponsor}</span>`:''}
+      </div>
+    </div>
+    <div class="dash-badges">
+      <div class="dbadge">v${d.id.versao||'1.0'}</div>
+      <div class="dbadge">📅 ${fd(d.id.data)||today}</div>
+      ${d.id.tipo?`<div class="dbadge">${d.id.tipo}</div>`:''}
+      <div class="dbadge">Complexidade: ${d.obj.complexidade||'—'}</div>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-lbl">Orçamento Estimado</div><div class="kpi-val" style="font-size:18px">${fmoney(d.fin.orcamento)}</div><div class="kpi-sub">${d.fin.fonte||'—'}</div></div>
+    <div class="kpi green"><div class="kpi-lbl">Duração</div><div class="kpi-val">${dur(d.fin.inicio,d.fin.fim)}</div><div class="kpi-sub">${fd(d.fin.inicio)} → ${fd(d.fin.fim)}</div></div>
+    <div class="kpi amber"><div class="kpi-lbl">Marcos</div><div class="kpi-val">${d.marcos.length}</div><div class="kpi-sub">milestones planejados</div></div>
+    <div class="kpi ${rAltos>0?'red':'green'}"><div class="kpi-lbl">Riscos Altos</div><div class="kpi-val">${rAltos}</div><div class="kpi-sub">de ${d.riscos.length} mapeados</div></div>
+    <div class="kpi"><div class="kpi-lbl">Equipe</div><div class="kpi-val">${d.equipe.length}</div><div class="kpi-sub">membros alocados</div></div>
+    <div class="kpi"><div class="kpi-lbl">Stakeholders</div><div class="kpi-val">${d.stake.length}</div><div class="kpi-sub">partes interessadas</div></div>
+  </div>`;
+
+  // Objetivo
+  if(d.obj.objetivo){
+    h+=`<div class="panel" style="margin-bottom:18px">
+      <div class="panel-h">🎯 Objetivo do Projeto</div>
+      <div class="panel-b">
+        <p style="font-size:13px;line-height:1.75">${d.obj.objetivo}</p>
+        ${d.obj.entregas?`<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"><div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:6px">Principais Entregas</div><p style="font-size:13px;line-height:1.7;white-space:pre-line">${d.obj.entregas}</p></div>`:''}
+      </div>
+    </div>`;
+  }
+
+  // Grid: Marcos + Riscos
+  h+=`<div class="g2">
+    <div class="panel">
+      <div class="panel-h">📅 Marcos Principais</div>
+      <div class="panel-b">
+        ${d.marcos.length===0?'<p style="color:var(--text-muted);font-size:13px;font-style:italic">Nenhum marco cadastrado</p>':
+          `<ul class="ms-list">${d.marcos.map(m=>`
+          <li class="ms-item">
+            <div class="ms-dot"></div>
+            <div style="flex:1">
+              <div class="ms-name">${m.descricao||'—'}</div>
+              <div class="ms-meta">📅 ${fd(m.prazo)||'—'} · ${m.fase||''}</div>
+              ${m.responsavel?`<div class="ms-resp">👤 ${m.responsavel}</div>`:''}
+            </div>
+            ${m.status?`<span class="badge ${statusBadge(m.status)}">${m.status}</span>`:''}
+          </li>`).join('')}</ul>`}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-h">⚠️ Mapa de Riscos</div>
+      <div class="panel-b">
+        ${d.riscos.length===0?'<p style="color:var(--text-muted);font-size:13px;font-style:italic">Nenhum risco cadastrado</p>':
+          d.riscos.map(r=>`<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start">
+            <span class="badge ${riskBadge(r.nivel)}" style="flex-shrink:0;margin-top:2px">${r.nivel||'—'}</span>
+            <div><div style="font-size:13px;font-weight:500">${r.descricao||'—'}</div>
+            ${r.mitigacao?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px">→ ${r.mitigacao}</div>`:''}
+            ${r.responsavel?`<div style="font-size:11px;color:var(--primary);margin-top:1px;font-weight:600">👤 ${r.responsavel}</div>`:''}
+            </div></div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+
+  // Stakeholders
+  if(d.stake.length>0){
+    h+=`<div class="panel" style="margin-bottom:18px">
+      <div class="panel-h">👥 Partes Interessadas</div>
+      <div class="panel-b" style="padding:0">
+        <table class="dtab"><thead><tr><th>Nome</th><th>Papel</th><th>Área</th><th>Influência</th><th>Tipo</th></tr></thead>
+        <tbody>${d.stake.map(s=>`<tr>
+          <td><strong>${s.nome||'—'}</strong></td>
+          <td>${s.papel||'—'}</td><td>${s.area||'—'}</td>
+          <td><span class="badge ${riskBadge(s.influencia)}">${s.influencia||'—'}</span></td>
+          <td><span class="badge b-neutro">${s.tipo||'—'}</span></td>
+        </tr>`).join('')}</tbody></table>
+      </div>
+    </div>`;
+  }
+
+  // Equipe
+  if(d.equipe.length>0){
+    h+=`<div class="panel" style="margin-bottom:18px">
+      <div class="panel-h">🏗️ Equipe do Projeto</div>
+      <div class="panel-b" style="padding:0">
+        <table class="dtab"><thead><tr><th>Nome</th><th>Cargo/Papel</th><th>Área</th><th>Dedicação</th></tr></thead>
+        <tbody>${d.equipe.map(e=>`<tr>
+          <td><strong>${e.nome||'—'}</strong></td>
+          <td>${e.cargo||'—'}</td><td>${e.area||'—'}</td>
+          <td><span class="badge b-baixo">${e.dedicacao||'—'}</span></td>
+        </tr>`).join('')}</tbody></table>
+      </div>
+    </div>`;
+  }
+
+  // Interfaces
+  if(d.fin.ifaces.length>0){
+    h+=`<div class="panel" style="margin-bottom:18px">
+      <div class="panel-h">🔗 Interfaces Envolvidas</div>
+      <div class="panel-b"><div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${d.fin.ifaces.map(i=>`<span style="background:#eef2ff;color:var(--primary);padding:5px 13px;border-radius:18px;font-size:12px;font-weight:600">${i}</span>`).join('')}
+        ${d.fin.outrasIfaces?`<span style="background:#f3f4f6;color:var(--text-muted);padding:5px 13px;border-radius:18px;font-size:12px">${d.fin.outrasIfaces}</span>`:''}
+      </div></div>
+    </div>`;
+  }
+
+  // Considerações
+  const hasC=d.cons.premissas||d.cons.restricoes||d.cons.depend;
+  if(hasC){
+    h+=`<div class="g2">
+      ${d.cons.premissas?`<div class="panel"><div class="panel-h">✅ Premissas</div><div class="panel-b"><p style="font-size:13px;line-height:1.75;white-space:pre-line">${d.cons.premissas}</p></div></div>`:''}
+      ${d.cons.restricoes?`<div class="panel"><div class="panel-h">🚧 Restrições</div><div class="panel-b"><p style="font-size:13px;line-height:1.75;white-space:pre-line">${d.cons.restricoes}</p></div></div>`:''}
+      ${d.cons.depend?`<div class="panel"><div class="panel-h">🔗 Dependências</div><div class="panel-b"><p style="font-size:13px;line-height:1.75;white-space:pre-line">${d.cons.depend}</p></div></div>`:''}
+    </div>`;
+  }
+
+  // Escopo
+  if(d.obj.escopoIn||d.obj.escopoOut){
+    h+=`<div class="g2" style="margin-bottom:18px">
+      ${d.obj.escopoIn?`<div class="panel"><div class="panel-h">✅ Dentro do Escopo</div><div class="panel-b"><p style="font-size:13px;line-height:1.75;white-space:pre-line">${d.obj.escopoIn}</p></div></div>`:''}
+      ${d.obj.escopoOut?`<div class="panel"><div class="panel-h">⛔ Fora do Escopo</div><div class="panel-b"><p style="font-size:13px;line-height:1.75;white-space:pre-line">${d.obj.escopoOut}</p></div></div>`:''}
+    </div>`;
+  }
+
+  document.getElementById('dash-view').innerHTML=h;
+}
+
+// ============================================================
+// DOCUMENT TAP
+// ============================================================
+function buildDoc(d){
+  const today=new Date().toLocaleDateString('pt-BR');
+  const S=(ttl,body)=>body?`<div class="doc-sec"><div class="doc-sec-ttl">${ttl}</div>${body}</div>`:'';
+  const P=(txt)=>txt?`<p class="doc-txt">${txt}</p>`:'';
+
+  let html=`
+  <div class="doc-topbar">
+    <div><div class="doc-org">IDG</div><div style="font-size:11px;opacity:.8">Instituto de Desenvolvimento e Gestão</div></div>
+    <div class="doc-meta-top"><div>PMO — Escritório de Projetos</div><div>${d.id.codigo||'—'}</div><div>v${d.id.versao||'1.0'} · ${fd(d.id.data)||today}</div></div>
+  </div>
+  <div class="doc-title">
+    <div class="doc-type-lbl">Termo de Abertura do Projeto — TAP</div>
+    <div class="doc-pname">${d.id.nome||'Projeto'}</div>
+    <div class="doc-pcode">${d.id.tipo||''}</div>
+  </div>
+  <div class="doc-infogrid">
+    <div class="doc-cell"><div class="doc-cell-lbl">Código</div><div class="doc-cell-val">${d.id.codigo||'—'}</div></div>
+    <div class="doc-cell"><div class="doc-cell-lbl">Data de Elaboração</div><div class="doc-cell-val">${fd(d.id.data)||'—'}</div></div>
+    <div class="doc-cell"><div class="doc-cell-lbl">Gerente do Projeto</div><div class="doc-cell-val">${d.id.gerente||'—'}</div></div>
+    <div class="doc-cell"><div class="doc-cell-lbl">Patrocinador</div><div class="doc-cell-val">${d.id.sponsor||'—'}</div></div>
+    <div class="doc-cell"><div class="doc-cell-lbl">Diretoria Responsável</div><div class="doc-cell-val">${d.id.diretoria||'—'}</div></div>
+    <div class="doc-cell"><div class="doc-cell-lbl">Complexidade</div><div class="doc-cell-val">${d.obj.complexidade||'—'}</div></div>
+    <div class="doc-cell"><div class="doc-cell-lbl">Data de Início Prevista</div><div class="doc-cell-val">${fd(d.fin.inicio)||'—'}</div></div>
+    <div class="doc-cell"><div class="doc-cell-lbl">Data de Conclusão Prevista</div><div class="doc-cell-val">${fd(d.fin.fim)||'—'}</div></div>
+    <div class="doc-cell"><div class="doc-cell-lbl">Orçamento Estimado</div><div class="doc-cell-val">${fmoney(d.fin.orcamento)}</div></div>
+    <div class="doc-cell"><div class="doc-cell-lbl">Fonte de Recursos</div><div class="doc-cell-val">${d.fin.fonte||'—'}</div></div>
+  </div>`;
+
+  html+=S('1. Objetivo do Projeto', P(d.obj.objetivo));
+  if(d.obj.entregas) html+=S('1.1 Principais Entregas', P(d.obj.entregas));
+  if(d.obj.escopoIn||d.obj.escopoOut){
+    html+=S('2. Abrangência',
+      (d.obj.escopoIn?`<p style="margin-bottom:10px"><strong>Dentro do escopo:</strong><br><span class="doc-txt">${d.obj.escopoIn}</span></p>`:'') +
+      (d.obj.escopoOut?`<p><strong>Fora do escopo:</strong><br><span class="doc-txt">${d.obj.escopoOut}</span></p>`:'')+
+      (d.obj.local?`<p style="margin-top:10px"><strong>Localização:</strong> ${d.obj.local}</p>`:'')
+    );
+  }
+  if(d.fin.ifaces.length>0){
+    html+=S('3. Interfaces',`<p class="doc-txt">${[...d.fin.ifaces,d.fin.outrasIfaces].filter(Boolean).join(', ')}</p>`);
+  }
+  if(d.ctx.definicoes) html+=S('4. Definições Técnicas e Operacionais', P(d.ctx.definicoes));
+  html+=S('5. Situação Atual', P(d.ctx.situacao));
+  html+=S('6. Justificativa', P(d.ctx.justificativa));
+  if(d.ctx.alinhamento) html+=S('6.1 Alinhamento Estratégico', P(d.ctx.alinhamento));
+
+  if(d.stake.length>0){
+    html+=S('7. Partes Interessadas',`
+      <table class="doc-table">
+        <thead><tr><th>Nome</th><th>Papel/Cargo</th><th>Área</th><th>Influência</th><th>Tipo</th></tr></thead>
+        <tbody>${d.stake.map(s=>`<tr><td>${s.nome||'—'}</td><td>${s.papel||'—'}</td><td>${s.area||'—'}</td><td>${s.influencia||'—'}</td><td>${s.tipo||'—'}</td></tr>`).join('')}</tbody>
+      </table>`);
+  }
+
+  if(d.marcos.length>0){
+    html+=S('8. Cronograma de Marcos Principais',`
+      <table class="doc-table">
+        <thead><tr><th>Marco</th><th>Prazo Previsto</th><th>Responsável</th><th>Fase</th><th>Status</th></tr></thead>
+        <tbody>${d.marcos.map(m=>`<tr><td>${m.descricao||'—'}</td><td>${fd(m.prazo)||'—'}</td><td>${m.responsavel||'—'}</td><td>${m.fase||'—'}</td><td>${m.status||'—'}</td></tr>`).join('')}</tbody>
+      </table>`);
+  }
+
+  if(d.equipe.length>0){
+    html+=S('9. Estrutura da Equipe',`
+      <table class="doc-table">
+        <thead><tr><th>Nome</th><th>Cargo/Papel</th><th>Área</th><th>Dedicação</th></tr></thead>
+        <tbody>${d.equipe.map(e=>`<tr><td>${e.nome||'—'}</td><td>${e.cargo||'—'}</td><td>${e.area||'—'}</td><td>${e.dedicacao||'—'}</td></tr>`).join('')}</tbody>
+      </table>`);
+  }
+
+  if(d.riscos.length>0){
+    html+=S('10. Riscos Identificados',`
+      <table class="doc-table">
+        <thead><tr><th>Risco</th><th>Probabilidade</th><th>Impacto</th><th>Nível</th><th>Mitigação</th><th>Responsável</th></tr></thead>
+        <tbody>${d.riscos.map(r=>`<tr><td>${r.descricao||'—'}</td><td>${r.probabilidade||'—'}</td><td>${r.impacto||'—'}</td><td>${r.nivel||'—'}</td><td>${r.mitigacao||'—'}</td><td>${r.responsavel||'—'}</td></tr>`).join('')}</tbody>
+      </table>`);
+  }
+
+  const hasC=d.cons.premissas||d.cons.restricoes||d.cons.depend||d.cons.obs;
+  if(hasC){
+    html+=`<div class="doc-sec"><div class="doc-sec-ttl">11. Considerações Relevantes</div>`;
+    if(d.cons.premissas) html+=`<p style="margin-bottom:12px"><strong>Premissas:</strong><br><span class="doc-txt">${d.cons.premissas}</span></p>`;
+    if(d.cons.restricoes) html+=`<p style="margin-bottom:12px"><strong>Restrições:</strong><br><span class="doc-txt">${d.cons.restricoes}</span></p>`;
+    if(d.cons.depend) html+=`<p style="margin-bottom:12px"><strong>Dependências:</strong><br><span class="doc-txt">${d.cons.depend}</span></p>`;
+    if(d.cons.obs) html+=`<p><strong>Observações:</strong><br><span class="doc-txt">${d.cons.obs}</span></p>`;
+    html+=`</div>`;
+  }
+
+  html+=`
+  <div class="doc-footer">
+    <div class="doc-sig">
+      <div class="doc-sig-name">${d.id.gerente||'Gerente do Projeto'}</div>
+      <div class="doc-sig-role">Gerente do Projeto · Data: ___/___/______</div>
+    </div>
+    <div class="doc-sig">
+      <div class="doc-sig-name">${d.id.sponsor||'Patrocinador'}</div>
+      <div class="doc-sig-role">Patrocinador / Aprovador · Data: ___/___/______</div>
+    </div>
+  </div>
+  <div class="doc-bottom">IDG — Instituto de Desenvolvimento e Gestão · PMO / Escritório de Projetos · Documento gerado em ${today}</div>`;
+
+  document.getElementById('doc-content').innerHTML=html;
+}
+
+// ============================================================
+// SALVAR / RESTAURAR RASCUNHO
+// ============================================================
+const DRAFT_KEY = 'tap_idg_draft';
+
+function salvarRascunho(){
+  const state = {
+    data: collect(),
+    cur: cur,
+    done: [...done],
+    ts: new Date().toISOString()
+  };
+
+  // 1. Save to localStorage (persists on refresh)
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(state));
+
+  // 2. Download HTML with data embedded (portable, shareable)
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show'));
+  clone.querySelectorAll('#restore-banner').forEach(b=>b.style.display='none');
+  clone.querySelectorAll('script[data-tap-draft]').forEach(s=>s.remove());
+  const inj = document.createElement('script');
+  inj.setAttribute('data-tap-draft','1');
+  inj.textContent = 'window.__DRAFT__=' + JSON.stringify(state) + ';';
+  clone.querySelector('head').insertBefore(inj, clone.querySelector('head').firstChild);
+  clone.querySelectorAll('textarea').forEach(el=>{
+    if(el.id){const orig=document.getElementById(el.id);if(orig)el.textContent=orig.value;}
+  });
+  clone.querySelectorAll('input[type=text],input[type=date],input[type=email],input[type=number]').forEach(el=>{
+    if(el.id){const orig=document.getElementById(el.id);if(orig)el.setAttribute('value',orig.value);}
+  });
+  clone.querySelectorAll('select').forEach(el=>{
+    if(el.id){const orig=document.getElementById(el.id);if(orig){[...el.options].forEach((opt,i)=>{opt.selected=orig.options[i]?.selected||false;});}}
+  });
+  const html='<!DOCTYPE html>\n'+clone.outerHTML;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  const nm=(document.getElementById('f-nome')?.value||'TAP').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_À-ú-]/g,'');
+  const dt=new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  a.download='TAP_'+nm+'_'+dt+'.html';
+  a.click();
+
+  showToast('💾 Salvo e baixado!');
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+function restoreDraft(){
+  const banner = document.getElementById('restore-banner');
+  const state = banner._state || (()=>{const r=localStorage.getItem(DRAFT_KEY);return r?JSON.parse(r):null;})();
+  if(!state) return;
+  applyData(state.data);
+  // Recalculate done: only sections with required fields, based on actual content
+  done.clear();
+  Object.keys(REQUIRED).forEach(sec=>{
+    if(sectionComplete(Number(sec))) done.add(Number(sec));
+  });
+  show(state.cur || 1);
+  document.getElementById('restore-banner').style.display='none';
+  showToast('✅ Rascunho restaurado!');
+}
+
+function dismissDraft(){
+  localStorage.removeItem(DRAFT_KEY);
+  document.getElementById('restore-banner').style.display='none';
+}
+
+function applyData(d){
+  function sv(id,val){const e=document.getElementById(id);if(e&&val!==undefined)e.value=val;}
+  function setCheck(name,vals){
+    document.querySelectorAll('input[name="'+name+'"]').forEach(e=>{e.checked=vals.includes(e.value);});
+  }
+  function setRadio(name,val){
+    const el=document.querySelector('input[name="'+name+'"][value="'+val+'"]');
+    if(el)el.checked=true;
+  }
+  function fillTable(tbodyId,rows,cols){
+    const tb=document.getElementById(tbodyId);
+    if(!tb||!rows||!rows.length)return;
+    // remove existing rows except the first two (pre-filled)
+    while(tb.rows.length>0)tb.deleteRow(0);
+    rows.forEach(()=>addRow(tbodyId.replace('tb-','')));
+    const trs=[...tb.querySelectorAll('tr')];
+    rows.forEach((row,i)=>{
+      if(!trs[i])return;
+      cols.forEach((col,ci)=>{
+        const inp=trs[i].querySelectorAll('td')[ci]?.querySelector('input,select');
+        if(inp&&row[col]!==undefined)inp.value=row[col];
+      });
+    });
+  }
+  if(d.id){sv('f-nome',d.id.nome);sv('f-codigo',d.id.codigo);sv('f-data',d.id.data);sv('f-versao',d.id.versao);sv('f-gerente',d.id.gerente);sv('f-sponsor',d.id.sponsor);sv('f-diretoria',d.id.diretoria);sv('f-tipo',d.id.tipo);}
+  if(d.obj){sv('f-objetivo',d.obj.objetivo);sv('f-entregas',d.obj.entregas);sv('f-in',d.obj.escopoIn);sv('f-out',d.obj.escopoOut);sv('f-local',d.obj.local);if(d.obj.complexidade)setRadio('complexidade',d.obj.complexidade);}
+  if(d.ctx){sv('f-situacao',d.ctx.situacao);sv('f-justificativa',d.ctx.justificativa);sv('f-alinhamento',d.ctx.alinhamento);sv('f-definicoes',d.ctx.definicoes);}
+  if(d.fin){sv('f-inicio',d.fin.inicio);sv('f-fim',d.fin.fim);sv('f-orcamento',d.fin.orcamento);sv('f-fonte',d.fin.fonte);if(d.fin.ifaces)setCheck('iface',d.fin.ifaces);sv('f-outras-iface',d.fin.outrasIfaces);}
+  if(d.stake)fillTable('tb-stake',d.stake,['nome','papel','area','influencia','tipo','email']);
+  if(d.marcos)fillTable('tb-marco',d.marcos,['descricao','prazo','responsavel','fase','status']);
+  if(d.equipe)fillTable('tb-equipe',d.equipe,['nome','cargo','area','dedicacao','email']);
+  if(d.riscos)fillTable('tb-risco',d.riscos,['descricao','probabilidade','impacto','nivel','mitigacao','responsavel']);
+  if(d.cons){sv('f-premissas',d.cons.premissas);sv('f-restricoes',d.cons.restricoes);sv('f-depend',d.cons.depend);sv('f-obs',d.cons.obs);}
+}
+
+
+
+function limparFormulario(){
+  document.getElementById('clear-modal').classList.add('show');
+}
+function fecharModal(){
+  document.getElementById('clear-modal').classList.remove('show');
+}
+function _downloadHTML(cloneEl, filename){
+  const html = '<!DOCTYPE html>\n' + cloneEl.outerHTML;
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+function _buildCleanClone(){
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('show'));
+  clone.querySelectorAll('#restore-banner').forEach(b=>b.style.display='none');
+  clone.querySelectorAll('script[data-tap-draft]').forEach(s=>s.remove());
+  clone.querySelectorAll('input[type=text],input[type=date],input[type=email],input[type=number]').forEach(el=>{
+    el.removeAttribute('value'); el.value='';
+  });
+  clone.querySelectorAll('textarea').forEach(el=>{ el.textContent=''; el.removeAttribute('value'); });
+  clone.querySelectorAll('select').forEach(el=>{ el.selectedIndex=0; [...el.options].forEach(o=>o.selected=o.defaultSelected); });
+  clone.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(el=>{ el.checked=false; el.removeAttribute('checked'); });
+  const dateEl = clone.querySelector('#f-data');
+  if(dateEl) dateEl.setAttribute('value', new Date().toISOString().split('T')[0]);
+  return clone;
+}
+
+function salvarTAPNovo(){
+  _downloadHTML(_buildCleanClone(), 'TAP_Novo_Projeto.html');
+  document.getElementById('post-clear-modal').classList.remove('show');
+}
+
+function confirmarLimpar(){
+  const nm = (document.getElementById('f-nome')?.value||'TAP').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_À-ú-]/g,'');
+  const dt = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+
+  // 1. BACKUP — download filled version (single download)
+  salvarRascunho();
+
+  // 2. CLEAR live form (after tiny delay so backup download registers first)
+  setTimeout(()=>{
+    document.querySelectorAll('#form-section input[type=text],#form-section input[type=date],#form-section input[type=email],#form-section input[type=number],#form-section textarea').forEach(el=>el.value='');
+    document.querySelectorAll('#form-section select').forEach(el=>el.selectedIndex=0);
+    document.querySelectorAll('#form-section input[type=checkbox],#form-section input[type=radio]').forEach(el=>el.checked=false);
+    ['tb-stake','tb-marco','tb-equipe','tb-risco'].forEach(id=>{
+      const tb=document.getElementById(id);
+      if(tb) while(tb.rows.length>0) tb.deleteRow(0);
+    });
+    ['stake','stake','marco','marco','marco','equipe','equipe','risco','risco'].forEach(addRow);
+    document.getElementById('f-data').value=new Date().toISOString().split('T')[0];
+    localStorage.removeItem(DRAFT_KEY);
+    done.clear();
+    show(1);
+    renderSteps();
+    fecharModal();
+    // 3. Show post-clear modal
+    document.getElementById('post-clear-modal').classList.add('show');
+  }, 300);
+}
+// ============================================================
+// INIT
+// ============================================================
+document.getElementById('f-data').value=new Date().toISOString().split('T')[0];
+['stake','stake','marco','marco','marco','equipe','equipe','risco','risco'].forEach(addRow);
+renderSteps();
+
+// Live validation: refresh step indicators when required fields change
+Object.entries(REQUIRED).forEach(([sec, ids])=>{
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('input', ()=>{
+      if(sectionComplete(Number(sec))) done.add(Number(sec));
+      else done.delete(Number(sec));
+      renderSteps();
+    });
+  });
+});
+
+// Check for existing draft
+(function(){
+  const embedded = window.__DRAFT__;
+  const stored = localStorage.getItem(DRAFT_KEY);
+
+  if(embedded && embedded.data && Object.values(embedded.data.id||{}).some(v=>v)){
+    // Exported file — auto-apply data immediately, no banner needed
+    applyData(embedded.data);
+  // Recalculate done: only sections with required fields, based on actual content
+  done.clear();
+  Object.keys(REQUIRED).forEach(sec=>{
+    if(sectionComplete(Number(sec))) done.add(Number(sec));
+  });
+    show(embedded.cur||1);
+    renderSteps();
+  } else if(stored){
+    const state = JSON.parse(stored);
+    if(state && state.data && Object.values(state.data.id||{}).some(v=>v)){
+      const ts = state.ts ? new Date(state.ts).toLocaleString('pt-BR') : '';
+      const banner = document.getElementById('restore-banner');
+      banner.querySelector('strong').textContent = '📋 Rascunho encontrado' + (ts ? ' · salvo em ' + ts : '');
+      banner.style.display = 'flex';
+      banner._state = state;
+    }
+  }
+})();
+</script>
+<div id="clear-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title">Limpar formulário?</div>
+    <div class="modal-body">Todos os campos preenchidos serão apagados.<br>O rascunho salvo no browser também será removido.<br><strong>Essa ação não pode ser desfeita.</strong></div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="modal-btn-confirm" onclick="confirmarLimpar()">Sim, limpar tudo</button>
+    </div>
+  </div>
+</div>
+<div id="post-clear-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon">✅</div>
+    <div class="modal-title">Formulário limpo!</div>
+    <div class="modal-body">Backup salvo no seu computador.<br><br>Para compartilhar o formulário em branco com outra pessoa, salve o arquivo abaixo.</div>
+    <div class="modal-btns" style="flex-direction:column;align-items:center;gap:10px;">
+      <button class="btn-gen" style="font-size:14px;padding:12px 28px" onclick="salvarTAPNovo()">💾 Salvar TAP em branco</button>
+      <button class="modal-btn-cancel" onclick="document.getElementById('post-clear-modal').classList.remove('show')">Fechar</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast">💾 Salvo e baixado!</div>
+
+
+</body></html>
