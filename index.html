@@ -645,6 +645,8 @@
       <h2>📦  Status de Requisições de Compras</h2>
       <div class="req-header-right">
         <span id="req-subtitle">50 requisições</span>
+        <button class="btn-refresh" id="btn-req-refresh" onclick="event.stopPropagation();loadSheetsData()" style="font-size:13px;padding:6px 14px">⟳ Atualizar</button>
+        <span class="refresh-label" id="req-refresh-label"></span>
         <span class="req-chevron" id="req-chevron">▼</span>
       </div>
     </div>
@@ -2916,6 +2918,8 @@ async function loadSheetsData() {
   const btn=document.getElementById('btn-refresh');
   const lbl=document.getElementById('refresh-label');
   if(btn){btn.disabled=true;btn.innerHTML='<span class="spinning">⟳</span> Atualizando...';}
+  const btnReq=document.getElementById('btn-req-refresh');
+  if(btnReq){btnReq.disabled=true;btnReq.innerHTML='<span class="spinning">⟳</span> Atualizando...';}
   const fetchAll=async()=>{
     let wbsRows, wbsColors=[], reqsRows=null, reqsOk=false;
     [wbsRows, wbsColors] = await Promise.all([
@@ -2959,12 +2963,15 @@ async function loadSheetsData() {
     const statusTxt=reqsOk?`🟢 Ao vivo · ${timeStr}`:`🟡 Cronograma OK · REQ erro · ${timeStr}`;
     const statusClr=reqsOk?'#15803d':'#b45309';
     if(lbl){lbl.innerHTML=`<span style="color:${statusClr};font-weight:700">${statusTxt}</span>`;}
+    const reqLbl=document.getElementById('req-refresh-label');
+    if(reqLbl){reqLbl.innerHTML=`<span style="color:${statusClr};font-weight:700">${statusTxt}</span>`;}
     if(btn){btn.disabled=false;btn.innerHTML='⟳ Atualizar';}
+    if(btnReq){btnReq.disabled=false;btnReq.innerHTML='⟳ Atualizar';}
     if(_refreshTimer) clearInterval(_refreshTimer);
     _refreshTimer=setInterval(loadSheetsData,AUTO_REFRESH_MS);
   } catch(err) {
     console.error('Erro ao buscar planilhas:',err);
-    if(_isInitialLoad){hideLoading();showConnErr();if(btn){btn.disabled=false;btn.innerHTML='&#8635; Tentar novamente';}if(lbl){lbl.innerHTML='<span style="color:#dc2626;font-weight:700">🔴 Timeout — clique Atualizar</span>';}_isInitialLoad=false;}
+    if(_isInitialLoad){hideLoading();showConnErr();if(btn){btn.disabled=false;btn.innerHTML='&#8635; Tentar novamente';}if(lbl){lbl.innerHTML='<span style="color:#dc2626;font-weight:700">🔴 Timeout — clique Atualizar</span>';}const _rql1=document.getElementById('req-refresh-label');if(_rql1){_rql1.innerHTML='<span style="color:#dc2626;font-weight:700">🔴 Timeout — clique Atualizar</span>';}_isInitialLoad=false;}
     else{
       if(lbl){lbl.innerHTML=`<span style="color:#dc2626;font-weight:700">🔴 Erro — ${err.message.substring(0,35)}</span>`;}
       if(btn){btn.disabled=false;btn.innerHTML='⟳ Tentar novamente';}
