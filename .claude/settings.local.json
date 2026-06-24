@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Start-Process py -ArgumentList \"-m http.server 8000\" -WorkingDirectory \"C:\\\\Users\\\\marcela.domingos\\\\GITHUB\\\\maz-dashboard-marcela\" -WindowStyle Normal)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:8000/index.html\" -UseBasicParsing -TimeoutSec 5)"
+    ]
+  }
+}
