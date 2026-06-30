@@ -516,6 +516,7 @@
   </div>
   <div class="tab-nav">
     <button class="tab-btn" onclick="switchTab('gantt')" id="tab-btn-gantt">📊 Gantt</button>
+    <button class="tab-btn" onclick="switchTab('gantt-dir')" id="tab-btn-gantt-dir">📊 Gantt Diretoria</button>
     <button class="tab-btn" onclick="switchTab('eap')" id="tab-btn-eap">📋 Status Report</button>
     <button class="tab-btn" onclick="switchTab('eap-dir')" id="tab-btn-eap-dir">📋 Status Report Diretoria</button>
     <button class="tab-btn" onclick="switchTab('reqs')" id="tab-btn-reqs">📦 Requisições</button>
@@ -627,6 +628,40 @@
 
   </div>
   </div><!-- /tab-gantt -->
+
+  <div id="tab-gantt-dir" class="tab-panel">
+  <div class="wbs-warning" id="wbs-warning-gantt-dir" onclick="toggleWBSWarningDd('gantt-dir')">
+    <span id="wbs-warning-gantt-dir-txt"></span>
+    <a href="https://docs.google.com/spreadsheets/d/17nttJ_ShqWztvDWH3l59iNqboLqkviZs3_PM5J3ihdA/edit" target="_blank" onclick="event.stopPropagation()">→ Abrir planilha</a>
+    <div class="wbs-warning-dd" id="wbs-warning-gantt-dir-dd" onclick="event.stopPropagation()"></div>
+  </div>
+  <!-- GANTT DIRETORIA SECTION -->
+  <div class="gantt-section">
+    <div class="gantt-section-title">
+      <h2>📊  Cronograma Gantt Diretoria por Eixo</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:13px;color:#8AB870">Clique em um eixo para abrir o Gantt</span>
+        <div class="gantt-mode-toggle">
+          <button class="gantt-mode-btn active" id="btn-mode-dir-mensal" onclick="setGanttModeDir('monthly')">📅 Mensal</button>
+          <button class="gantt-mode-btn" id="btn-mode-dir-semanal" onclick="setGanttModeDir('weekly')">🗓 Semanal</button>
+        </div>
+        <div class="expand-dd-wrap">
+          <button class="btn-expand expand-dd-btn" onclick="toggleExpandDd('gantt-dir');event.stopPropagation()">VISUALIZAÇÃO: <span id="gantt-dir-viz-label" style="color:#111827;font-weight:800">—</span> ▾</button>
+          <div class="expand-dd-menu" id="gantt-dir-expand-menu">
+            <div class="expand-dd-item" onclick="expandLevel('gantt-dir','eixos')">Eixos</div>
+            <div class="expand-dd-item" onclick="expandLevel('gantt-dir','grupo')">Grupo</div>
+            <div class="expand-dd-item" onclick="expandLevel('gantt-dir','marco')">Marco</div>
+            <div class="expand-dd-item" onclick="expandLevel('gantt-dir','tarefas')">Tarefas</div>
+          </div>
+        </div>
+        <button class="btn-collapse" onclick="collapseAllGanttDir()">▲ Recolher Tudo</button>
+      </div>
+    </div>
+    <div class="legend" id="gantt-dir-legend" style="background:#F8FAFC;border-top:1px solid var(--border)"></div>
+    <div class="gantt-cards" id="gantt-dir-container"></div>
+    <div class="resp-required-msg" id="gantt-dir-resp-msg">SELECIONE AO MENOS UM RESPONSÁVEL</div>
+  </div>
+  </div><!-- /tab-gantt-dir -->
 
   <div id="tab-eap" class="tab-panel">
   <div class="wbs-warning" id="wbs-warning-eap" onclick="toggleWBSWarningDd('eap')">
@@ -3091,6 +3126,11 @@ let ganttOpen=new Array(WBS.length).fill(false),
     ganttRendered=new Array(WBS.length).fill(false),
     ganttGroupExpanded={},
     ganttMarcoExpanded={};
+let ganttModeDir='monthly';
+let ganttOpenDir=new Array(WBS_DIR.length).fill(false),
+    ganttRenderedDir=new Array(WBS_DIR.length).fill(false),
+    ganttGroupExpandedDir={},
+    ganttMarcoExpandedDir={};
 
 function setGanttMode(mode){
   ganttMode=mode;
@@ -3473,7 +3513,381 @@ function renderGanttForEixo(gi){
   wrap.innerHTML=`<div style="display:flex;align-items:flex-start;overflow-x:auto"><div style="position:sticky;left:0;z-index:10;flex-shrink:0;overflow:hidden;box-shadow:3px 0 10px rgba(0,0,0,0.18)">${sL}</div><div style="flex-shrink:0">${sR}</div></div>`;
 }
 
+// ── GANTT DIRETORIA ────────────────────────────────────────────────
+function setGanttModeDir(mode){
+  ganttModeDir=mode;
+  document.getElementById('btn-mode-dir-mensal').classList.toggle('active',mode==='monthly');
+  document.getElementById('btn-mode-dir-semanal').classList.toggle('active',mode==='weekly');
+  ganttRenderedDir=[];
+  ganttOpenDir.forEach((open,gi)=>{
+    if(open)renderGanttForEixoDir(gi);
+  });
+}
+
+function renderGanttSectionDir(){
+  const con=document.getElementById('gantt-dir-container');
+  if(!con)return;
+  const _rpA=[...document.querySelectorAll('#ms-resp-menu input:not([id$="-chk-all"])')];
+  const _rpC=_rpA.filter(el=>el.checked).map(el=>el.value);
+  const fRespG=(_rpC.length===_rpA.length||_rpC.length===0)?[]:_rpC;
+  con.innerHTML=WBS_DIR.map((eixo,gi)=>{
+    if(fRespG.length>0&&!(eixo.children||[]).some(m=>grupoHasResp(m,fRespG)))return '';
+    const n=(eixo.children||[]).length;
+    const col=sc(eixo.status||'Em andamento');
+    return `<div class="gantt-card" id="gantt-card-dir-${gi}">
+      <div class="gantt-card-header" onclick="toggleGanttDir(${gi})">
+        <span class="gantt-chevron" id="gchev-dir-${gi}" style="transform:rotate(-90deg)">▶</span>
+        <span class="gantt-eixo-id" style="background:${col}">${escH(eixo.id||String(gi+1))}</span>
+        <span class="gantt-eixo-name">${escH(eixo.name)}</span>
+        <span class="gantt-eixo-count">${n} grupo${n!==1?'s':''}</span>
+      </div>
+      <div class="gantt-body" id="gbody-dir-${gi}" style="max-height:0">
+        <div class="gantt-svg-wrap"><div id="gantt-svg-dir-${gi}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleGanttDir(gi){
+  ganttOpenDir[gi]=!ganttOpenDir[gi];
+  const body=document.getElementById('gbody-dir-'+gi);
+  const chev=document.getElementById('gchev-dir-'+gi);
+  if(!body)return;
+  if(ganttOpenDir[gi]){
+    if(!ganttRenderedDir[gi]){renderGanttForEixoDir(gi);ganttRenderedDir[gi]=true;}
+    body.style.maxHeight=body.scrollHeight+'px';
+    setTimeout(()=>{if(ganttOpenDir[gi])body.style.maxHeight='none';},430);
+    if(chev)chev.style.transform='rotate(90deg)';
+  } else {
+    body.style.maxHeight=body.scrollHeight+'px';
+    requestAnimationFrame(()=>body.style.maxHeight='0px');
+    if(chev)chev.style.transform='rotate(-90deg)';
+  }
+}
+
+function toggleGanttGroupDir(gi,ri){
+  const key=gi+'_'+ri;
+  ganttGroupExpandedDir[key]=!ganttGroupExpandedDir[key];
+  if(!ganttGroupExpandedDir[key]){
+    Object.keys(ganttMarcoExpandedDir).forEach(k=>{if(k.startsWith(gi+'_'+ri+'_'))delete ganttMarcoExpandedDir[k];});
+  }
+  renderGanttForEixoDir(gi);
+  const body=document.getElementById('gbody-dir-'+gi);
+  if(body)body.style.maxHeight='none';
+}
+
+function toggleGanttMarcoDir(gi,ri,ti){
+  const key=gi+'_'+ri+'_'+ti;
+  ganttMarcoExpandedDir[key]=!ganttMarcoExpandedDir[key];
+  renderGanttForEixoDir(gi);
+  const body=document.getElementById('gbody-dir-'+gi);
+  if(body)body.style.maxHeight='none';
+}
+
+function expandAllGanttDir(){
+  WBS_DIR.forEach((e,gi)=>{
+    ganttOpenDir[gi]=true;
+    ganttRenderedDir[gi]=true;
+    renderGanttForEixoDir(gi);
+    const body=document.getElementById('gbody-dir-'+gi);
+    const chev=document.getElementById('gchev-dir-'+gi);
+    if(body)body.style.maxHeight='none';
+    if(chev)chev.style.transform='rotate(90deg)';
+  });
+}
+
+function expandAllSubgruposDir(){
+  WBS_DIR.forEach((e,gi)=>{
+    if(!ganttOpenDir[gi])return;
+    (e.children||[]).forEach((g,ri)=>{
+      if(g.tasks&&g.tasks.filter(t=>t.start||t.end).length>0)
+        ganttGroupExpandedDir[gi+'_'+ri]=true;
+    });
+    renderGanttForEixoDir(gi);
+    const body=document.getElementById('gbody-dir-'+gi);
+    if(body)body.style.maxHeight='none';
+  });
+}
+
+function expandAllTarefasGanttDir(){
+  WBS_DIR.forEach((e,gi)=>{
+    if(!ganttOpenDir[gi])return;
+    (e.children||[]).forEach((g,ri)=>{
+      const allMarcos=(g.tasks||[]).filter(t=>t.tipo==='marco'||(t.start||t.end));
+      const dated=allMarcos.filter(t=>t.start||t.end);
+      if(!dated.length)return;
+      ganttGroupExpandedDir[gi+'_'+ri]=true;
+      dated.forEach((t,ti)=>{
+        if((t.subtasks||[]).filter(s=>s.start||s.end).length)
+          ganttMarcoExpandedDir[gi+'_'+ri+'_'+ti]=true;
+      });
+    });
+    renderGanttForEixoDir(gi);
+    const body=document.getElementById('gbody-dir-'+gi);
+    if(body)body.style.maxHeight='none';
+  });
+}
+
+function collapseAllGanttDir(){
+  const anyTarefaOpen=Object.values(ganttMarcoExpandedDir).some(v=>v);
+  if(anyTarefaOpen){
+    ganttMarcoExpandedDir={};
+    WBS_DIR.forEach((e,gi)=>{if(ganttOpenDir[gi]){renderGanttForEixoDir(gi);const body=document.getElementById('gbody-dir-'+gi);if(body)body.style.maxHeight='none';}});
+    return;
+  }
+  const anyMarcoOpen=Object.values(ganttGroupExpandedDir).some(v=>v);
+  if(anyMarcoOpen){
+    ganttGroupExpandedDir={};
+    WBS_DIR.forEach((e,gi)=>{if(ganttOpenDir[gi]){renderGanttForEixoDir(gi);const body=document.getElementById('gbody-dir-'+gi);if(body)body.style.maxHeight='none';}});
+  } else {
+    WBS_DIR.forEach((e,gi)=>{
+      ganttOpenDir[gi]=false;
+      const body=document.getElementById('gbody-dir-'+gi);
+      const chev=document.getElementById('gchev-dir-'+gi);
+      if(body){body.style.maxHeight=body.scrollHeight+'px';requestAnimationFrame(()=>body.style.maxHeight='0px');}
+      if(chev)chev.style.transform='rotate(-90deg)';
+    });
+  }
+  _setVizLabel('gantt-dir','Eixos');
+}
+
+function _forceCollapseGanttDir(){
+  ganttGroupExpandedDir={};
+  ganttMarcoExpandedDir={};
+  WBS_DIR.forEach((e,gi)=>{
+    ganttOpenDir[gi]=false;
+    const body=document.getElementById('gbody-dir-'+gi);
+    const chev=document.getElementById('gchev-dir-'+gi);
+    if(body)body.style.maxHeight='0';
+    if(chev)chev.style.transform='rotate(-90deg)';
+  });
+}
+
 // ── Multi-select helpers ──
+function renderGanttForEixoDir(gi){
+  const eixo=WBS_DIR[gi];
+  const allGrupos=eixo.children||[];
+  const wrap=document.getElementById('gantt-svg-dir-'+gi);
+  if(!wrap)return;
+  if(!allGrupos.length){wrap.innerHTML='<p style="padding:20px;color:#94A3B8;font-size:14px;text-align:center">Sem grupos cadastrados.</p>';return;}
+  const fDS=document.getElementById('filter-date-start').value;
+  const fDE=document.getElementById('filter-date-end').value;
+  const _skipDate=!!(fDS&&fDE&&fDS>fDE);
+  if(_skipDate)showDateError();
+  function inRange(start,end){
+    if(_skipDate||(!fDS&&!fDE))return true;
+    if(!start&&!end)return false;
+    const s=start?new Date(start):null,e=end?new Date(end):null;
+    const fs=fDS?new Date(fDS):null,fe=fDE?new Date(fDE):null;
+    if(fs&&e&&e<fs)return false;
+    if(fe&&s&&s>fe)return false;
+    return true;
+  }
+  const _fAll=[...document.querySelectorAll('#ms-status-menu input:not([id$="-chk-all"])')]
+  const _fChk=_fAll.filter(el=>el.checked).map(el=>el.value);
+  const fStatus=(_fChk.length===_fAll.length||_fChk.length===0)?[]:_fChk;
+  const _rpAllG=[...document.querySelectorAll('#ms-resp-menu input:not([id$="-chk-all"])')];
+  const _rpChkG=_rpAllG.filter(el=>el.checked).map(el=>el.value);
+  const fResp=(_rpChkG.length===_rpAllG.length||_rpChkG.length===0)?[]:_rpChkG;
+  const rows=[];
+  allGrupos.forEach((g,ri)=>{
+    if(!inRange(g.start,g.end))return;
+    if(fStatus.length>0 && !(g.tasks||[]).some(t=>fStatus.includes(t.status||'A iniciar')))return;
+    const allMarcos=(g.tasks||[]).filter(t=>t.tipo==='marco'||(t.start||t.end));
+    const datedTasks=allMarcos.filter(t=>t.start||t.end);
+    if(fResp.length>0){const hasAny=datedTasks.some(t=>(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp)));if(!hasAny)return;}
+    const hasTasks=datedTasks.length>0;
+    const expanded=!!ganttGroupExpandedDir[gi+'_'+ri];
+    rows.push({type:'grupo',data:g,ri,hasTasks,expanded});
+    if(expanded){
+      datedTasks.filter(t=>inRange(t.start,t.end)&&(!fStatus.length||fStatus.includes(t.status))).forEach((t,ti)=>{
+        if(fResp.length>0){const mm=(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp));if(!mm)return;}
+        const datedSubs=(t.subtasks||[]).filter(s=>s.start||s.end);
+        const filteredSubs=datedSubs.filter(s=>inRange(s.start,s.end)&&(!fStatus.length||filterLevel==='marco'||fStatus.includes(s.status)));
+        const visSubs=fResp.length>0&&!(t.resp&&fResp.includes(t.resp))?filteredSubs.filter(s=>s.resp&&fResp.includes(s.resp)):filteredSubs;
+        const hasSubs=visSubs.length>0;
+        const marcoExp=!!ganttMarcoExpandedDir[gi+'_'+ri+'_'+ti];
+        rows.push({type:'task',data:t,parentRi:ri,ti,hasSubs,marcoExp});
+        if(marcoExp){visSubs.forEach(s=>{rows.push({type:'tarefa',data:s,parentRi:ri,parentTi:ti});});}
+      });
+    }
+  });
+  const isWeekly=ganttModeDir==='weekly';
+  const LW=400,TW=1800;
+  const CS=new Date('2026-01-01'),CE=new Date('2026-12-31');
+  const GRH=68,TRH=50,SRH=38;
+  const HY=isWeekly?22:24,HM=isWeekly?36:48,HW=isWeekly?32:0;
+  const HH=HY+HM+HW;
+  const TOTMS=CE-CS;
+  const H=HH+rows.reduce((s,r)=>s+(r.type==='grupo'?GRH:r.type==='task'?TRH:SRH),0)+4;
+  const pxR=d=>Math.max(0,Math.min(TW,(+d-+CS)/TOTMS*TW));
+  const MN=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const months=[];
+  for(let d=new Date(2025,0,1);+d<=+CE;d=new Date(d.getFullYear(),d.getMonth()+1,1))months.push(new Date(d));
+  const weeks=[];
+  {const wd=new Date(CS);const dow=wd.getDay();wd.setDate(wd.getDate()-(dow===0?6:dow-1));
+   while(+wd<=+CE){weeks.push(new Date(wd));wd.setDate(wd.getDate()+7);}}
+  let sL=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${LW} ${H}" width="${LW}" height="${H}" style="display:block">`;
+  sL+=`<rect width="${LW}" height="${H}" fill="#FAFBFC"/>`;
+  let sR=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${TW} ${H}" width="${TW}" height="${H}" style="display:block">`;
+  sR+=`<rect width="${TW}" height="${H}" fill="#FAFBFC"/>`;
+  if(isWeekly){
+    weeks.forEach((w,i)=>{
+      const x1=pxR(w),x2=i+1<weeks.length?pxR(weeks[i+1]):TW,cw=x2-x1;
+      if(i%2===0)sR+=`<rect x="${x1.toFixed(1)}" y="${HH}" width="${cw.toFixed(1)}" height="${H-HH}" fill="rgba(59,130,246,0.07)"/>`;
+      const isMajor=i%4===0;
+      sR+=`<line x1="${x1.toFixed(1)}" y1="${HH}" x2="${x1.toFixed(1)}" y2="${H}" stroke="${isMajor?'rgba(71,85,105,0.55)':'rgba(148,163,184,0.4)'}" stroke-width="${isMajor?'1.5':'1'}"/>`;
+    });
+  } else {
+    months.forEach((m,i)=>{
+      const x1=pxR(m),x2=i+1<months.length?pxR(months[i+1]):TW,cw=x2-x1;
+      if(i%2===0)sR+=`<rect x="${x1.toFixed(1)}" y="${HH}" width="${cw.toFixed(1)}" height="${H-HH}" fill="rgba(0,0,0,0.025)"/>`;
+      sR+=`<line x1="${x1.toFixed(1)}" y1="${HH}" x2="${x1.toFixed(1)}" y2="${H}" stroke="#E2E8F0" stroke-width="1"/>`;
+    });
+  }
+  if(fDS||fDE){
+    const rStart=fDS?new Date(fDS):CS,rEnd=fDE?new Date(fDE):CE;
+    const rx1=pxR(rStart),rx2=pxR(rEnd),rw=Math.max(2,rx2-rx1);
+    sR+=`<rect x="${rx1.toFixed(1)}" y="${HH}" width="${rw.toFixed(1)}" height="${H-HH}" fill="rgba(255,207,0,0.28)"/>`;
+    sR+=`<line x1="${rx1.toFixed(1)}" y1="${HH}" x2="${rx1.toFixed(1)}" y2="${H}" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4,3" opacity="0.9"/>`;
+    sR+=`<line x1="${rx2.toFixed(1)}" y1="${HH}" x2="${rx2.toFixed(1)}" y2="${H}" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4,3" opacity="0.9"/>`;
+  }
+  let cy=HH;
+  rows.forEach((row,idx)=>{
+    const rh=row.type==='grupo'?GRH:row.type==='task'?TRH:SRH;
+    const isGrupo=row.type==='grupo',isTask=row.type==='task',isTarefa=row.type==='tarefa';
+    const bgL=isGrupo?'#C8E09A':isTask?'#F0F7E6':'#FAFDF7';
+    sL+=`<rect x="0" y="${cy}" width="${LW}" height="${rh}" fill="${bgL}"/>`;
+    if(idx%2===1)sR+=`<rect x="0" y="${cy}" width="${TW}" height="${rh}" fill="rgba(0,0,0,${isGrupo?'0.018':'0.015'})"/>`;
+    if(isTask)sR+=`<line x1="2" y1="${(cy+rh/2).toFixed(1)}" x2="${TW}" y2="${(cy+rh/2).toFixed(1)}" stroke="#64748B" stroke-width="1" opacity="0.9"/>`;
+    else if(isTarefa)sR+=`<line x1="2" y1="${(cy+rh/2).toFixed(1)}" x2="${TW}" y2="${(cy+rh/2).toFixed(1)}" stroke="#64748B" stroke-width="1" stroke-dasharray="10,6" opacity="0.85"/>`;
+    if(isGrupo){
+      const g=row.data,col=sc(g.status);
+      sL+=`<rect x="0" y="${cy}" width="4" height="${rh}" fill="${col}" opacity="0.8"/>`;
+      if(row.hasTasks){const arrow=row.expanded?'▾':'▶';sL+=`<text x="14" y="${(cy+rh/2+5).toFixed(1)}" font-size="14" fill="#3A6018" font-weight="700">${arrow}</text>`;}
+      sL+=`<circle cx="${LW-16}" cy="${(cy+rh/2).toFixed(1)}" r="7" fill="${col}"/>`;
+      const nm=g.name.length>44?g.name.slice(0,42)+'...':g.name;
+      sL+=`<text x="30" y="${(cy+rh/2+5).toFixed(1)}" font-size="15" fill="#1A2E0A" font-weight="700">${escSVG(nm)}</text>`;
+      if(row.hasTasks)sL+=`<rect x="0" y="${cy}" width="${LW}" height="${rh}" fill="transparent" cursor="pointer" onclick="toggleGanttGroupDir(${gi},${row.ri})"/>`;
+      if(g.start&&g.end){
+        const clipL=fDS&&g.start<fDS,clipR=fDE&&g.end>fDE;
+        const fullBx=Math.max(0,pxR(new Date(g.start))),fullEx=Math.max(fullBx+6,pxR(new Date(g.end)));
+        const clampBx=clipL?pxR(new Date(fDS)):fullBx,clampEx=clipR?pxR(new Date(fDE)):fullEx;
+        const solidW=Math.max(4,clampEx-clampBx),by=cy+11,bh=rh-22;
+        if(clipL&&clampBx>fullBx){const gw=clampBx-fullBx;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="${col}" opacity="0.18"/>`;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.55"/>`;}
+        sR+=`<rect x="${clampBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="${(clipL&&clampBx>fullBx)||clipR?0:4}" fill="${col}" opacity="0.88"/>`;
+        if(solidW>60)sR+=`<text x="${(clampBx+solidW/2).toFixed(1)}" y="${(by+bh/2+4.5).toFixed(1)}" text-anchor="middle" font-size="13" fill="#FFF" font-weight="700">${escSVG(sl(g.status))}</text>`;
+        if(fullBx>50)sR+=`<text x="${(fullBx-5).toFixed(1)}" y="${(by+bh/2+5).toFixed(1)}" text-anchor="end" font-size="16" font-weight="700" fill="#111827">${fmtBRshort(g.start)}</text>`;
+        sR+=`<text x="${(fullEx+5).toFixed(1)}" y="${(by+bh/2+5).toFixed(1)}" font-size="16" font-weight="700" fill="#111827">${fmtBRshort(g.end)}</text>`;
+        if(clipR&&fullEx>clampEx){const gw=fullEx-clampEx;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="${col}" opacity="0.18"/>`;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.55"/>`;}
+      }
+    } else if(isTask){
+      const t=row.data,col=sc(t.status||'Em andamento');
+      if(row.hasSubs){const arrow=row.marcoExp?'▾':'▶';sL+=`<text x="10" y="${(cy+rh/2+4.5).toFixed(1)}" font-size="11" fill="#5A8A2E" font-weight="700">${arrow}</text>`;}
+      sL+=`<line x1="22" y1="${cy}" x2="22" y2="${cy+rh/2}" stroke="#B0C8A0" stroke-width="1.5"/>`;
+      sL+=`<line x1="22" y1="${cy+rh/2}" x2="36" y2="${cy+rh/2}" stroke="#B0C8A0" stroke-width="1.5"/>`;
+      const nm=(t.tarefa||'').length>46?(t.tarefa||'').slice(0,44)+'...':(t.tarefa||'');
+      sL+=`<text x="39" y="${(cy+rh/2+4.5).toFixed(1)}" font-size="13" fill="#2D4A1E" font-weight="700">${escSVG(nm)}</text>`;
+      if(row.hasSubs)sL+=`<rect x="0" y="${cy}" width="${LW}" height="${rh}" fill="transparent" cursor="pointer" onclick="toggleGanttMarcoDir(${gi},${row.parentRi},${row.ti})"/>`;
+      if(t.start&&t.end){
+        const clipL=fDS&&t.start<fDS,clipR=fDE&&t.end>fDE;
+        const fullBx=Math.max(0,pxR(new Date(t.start))),fullEx=Math.max(fullBx+4,pxR(new Date(t.end)));
+        const clampBx=clipL?pxR(new Date(fDS)):fullBx,clampEx=clipR?pxR(new Date(fDE)):fullEx;
+        const solidW=Math.max(3,clampEx-clampBx),by=cy+7,bh=rh-14;
+        if(clipL&&clampBx>fullBx){const gw=clampBx-fullBx;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="${col}" opacity="0.15"/>`;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;}
+        sR+=`<rect x="${clampBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="${(clipL&&clampBx>fullBx)||clipR?0:3}" fill="${col}" opacity="0.75"/>`;
+        if(solidW>50)sR+=`<text x="${(clampBx+solidW/2).toFixed(1)}" y="${(by+bh/2+4).toFixed(1)}" text-anchor="middle" font-size="11" fill="#FFF" font-weight="600">${escSVG(sl(t.status||'Em andamento'))}</text>`;
+        if(fullBx>50)sR+=`<text x="${(fullBx-5).toFixed(1)}" y="${(by+bh/2+5).toFixed(1)}" text-anchor="end" font-size="16" font-weight="700" fill="#111827">${fmtBRshort(t.start)}</text>`;
+        sR+=`<text x="${(fullEx+5).toFixed(1)}" y="${(by+bh/2+5).toFixed(1)}" font-size="16" font-weight="700" fill="#111827">${fmtBRshort(t.end)}</text>`;
+        if(clipR&&fullEx>clampEx){const gw=fullEx-clampEx;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="${col}" opacity="0.15"/>`;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;}
+      } else if(t.start){
+        const dx=pxR(new Date(t.start));
+        sR+=`<polygon points="${dx},${cy+5} ${dx+7},${cy+rh/2} ${dx},${cy+rh-5} ${dx-7},${cy+rh/2}" fill="${col}"/>`;
+      }
+    } else {
+      const t=row.data,col=sc(t.status||'A iniciar');
+      sL+=`<line x1="44" y1="${cy}" x2="44" y2="${cy+rh/2}" stroke="#C8DEBA" stroke-width="1"/>`;
+      sL+=`<line x1="44" y1="${cy+rh/2}" x2="56" y2="${cy+rh/2}" stroke="#C8DEBA" stroke-width="1"/>`;
+      const nm=(t.tarefa||'').length>48?(t.tarefa||'').slice(0,46)+'...':(t.tarefa||'');
+      sL+=`<text x="59" y="${(cy+rh/2+4).toFixed(1)}" font-size="11" fill="#0F172A" font-weight="550">${escSVG(nm)}</text>`;
+      if(t.start&&t.end){
+        const fullBx=Math.max(0,pxR(new Date(t.start))),fullEx=Math.max(fullBx+3,pxR(new Date(t.end)));
+        const solidW=Math.max(3,fullEx-fullBx),by=cy+5,bh=rh-10;
+        sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="2" fill="${col}" opacity="0.6"/>`;
+        if(solidW>44)sR+=`<text x="${(fullBx+solidW/2).toFixed(1)}" y="${(by+bh/2+3.5).toFixed(1)}" text-anchor="middle" font-size="10" fill="#FFF" font-weight="600">${escSVG(sl(t.status||'A iniciar'))}</text>`;
+        if(fullBx>44)sR+=`<text x="${(fullBx-4).toFixed(1)}" y="${(by+bh/2+4).toFixed(1)}" text-anchor="end" font-size="10" font-weight="600" fill="#374151">${fmtBRshort(t.start)}</text>`;
+        sR+=`<text x="${(fullEx+4).toFixed(1)}" y="${(by+bh/2+4).toFixed(1)}" font-size="10" font-weight="600" fill="#374151">${fmtBRshort(t.end)}</text>`;
+      }
+    }
+    cy+=rh;
+  });
+  sL+=`<rect width="${LW}" height="${HH}" fill="#1E2E0D"/>`;
+  sL+=`<text x="${LW/2}" y="${HH/2+6}" text-anchor="middle" font-size="13" fill="#8AB870" font-weight="700">GRUPO / MARCO / TAREFA</text>`;
+  sL+='</svg>';
+  if(isWeekly){
+    sR+=`<rect x="0" y="0" width="${TW}" height="${HY}" fill="#111A08"/>`;
+    sR+=`<rect x="0" y="${HY}" width="${TW}" height="${HM}" fill="#2F4A18"/>`;
+    sR+=`<rect x="0" y="${HY+HM}" width="${TW}" height="${HW}" fill="#122235"/>`;
+    sR+=`<line x1="0" y1="${HY}" x2="${TW}" y2="${HY}" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`;
+    sR+=`<line x1="0" y1="${HY+HM}" x2="${TW}" y2="${HY+HM}" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>`;
+    let yearLabeled={};
+    months.forEach(m=>{
+      if(m.getMonth()!==0)return;
+      const xJ=pxR(m);
+      if(!yearLabeled[m.getFullYear()]){
+        if(m.getFullYear()>2025)sR+=`<rect x="${(xJ-1).toFixed(1)}" y="0" width="2" height="${HH}" fill="#8AC43A" opacity="0.7"/>`;
+        sR+=`<text x="${(xJ+7).toFixed(1)}" y="${(HY*0.78).toFixed(1)}" font-size="13" fill="#8AC43A" font-weight="800">${m.getFullYear()}</text>`;
+        yearLabeled[m.getFullYear()]=true;
+      }
+    });
+    if(!yearLabeled[2025])sR+=`<text x="8" y="${(HY*0.78).toFixed(1)}" font-size="13" fill="#8AC43A" font-weight="800">2025</text>`;
+    months.forEach((m,i)=>{
+      const x1=pxR(m),nextM=i+1<months.length?months[i+1]:null;
+      const x2=nextM?pxR(nextM):TW,mx=((x1+x2)/2).toFixed(1);
+      sR+=`<line x1="${x1.toFixed(1)}" y1="${HY}" x2="${x1.toFixed(1)}" y2="${HH}" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>`;
+      sR+=`<text x="${mx}" y="${(HY+HM*0.68).toFixed(1)}" text-anchor="middle" font-size="17" fill="rgba(255,255,255,0.92)" font-weight="700">${MN[m.getMonth()]}</text>`;
+    });
+    weeks.forEach((w,i)=>{
+      const x1=pxR(w),x2=i+1<weeks.length?pxR(weeks[i+1]):TW,cw=x2-x1;
+      const wn=String(getISOWeek(w)).padStart(2,'0');
+      sR+=`<line x1="${x1.toFixed(1)}" y1="${HY+HM}" x2="${x1.toFixed(1)}" y2="${HH}" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>`;
+      if(cw>16)sR+=`<text x="${((x1+x2)/2).toFixed(1)}" y="${(HY+HM+HW*0.76).toFixed(1)}" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.58)" font-weight="600">S${wn}</text>`;
+    });
+  } else {
+    sR+=`<rect x="0" y="0" width="${TW}" height="${HY}" fill="#111A08"/>`;
+    sR+=`<rect x="0" y="${HY}" width="${TW}" height="${HM}" fill="#2F4A18"/>`;
+    sR+=`<line x1="0" y1="${HY}" x2="${TW}" y2="${HY}" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`;
+    let yearLabeledM={};
+    months.forEach(m=>{
+      if(m.getMonth()!==0)return;
+      const xJ=pxR(m);
+      if(!yearLabeledM[m.getFullYear()]){
+        if(m.getFullYear()>2025)sR+=`<rect x="${(xJ-1).toFixed(1)}" y="0" width="2" height="${HH}" fill="#8AC43A" opacity="0.7"/>`;
+        sR+=`<text x="${(xJ+7).toFixed(1)}" y="${(HY*0.80).toFixed(1)}" font-size="13" fill="#8AC43A" font-weight="800">${m.getFullYear()}</text>`;
+        yearLabeledM[m.getFullYear()]=true;
+      }
+    });
+    if(!yearLabeledM[2025])sR+=`<text x="8" y="${(HY*0.80).toFixed(1)}" font-size="13" fill="#8AC43A" font-weight="800">2025</text>`;
+    months.forEach((m,i)=>{
+      const x1=pxR(m),nextM=i+1<months.length?months[i+1]:null;
+      const x2=nextM?pxR(nextM):TW,mx=((x1+x2)/2).toFixed(1);
+      sR+=`<line x1="${x1.toFixed(1)}" y1="${HY}" x2="${x1.toFixed(1)}" y2="${HH}" stroke="rgba(255,255,255,0.13)" stroke-width="1"/>`;
+      sR+=`<text x="${mx}" y="${(HY+HM*0.68).toFixed(1)}" text-anchor="middle" font-size="20" fill="rgba(255,255,255,0.90)" font-weight="700">${MN[m.getMonth()]}</text>`;
+    });
+  }
+  const today=new Date();
+  if(+today>=+CS&&+today<=+CE){
+    const tx=pxR(today);
+    sR+=`<line x1="${tx.toFixed(1)}" y1="${HH}" x2="${tx.toFixed(1)}" y2="${H}" stroke="#FF4444" stroke-width="2" stroke-dasharray="4,3"/>`;
+    sR+=`<rect x="${(tx-22).toFixed(1)}" y="${HH+4}" width="44" height="18" rx="4" fill="#FF4444"/>`;
+    sR+=`<text x="${tx.toFixed(1)}" y="${HH+16}" text-anchor="middle" font-size="12" fill="#FFF" font-weight="800">HOJE</text>`;
+  }
+  sR+='</svg>';
+  sL+=`<line x1="${(LW-1).toFixed(1)}" y1="0" x2="${(LW-1).toFixed(1)}" y2="${H}" stroke="#CBD5E1" stroke-width="1.5"/>`;
+  sL+='</svg>';
+  wrap.innerHTML=`<div style="display:flex;align-items:flex-start;overflow-x:auto"><div style="position:sticky;left:0;z-index:10;flex-shrink:0;overflow:hidden;box-shadow:3px 0 10px rgba(0,0,0,0.18)">${sL}</div><div style="flex-shrink:0">${sR}</div></div>`;
+}
+
 function toggleMs(id){
   const menu=document.getElementById('ms-'+id+'-menu');
   const isOpen=menu.classList.contains('open');
@@ -3571,10 +3985,16 @@ function expandLevel(section,level){
   _setVizLabel(section,level);
   if(section==='gantt'){
     _forceCollapseGantt();
-    if(level==='eixos') return; // só mostra cards fechados
+    if(level==='eixos') return;
     expandAllGantt();
     if(level==='marco') setTimeout(()=>expandAllSubgrupos(),50);
     if(level==='tarefas') setTimeout(()=>expandAllTarefasGantt(),50);
+  } else if(section==='gantt-dir'){
+    _forceCollapseGanttDir();
+    if(level==='eixos') return;
+    expandAllGanttDir();
+    if(level==='marco') setTimeout(()=>expandAllSubgruposDir(),50);
+    if(level==='tarefas') setTimeout(()=>expandAllTarefasGanttDir(),50);
   } else if(section==='eap-dir'){
     _forceCollapseEAP_Dir();
     _setEAPVizClass_Dir(level);
@@ -3834,7 +4254,11 @@ async function loadSheetsData() {
     ganttGroupExpanded={};ganttMarcoExpanded={};
     groupOpen_Dir=new Array(WBS_DIR.length).fill(false);commentOpen_Dir={};marcoOpen_Dir={};
     ganttRendered=new Array(WBS.length).fill(false);
+    ganttOpenDir=new Array(WBS_DIR.length).fill(false);
+    ganttRenderedDir=new Array(WBS_DIR.length).fill(false);
+    ganttGroupExpandedDir={};ganttMarcoExpandedDir={};
     renderGanttSection();
+    renderGanttSectionDir();
     document.getElementById('group-list').style.maxHeight='none';
     AREAS_DATA=_buildAreasData();
     buildAreasFilter();
