@@ -16,3 +16,12 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code — configurações locais de sessão
+.claude/
+
+# Documentação gerada localmente
+docs/
+TAP/
+AGENTS.md
+maz-dashboard/
