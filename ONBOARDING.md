@@ -365,6 +365,45 @@ Dropdown multi-select na barra de filtros da aba Requisições. Lê valores úni
 | `buildReqFilters()` | Monta os filtros de status, comprador, prioridade e fornecedor |
 | `applyReqFilter()` | Aplica todos os filtros e re-renderiza a lista de requisições |
 
+#### Aba Gantt Diretoria (Jun/2026)
+
+Aba `📊 Gantt Diretoria`, visualmente idêntica à aba Gantt, mas com regra de status diferente: usa o status **exatamente como preenchido na planilha**, sem os overrides automáticos por data que a aba Gantt aplica.
+
+**Diferença de regra de negócio:**
+| Regra | Aba Gantt | Aba Gantt Diretoria |
+|---|---|---|
+| Status vazio + sem data início | `Definir datas` | `Definir datas` |
+| Status vazio + com data início | `A iniciar` | `A iniciar` |
+| `A iniciar` + data início no passado | override → `Risco de atraso` | **mantém** `A iniciar` |
+| Data fim no passado | override → `Atrasado` | **mantém** status da planilha |
+| Data fim nos próximos 7 dias | override → `Risco de atraso` | **mantém** status da planilha |
+| Rollup marco/grupo/eixo (pior status) | sim | sim (mantido) |
+| `Feito`/`Cancelado`/`Cancelado/Congelado` nunca sobrescreve | sim | sim (mantido) |
+
+**Fonte de dados:** `WBS_DIR` (deep copy de `WBS`) + `preprocessStatusesDiretoria()` — ambos já existiam no projeto, criados para a aba "Status Report Diretoria". A aba Gantt Diretoria reaproveita essa mesma fonte.
+
+**Implementação:** duplicação independente de toda a cadeia de funções do Gantt, sufixadas `Dir`, para não alterar a aba Gantt original:
+
+| Função original | Função Dir (Gantt Diretoria) |
+|---|---|
+| `renderGanttSection()` | `renderGanttSectionDir()` |
+| `renderGanttForEixo(gi)` | `renderGanttForEixoDir(gi)` — usa `WBS_DIR`, `ganttModeDir` |
+| `toggleGantt(gi)` | `toggleGanttDir(gi)` |
+| `toggleGanttGroup(gi,ri)` | `toggleGanttGroupDir(gi,ri)` |
+| `toggleGanttMarco(gi,ri,ti)` | `toggleGanttMarcoDir(gi,ri,ti)` |
+| `expandAllGantt()` | `expandAllGanttDir()` |
+| `expandAllTarefasGantt()` | `expandAllTarefasGanttDir()` |
+| `collapseAllGantt()` | `collapseAllGanttDir()` |
+| `setGanttMode(mode)` | `setGanttModeDir(mode)` |
+
+IDs de DOM têm o sufixo/infixo `dir`: `gantt-dir-container`, `gbody-dir-{gi}`, `gchev-dir-{gi}`, `gantt-svg-dir-{gi}`, `btn-mode-dir-mensal`, `btn-mode-dir-semanal`.
+
+A função `expandLevel(section, level)` ganhou o branch `section==='gantt-dir'` para o dropdown VISUALIZAÇÃO da nova aba.
+
+Os mesmos filtros globais (responsável, status, período) e a mesma trava de senha da aba Status Report (`sessionStorage` `eap_unlocked`) se aplicam à Gantt Diretoria — `switchTab()` exige desbloqueio para `name==='eap'||name==='eap-dir'`.
+
+> ⚠️ A aba Gantt original (`WBS`, `preprocessStatuses()`, funções sem sufixo `Dir`) não foi alterada.
+
 #### Aba Áreas — Gantt e Export PDF (Jun/2026)
 
 A aba Áreas exibe o Gantt por área física do museu. As colunas de área são detectadas dinamicamente a partir do header da planilha.
