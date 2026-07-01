@@ -22,12 +22,11 @@
 Dashboard interativo do **Museu das Amazônias 2026 (MAZ ELD)** — acompanhamento de cronograma, status report e requisições de compras.
 
 ### Arquitetura
-- **Dois arquivos HTML** são o projeto inteiro:
-  - `index.html` → versão desktop
-  - `mobile.html` → versão mobile (3 abas: Gantt, Status Report, Requisições)
+- **Um único arquivo HTML** é o projeto inteiro:
+  - `index.html` → versão desktop e mobile (responsiva, ≤768px), inclui as abas Diretoria (Gantt Diretoria, Status Report Diretoria, Comparativo de Status)
+  - `mobile.html` foi removido em 01/07/2026 — a pedido do Sergio, o mobile dedicado saiu de linha e agora todo acesso (celular ou desktop) usa o `index.html`
 - **Dados ao vivo** — buscados direto do Google Sheets via API Key no browser, sem backend
 - **Publicado** em `https://pmo-creator.github.io/maz-dashboard/` via GitHub Pages
-- **Redirect automático**: o mesmo link detecta desktop ou celular e abre a versão correta
 - **Dependências externas (CDN):**
   - Chart.js 4.5.1 — gráficos de KPI
   - jsPDF 2.5.1 + svg2pdf.js 2.2.3 — export PDF
@@ -39,7 +38,7 @@ Google Sheets (Cronograma + REQS)
         ↓  API Key (sem OAuth)
     Browser do usuário
         ↓  renderiza
-    Dashboard (index.html ou mobile.html)
+    Dashboard (index.html — desktop e mobile no mesmo arquivo)
 ```
 
 ### Indicador de status (canto superior direito)
@@ -76,10 +75,9 @@ Google Sheets (Cronograma + REQS)
 - ✅ Hard refresh (`Ctrl+Shift+R`) ao testar — evita ver versão em cache
 - ✅ Verificar o indicador 🟢 Ao vivo após atualizar
 - ✅ Um commit por alteração com descrição clara do que foi feito
-- ✅ Testar no celular também antes de publicar
-- ✅ Verificar os dois arquivos (index.html E mobile.html) quando a mudança afeta ambos
+- ✅ Testar no celular também antes de publicar (redimensione o browser para ≤768px ou abra direto no celular — é o mesmo `index.html`)
 - ✅ Validar JavaScript com `node --check` após qualquer alteração no código. Extrair o bloco script para um arquivo `.js` temporário e rodar: `node --check arquivo.js`
-- ✅ Ao criar ou alterar o filtro de responsável, verificar os **3 estados** em desktop e mobile: (a) todos marcados → cronograma completo, (b) alguns marcados → mostra só os responsáveis selecionados, (c) nenhum marcado → conteúdo some e aparece mensagem de aviso verde
+- ✅ Ao criar ou alterar o filtro de responsável, verificar os **3 estados**: (a) todos marcados → cronograma completo, (b) alguns marcados → mostra só os responsáveis selecionados, (c) nenhum marcado → conteúdo some e aparece mensagem de aviso verde
 
 ### Nunca fazer
 - ❌ Editar direto no GitHub pelo browser (vai direto para produção sem teste)
@@ -93,7 +91,7 @@ Google Sheets (Cronograma + REQS)
 - 📌 **Nunca altere as constantes de API Key ou IDs de planilha** sem confirmar com o responsável do projeto
 - 📌 **Se o indicador mostrar 🔴**, não é bug do dashboard — é problema de conectividade com o Sheets. Verifique compartilhamento da planilha e API Key
 - 📌 **Qualquer mudança na estrutura das colunas das planilhas** exige atualização do código de parse (`_parseWBS` e `_parseREQS`)
-- 📌 **Ao testar no celular**, use sempre o link do GitHub Pages (`pmo-creator.github.io/maz-dashboard`) — não o localhost, que não redireciona corretamente para mobile
+- 📌 **Ao testar no celular**, use sempre o link do GitHub Pages (`pmo-creator.github.io/maz-dashboard`) ou o layout responsivo local — não existe mais redirecionamento, é o mesmo `index.html` em qualquer tela
 
 ---
 
