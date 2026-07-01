@@ -13,8 +13,7 @@ Usado pelo time de PMO para acompanhar cronograma e requisições do projeto.
 
 ```
 maz-dashboard/                  ← PASTA ÚNICA (git repo + tudo)
-  index.html                    → Dashboard desktop (~330KB)
-  mobile.html                   → Dashboard mobile (~43KB)
+  index.html                    → Dashboard único, desktop e mobile (~330KB) — mobile.html removido em 01/07/2026
   Consulte ONBOARDING.md seção 7 ou 10 apenas se a tarefa envolver filtros específicos ou feature N2
   SERVE_DASHBOARD.bat           → Servidor local para preview (duplo-clique)
   CLAUDE.md                     → Este arquivo
@@ -49,7 +48,7 @@ maz-dashboard/                  ← PASTA ÚNICA (git repo + tudo)
    do usuário.** Esta é a regra mais importante — violar causa publicação acidental
    em produção.
 
-3. **Editar index.html/mobile.html via Python str.replace() no bash**, nunca com
+3. **Editar index.html via Python str.replace() no bash**, nunca com
    o Edit tool — arquivos grandes truncam.
 
 4. **Novos relatórios doc-sync** → salvar sempre em `doc-sync/reports/`.
@@ -113,6 +112,16 @@ expandAllTarefasGantt, expandLevel
 buildAreasFilter, renderAreasTab, renderAreaGantt,
 toggleAreaSection, toggleAreaMarco, setAreasGanttMode
 
+### 🏛️ Diretoria — Gantt/EAP/N2/Comparativo (adicionado 01/07/2026)
+preprocessStatusesDiretoria, renderKPIs_Dir, renderTree_Dir, buildCommentPanel_Dir,
+toggleGroup_Dir, toggleComment_Dir, toggleMarco_Dir, collapseAll_Dir,
+expandAllEixosEAP_Dir, expandAllMarcosEAP_Dir, expandAllTarefasEAP_Dir,
+renderGanttSectionDir, renderGanttForEixoDir, toggleGanttDir, setGanttModeDir,
+expandAllGanttDir, collapseAllGanttDir,
+loadN2_Dir, saveN2_Dir, toggleN2Task_Dir, updateN2Fab_Dir, publishN2Pauta_Dir,
+unlockN2Edit_Dir, exportN2PPT_Dir,
+buildComparativoModal, openComparativoModal, closeComparativoModal
+
 ### ☁️ Google Sheets / Dados (2509–2654)
 fetchSheet, fetchSheetColors, loadSheetsData,
 _parseWBS, _parseREQS, _sg, _fmtDate, _worstStatus
@@ -132,14 +141,13 @@ _runExportPDF, _buildGanttSVGForExport
 
 Arquivos pesados conhecidos — nunca ler inteiro sem autorização:
 - `index.html` (~330KB / ~3.462 linhas) → usar `grep`, `sed` ou busca por âncora
-- `mobile.html` (~43KB) → idem
 - `ONBOARDING.md` → ler só a seção relevante, não o arquivo completo
 - `Manual/*.docx` → nunca abrir direto — usar PDF ou extração pontual
 
 Antes de qualquer operação nesses arquivos, aplicar regra do Token Management global:
 perguntar + listar alternativas leves.
 
-## Roteamento de Edições — index.html / mobile.html
+## Roteamento de Edições — index.html
 
 Antes de editar, classificar a mudança:
 
