@@ -348,8 +348,16 @@
   .req-dd-btn:hover{background:#1E4A7A}
   .req-clear-btn{background:#4A7C1E;border:1px solid #4A7C1E;color:#FFF;padding:6px 12px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
   .req-clear-btn:hover{background:#3A6410;border-color:#3A6410}
-  /* REQUISIÇÕES QUADROS */
-  .req-quadros-grid{padding:16px;display:flex;flex-direction:column;gap:18px}
+  /* REQUISIÇÕES GRUPOS (COTAÇÃO / COMPRAS / NÃO INICIADA / CANCELADA) */
+  .req-quadros-grid{padding:16px;display:flex;flex-direction:column;gap:20px}
+  .req-group{border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.10)}
+  .req-group-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none}
+  .req-group-header:hover{filter:brightness(1.08)}
+  .req-group-title{font-size:18px;font-weight:800;color:#FFF;letter-spacing:.8px;text-transform:uppercase}
+  .req-group-count{font-size:13px;font-weight:700;color:rgba(255,255,255,.9);background:rgba(0,0,0,.18);padding:4px 12px;border-radius:12px}
+  .req-group-body{padding:0;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
+  .req-group-body>.req-quadros-grid{padding:14px}
+  /* REQUISIÇÕES QUADROS (sub-seções por status dentro de cada grupo) */
   .req-quadro{border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
   .req-quadro-title{font-size:16px;font-weight:800;color:#FFF;letter-spacing:.5px}
   .req-quadro-count{font-size:13px;font-weight:700;color:rgba(255,255,255,.85);background:rgba(0,0,0,.15);padding:3px 10px;border-radius:12px}
@@ -3057,17 +3065,22 @@ function renderReqs(){
   const badge=document.getElementById('req-search-badge');
   if(badge)badge.textContent=reqSearchTerm?`${filtered.length} resultado${filtered.length!==1?'s':''}`:filtered.length+' requisições';
   const sortByReq=(a,b)=>(parseInt(a.req)||0)-(parseInt(b.req)||0);
-  const QUADROS=REQ_STATUS_ORDER.map(s=>{
-    const c=REQ_STATUS_COLORS[s]||{bg:'#F1F5F9',fg:'#6B7280'};
-    return{key:s,label:s,color:c.fg};
-  });
-  const grid=document.getElementById('req-quadros');
-  grid.innerHTML=QUADROS.map(q=>{
-    const items=filtered.filter(r=>(r.status||'')===q.key).sort(sortByReq);
-    if(!items.length)return '';
+  const _grpCotacao=['Em cotação','Cotação em análise','Cotação finalizada'];
+  const _grpNaoIniciada=['Não iniciada'];
+  const _grpCancelada=['Cancelado'];
+  const _grpExplicit=[..._grpCotacao,..._grpNaoIniciada,..._grpCancelada];
+  const _grpCompras=REQ_STATUS_ORDER.filter(s=>!_grpExplicit.includes(s));
+  const REQ_GROUPS=[
+    {label:'COTAÇÃO',color:'#6366F1',statuses:_grpCotacao},
+    {label:'COMPRAS',color:'#16A34A',statuses:_grpCompras},
+    {label:'NÃO INICIADA',color:'#6B7280',statuses:_grpNaoIniciada},
+    {label:'CANCELADA',color:'#1F2937',statuses:_grpCancelada},
+  ];
+  const buildQuadro=(status,items)=>{
+    const c=REQ_STATUS_COLORS[status]||{bg:'#F1F5F9',fg:'#6B7280'};
     return `<div class="req-quadro">
-      <div class="req-quadro-header" style="background:${q.color}" onclick="toggleQuadro(this)">
-        <span class="req-quadro-title">${q.label}</span>
+      <div class="req-quadro-header" style="background:${c.fg}" onclick="toggleQuadro(this)">
+        <span class="req-quadro-title">${status}</span>
         <div style="display:flex;align-items:center;gap:8px">
           <span class="req-quadro-count">${items.length} requisição${items.length!==1?'s':''}</span>
           <span class="req-quadro-chev">▶</span>
@@ -3089,6 +3102,27 @@ function renderReqs(){
             </tr>`;
           }).join('')}</tbody>
         </table>
+      </div>
+    </div>`;
+  };
+  const grid=document.getElementById('req-quadros');
+  grid.innerHTML=REQ_GROUPS.map(g=>{
+    const groupItems=filtered.filter(r=>g.statuses.includes(r.status||''));
+    if(!groupItems.length)return '';
+    const subQuadros=g.statuses.map(s=>{
+      const items=groupItems.filter(r=>(r.status||'')===s).sort(sortByReq);
+      return items.length?buildQuadro(s,items):'';
+    }).join('');
+    return `<div class="req-group">
+      <div class="req-group-header" style="background:${g.color}" onclick="toggleQuadro(this)">
+        <span class="req-group-title">${g.label}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="req-group-count">${groupItems.length} requisição${groupItems.length!==1?'s':''}</span>
+          <span class="req-quadro-chev">▶</span>
+        </div>
+      </div>
+      <div class="req-group-body" style="max-height:0" data-open="0">
+        <div class="req-quadros-grid">${subQuadros}</div>
       </div>
     </div>`;
   }).join('');
