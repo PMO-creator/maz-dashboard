@@ -435,7 +435,9 @@
   .task-card{background:#F0F4FA;border-left:5px solid;border-radius:0;padding:14px 18px;margin:0 14px 0 48px;box-shadow:inset 0 -1px 0 #DDE5EF}
   .task-card:last-child{border-radius:0 0 8px 8px;margin-bottom:12px}
   .task-card:hover{background:#E8EEF8}
-  .tc-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+  .tc-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;cursor:pointer}
+  .tc-chev{font-size:11px;color:#64748B;transition:transform .3s;flex-shrink:0;margin-left:auto;padding-top:3px}
+  .tc-details{overflow:hidden;transition:max-height .3s cubic-bezier(.4,0,.2,1)}
   .tc-status{font-size:14px;font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:4px;color:#FFF;white-space:nowrap;flex-shrink:0}
   .tarefa-name{font-size:16px;font-weight:500;color:#0F172A;line-height:1.4;flex:1;word-wrap:break-word;overflow-wrap:break-word;min-width:0}
   .tc-meta{display:flex;gap:14px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
@@ -2071,6 +2073,7 @@ function abrevNome(n){
 function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
   const tasks = m.tasks||[];
   if(!tasks.length) return '';
+  let _tcSeq = 0;
 
   function taskCard(t, n2Id){
     const mc  = sc(t.status||'A iniciar');
@@ -2088,10 +2091,13 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
     const progVal = progTxt ? escH(progTxt) : (isAtrasado ? NPA : NP);
     const encVal  = encTxt  ? escH(encTxt)  : (isAtrasado ? NPA : NP);
     const isCancelado=(t.status||'').toLowerCase().includes('cancelado');
+    const detailsId = 'td-'+gi+'-'+mi+'-'+(_tcSeq++);
     let h = `<div class="task-card"${n2Id?' id="taskcard-'+n2Id+'"':''} style="border-color:${mc}">`;
-    h += `<div class="tc-header">`;
+    h += `<div class="tc-header" onclick="toggleTaskDetails('${detailsId}',event)">`;
     if(n2Id) h += `<input type="checkbox" class="n2-check" id="n2c-${n2Id}" onclick="toggleN2Task('${n2Id}',event)">`;
-    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span></div>`;
+    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span>`;
+    h += `<span class="tc-chev" id="tdchev-${detailsId}" style="transform:rotate(-90deg)">\u25bc</span></div>`;
+    h += `<div class="tc-details" id="tdw-${detailsId}" style="max-height:0">`;
     if(dateStr||t.resp){
       h += `<div class="tc-meta">`;
       if(dateStr) h += `<span class="tc-date">\uD83D\uDCC5 ${dateStr}</span>`;
@@ -2101,7 +2107,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
     h += `<div class="tc-fields">`;
     h += `<div class="tc-field"><span class="tc-label">Progresso:</span><span class="tc-text ${progCls}">${progVal}</span></div>`;
     h += `<div class="tc-field"><span class="tc-label">Encaminhamentos:</span><span class="tc-text ${encCls}">${encVal}</span></div>`;
-    h += `</div></div>`;
+    h += `</div></div></div>`;
     return h;
   }
 
@@ -2172,6 +2178,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
 function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
   const tasks = m.tasks||[];
   if(!tasks.length) return '';
+  let _tcSeqDir = 0;
   function taskCard_Dir(t, n2Id){
     const mc  = sc(t.status||'A iniciar');
     const sl_ = sl(t.status||'A iniciar');
@@ -2188,10 +2195,13 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
     const progVal = progTxt ? escH(progTxt) : (isAtrasado ? NPA : NP);
     const encVal  = encTxt  ? escH(encTxt)  : (isAtrasado ? NPA : NP);
     const isCancelado=(t.status||'').toLowerCase().includes('cancelado');
+    const detailsId = 'td-dir-'+gi+'-'+mi+'-'+(_tcSeqDir++);
     let h = `<div class="task-card"${n2Id?' id="taskcard-dir-'+n2Id+'"':''} style="border-color:${mc}">`;
-    h += `<div class="tc-header">`;
+    h += `<div class="tc-header" onclick="toggleTaskDetails('${detailsId}',event)">`;
     if(n2Id) h += `<input type="checkbox" class="n2-check n2-check-dir" id="n2c-dir-${n2Id}" onclick="toggleN2Task_Dir('${n2Id}',event)">`;
-    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span></div>`;
+    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span>`;
+    h += `<span class="tc-chev" id="tdchev-${detailsId}" style="transform:rotate(-90deg)">▼</span></div>`;
+    h += `<div class="tc-details" id="tdw-${detailsId}" style="max-height:0">`;
     if(dateStr||t.resp){
       h += `<div class="tc-meta">`;
       if(dateStr) h += `<span class="tc-date">📅 ${dateStr}</span>`;
@@ -2201,7 +2211,7 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
     h += `<div class="tc-fields">`;
     h += `<div class="tc-field"><span class="tc-label">Progresso:</span><span class="tc-text ${progCls}">${progVal}</span></div>`;
     h += `<div class="tc-field"><span class="tc-label">Encaminhamentos:</span><span class="tc-text ${encCls}">${encVal}</span></div>`;
-    h += `</div></div>`;
+    h += `</div></div></div>`;
     return h;
   }
   const sfLow=(statusFilter||[]).map(s=>s.toLowerCase());
@@ -2681,6 +2691,24 @@ function toggleMarco(gi,mi,ti,ev){
     if(el.style.maxHeight==='none'||el.style.maxHeight==='')el.style.maxHeight='2000px';
     requestAnimationFrame(()=>el.style.maxHeight='0');
     if(chev)chev.style.transform='rotate(-90deg)';
+  }
+}
+function toggleTaskDetails(id,ev){
+  if(ev)ev.stopPropagation();
+  const el=document.getElementById(`tdw-${id}`);
+  if(!el)return;
+  const chev=document.getElementById(`tdchev-${id}`);
+  const isOpen=el.dataset.open==='1';
+  if(isOpen){
+    if(el.style.maxHeight==='none'||el.style.maxHeight==='')el.style.maxHeight='2000px';
+    requestAnimationFrame(()=>el.style.maxHeight='0');
+    if(chev)chev.style.transform='rotate(-90deg)';
+    el.dataset.open='0';
+  } else {
+    el.style.maxHeight='2000px';
+    setTimeout(()=>{if(el.dataset.open==='1')el.style.maxHeight='none';},350);
+    if(chev)chev.style.transform='';
+    el.dataset.open='1';
   }
 }
 function expandAll(){groupOpen=new Array(WBS.length).fill(true);commentOpen={};renderTree();if(!rootOpen)toggleRoot();}

@@ -119,8 +119,7 @@ O projeto usa **uma única pasta** — edição, teste e publicação acontecem 
 ```
 GitHub\
   maz-dashboard\                 ← PASTA ÚNICA — edita, testa e publica daqui
-    index.html                   → Dashboard desktop (~330 KB)
-    mobile.html                  → Dashboard mobile (~43 KB)
+    index.html                   → Dashboard único, desktop e mobile (~330 KB) — mobile.html removido em 01/Jul/2026
     SERVE_DASHBOARD.bat          → Servidor local (duplo-clique para preview)
     ONBOARDING.md                ← este arquivo (leia antes de trabalhar)
     CLAUDE.md
@@ -175,15 +174,13 @@ python -m http.server 8000
 
 ### Passo 2 — Fazer as alterações
 
-Edite `index.html` e/ou `mobile.html` com **Claude Code** (abrir o Claude Code na pasta `maz-dashboard`).
-
-> ⚠️ Alterações que afetam layout, KPIs, lógica de dados ou parsing de colunas **normalmente afetam os dois arquivos**. Sempre verifique ambos.
+Edite `index.html` com **Claude Code** (abrir o Claude Code na pasta `maz-dashboard`).
 
 ### Passo 3 — Testar localmente
 
 ```
 Desktop → http://localhost:8000/index.html
-Mobile  → http://localhost:8000/mobile.html
+Mobile  → redimensione o browser para ≤768px, ou abra o mesmo link no celular
 Celular → http://[SEU-IP]:8000/index.html  (ver seção 5)
 ```
 
@@ -195,7 +192,7 @@ Celular → http://[SEU-IP]:8000/index.html  (ver seção 5)
 
 ```bash
 # No terminal, dentro de maz-dashboard:
-git add index.html mobile.html
+git add index.html
 git commit -m "Descrição clara do que foi alterado"
 git push
 ```
