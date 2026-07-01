@@ -364,7 +364,8 @@
   .req-q-table th:nth-child(3),.req-q-table td:nth-child(3){overflow:hidden;text-overflow:ellipsis}
   .req-q-table th:nth-child(4),.req-q-table td:nth-child(4){width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .req-q-table th:nth-child(5),.req-q-table td:nth-child(5){width:175px}
-  .req-q-table th:nth-child(6),.req-q-table td:nth-child(6){width:100px;white-space:nowrap}
+  .req-q-table th:nth-child(6),.req-q-table td:nth-child(6){width:130px;white-space:normal}
+  .req-q-table th:nth-child(7),.req-q-table td:nth-child(7){width:130px;white-space:normal}
   .req-q-table th{padding:10px 14px;text-align:left;font-size:14px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;border-bottom:2px solid var(--border);background:#FAFBFC;white-space:nowrap}
   .req-q-table td{padding:11px 14px;border-bottom:1px solid #EEF2F6;vertical-align:middle;font-size:16px;font-weight:600}
   .req-q-table tr:last-child td{border-bottom:none}
@@ -1015,7 +1016,7 @@ window.onload=function(){
   loadSheetsData();
 };
 function switchTab(name){
-if((name==='eap'||name==='eap-dir')&&sessionStorage.getItem('eap_unlocked')!=='1'){_showEapModal();return;}
+  if((name==='eap'||name==='eap-dir')&&sessionStorage.getItem('eap_unlocked')!=='1'){_showEapModal();return;}
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
@@ -3057,16 +3058,13 @@ function renderReqs(){
   const badge=document.getElementById('req-search-badge');
   if(badge)badge.textContent=reqSearchTerm?`${filtered.length} resultado${filtered.length!==1?'s':''}`:filtered.length+' requisições';
   const sortByReq=(a,b)=>(parseInt(a.req)||0)-(parseInt(b.req)||0);
-  const QUADROS=[
-    {key:'1',label:'P1 — ALTA PRIORIDADE',color:'#DC2626'},
-    {key:'2',label:'P2 — MÉDIA PRIORIDADE',color:'#EA580C'},
-    {key:'3',label:'P3 — NORMAL',color:'#2563EB'},
-    {key:'4',label:'P4 — BAIXA PRIORIDADE',color:'#64748B'},
-    {key:'',label:'SEM PRIORIDADE DEFINIDA',color:'#7C3AED'},
-  ];
+  const QUADROS=REQ_STATUS_ORDER.map(s=>{
+    const c=REQ_STATUS_COLORS[s]||{bg:'#F1F5F9',fg:'#6B7280'};
+    return{key:s,label:s,color:c.fg};
+  });
   const grid=document.getElementById('req-quadros');
   grid.innerHTML=QUADROS.map(q=>{
-    const items=filtered.filter(r=>(r.prio||'')===q.key).sort(sortByReq);
+    const items=filtered.filter(r=>(r.status||'')===q.key).sort(sortByReq);
     if(!items.length)return '';
     return `<div class="req-quadro">
       <div class="req-quadro-header" style="background:${q.color}" onclick="toggleQuadro(this)">
@@ -3078,7 +3076,7 @@ function renderReqs(){
       </div>
       <div class="req-quadro-body" style="max-height:0" data-open="0">
         <table class="req-q-table">
-          <thead><tr><th>Req #</th><th>Fornecedor</th><th>Descrição</th><th>Comprador</th><th>Status</th><th>Previsão</th></tr></thead>
+          <thead><tr><th>Req #</th><th>Fornecedor</th><th>Descrição</th><th>Comprador</th><th>Status</th><th>Chegada do Material</th><th>Finalização do Serviço</th></tr></thead>
           <tbody>${items.map(r=>{
             const sc2=REQ_STATUS_COLORS[r.status]||{bg:'#F1F5F9',fg:'#64748B'};
             return `<tr>
@@ -3087,6 +3085,7 @@ function renderReqs(){
               <td style="font-size:16px;font-weight:600">${escH(r.desc)}</td>
               <td class="req-q-comp">${escH(r.comp)}</td>
               <td><span class="req-status-chip" style="background:${sc2.bg};color:${sc2.fg}">${escH(r.status)}</span></td>
+              <td class="req-q-date">${fmtBR((r.arr||'').substring(0,10))}</td>
               <td class="req-q-date">${fmtBR((r.fin||'').substring(0,10))}</td>
             </tr>`;
           }).join('')}</tbody>
@@ -4209,7 +4208,7 @@ function _parseREQS(rows) {
     if(/^\d+\.0$/.test(req)) req=req.slice(0,-2);
     let prio=(r[3]||'').toString().trim();
     if(/^\d+\.0$/.test(prio)) prio=prio.slice(0,-2);
-    return{req,prio,comp:(r[1]||'').toString().trim(),desc:(r[4]||'').toString().trim(),status:(r[5]||'').toString().trim(),forn:(r[6]||'').toString().trim(),fin:_fmtDate((r[12]||'').toString().trim())};
+    return{req,prio,comp:(r[1]||'').toString().trim(),desc:(r[4]||'').toString().trim(),status:(r[5]||'').toString().trim(),forn:(r[6]||'').toString().trim(),arr:_fmtDate((r[10]||'').toString().trim()),fin:_fmtDate((r[12]||'').toString().trim())};
   }).filter(Boolean);
 }
 
