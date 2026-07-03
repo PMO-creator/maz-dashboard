@@ -256,8 +256,8 @@ tr:hover td{background:rgba(138,196,58,.04)}
         </div>
         <div style="flex:1;text-align:center;background:var(--bg2);border-radius:8px;padding:14px">
           <div style="font-size:28px;margin-bottom:6px">📱</div>
-          <div style="font-weight:700;font-size:14px">Celular</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">Redireciona automaticamente ao abrir no celular</div>
+          <div style="font-weight:700;font-size:14px">Responsivo</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">index.html se adapta automaticamente ao celular — mesmo arquivo</div>
         </div>
       </div>
     </div>
@@ -589,19 +589,19 @@ tr:hover td{background:rgba(138,196,58,.04)}
 
   <div class="g2" style="margin-bottom:16px">
     <div class="doc-card" onclick="openModal('doc_manual')">
-      <div class="doc-version">v6 — atualizado Mai/2026</div>
+      <div class="doc-version">v11 — atualizado Jul/2026</div>
       <div class="doc-title">📘 Manual de Uso e Manutenção</div>
       <div class="doc-who">👥 Para: gestores e equipe IDG que usam o dashboard no dia a dia</div>
       <div class="doc-when">Atualizado quando: algo muda na tela — novo filtro, nova aba, nova cor, novo botão</div>
     </div>
     <div class="doc-card" onclick="openModal('doc_onboarding')">
-      <div class="doc-version">v10 — atualizado Mai/2026</div>
+      <div class="doc-version">v17 — atualizado Jul/2026</div>
       <div class="doc-title">🛠️ Guia de Onboarding — Manutenção</div>
       <div class="doc-who">👨‍💻 Para: o PMO que vai manter o código com Claude</div>
       <div class="doc-when">Atualizado quando: algum processo técnico muda, nova armadilha descoberta, novos passos de configuração</div>
     </div>
     <div class="doc-card" onclick="openModal('doc_ficha')">
-      <div class="doc-version">v3 — Mai/2026</div>
+      <div class="doc-version">v4 — Mai/2026</div>
       <div class="doc-title">📋 Ficha Técnica</div>
       <div class="doc-who">📊 Para: gestores seniores, TI, stakeholders que precisam de uma visão rápida do sistema</div>
       <div class="doc-when">Atualizado quando: endereço do dashboard muda, planilha muda, sistema muda</div>
@@ -611,6 +611,12 @@ tr:hover td{background:rgba(138,196,58,.04)}
       <div class="doc-title">🎯 Guia do Usuário Final</div>
       <div class="doc-who">🙋 Para: equipe da exposição e parceiros que nunca viram o dashboard</div>
       <div class="doc-when">Atualizado quando: algo visível na tela muda de lugar ou de funcionamento</div>
+    </div>
+    <div class="doc-card" style="cursor:default">
+      <div class="doc-version">v2 — atualizado Jul/2026</div>
+      <div class="doc-title">📗 SOP — Procedimento Operacional Padrão</div>
+      <div class="doc-who">👨‍💻 Para: quem executa o processo de manutenção passo a passo</div>
+      <div class="doc-when">Atualizado quando: o fluxo de trabalho ou as ferramentas mudam</div>
     </div>
   </div>
 
@@ -756,7 +762,7 @@ tr:hover td{background:rgba(138,196,58,.04)}
 <!-- ═══════════ ABA: REGRAS DE NEGÓCIO ═══════════ -->
 <div class="section" id="sec-rn">
   <div class="sec-title">Regras de negócio do código</div>
-  <div class="sec-sub">Lógica implementada em <strong>index.html</strong> e <strong>mobile.html</strong>. Referência para quem vai manter ou evoluir o dashboard. Última revisão: Mai/2026</div>
+  <div class="sec-sub">Lógica implementada em <strong>index.html</strong> (arquivo único, responsivo). Referência para quem vai manter ou evoluir o dashboard. Última revisão: Jul/2026</div>
 
   <!-- GRUPO 1 -->
   <div class="card">
@@ -950,7 +956,30 @@ tr:hover td{background:rgba(138,196,58,.04)}
 
     <div class="alert warn" style="margin-top:12px">
       <div class="alert-icon">⚠️</div>
-      <div>Qualquer alteração na lógica de status ou KPIs deve ser verificada nos dois arquivos — <strong>index.html</strong> e <strong>mobile.html</strong> — pois têm implementações independentes.</div>
+      <div>Qualquer alteração na lógica de status ou KPIs deve ser verificada nas duas cópias de dados usadas pelo dashboard — o cronograma principal (<strong>WBS</strong>) e o da aba Diretoria (<strong>WBS_DIR</strong>) — pois usam funções de pré-processamento diferentes (<code style="background:#0A1204;padding:1px 5px;border-radius:3px">preprocessStatuses</code> vs <code style="background:#0A1204;padding:1px 5px;border-radius:3px">preprocessStatusesDiretoria</code>).</div>
+    </div>
+  </div>
+
+  <!-- GRUPO 6 -->
+  <div class="card">
+    <div class="card-label">Grupo 6 — Aba Diretoria</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+
+      <div style="background:var(--bg2);border-radius:8px;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="background:#0A1204;border:1px solid var(--accent);border-radius:4px;padding:2px 8px;font-family:monospace;font-size:11px;font-weight:700;color:var(--accent)">RN-14</span>
+          <strong style="font-size:13px">WBS_DIR é cópia congelada no load, não referência viva</strong>
+        </div>
+        <div style="font-size:12px;color:var(--muted)"><code style="background:#0A1204;padding:1px 5px;border-radius:3px">WBS_DIR.length=0; JSON.parse(JSON.stringify(newWBS)).forEach(e=&gt;WBS_DIR.push(e));</code> — é um deep copy tirado no momento da carga dos dados. A partir daí, <strong>WBS</strong> e <strong>WBS_DIR</strong> vivem desacoplados: editar o status manualmente numa árvore não propaga para a outra. Isso é intencional (permite status divergente para o Comparativo), mas quebra a expectativa de "é a mesma árvore".</div>
+      </div>
+
+      <div style="background:var(--bg2);border-radius:8px;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="background:#0A1204;border:1px solid var(--accent);border-radius:4px;padding:2px 8px;font-family:monospace;font-size:11px;font-weight:700;color:var(--accent)">RN-15</span>
+          <strong style="font-size:13px">Comparativo casa tarefas por eixo/grupo/marco — não por ID</strong>
+        </div>
+        <div style="font-size:12px;color:var(--muted)"><code style="background:#0A1204;padding:1px 5px;border-radius:3px">buildComparativoModal()</code> encontra divergências de status comparando <strong>WBS</strong> × <strong>WBS_DIR</strong> pela chave textual eixo/grupo/marco/tarefa. Renomear um desses campos numa árvore sem atualizar a outra faz a tarefa "sumir" da comparação em vez de aparecer como divergência. O botão "Exportar PDF" do modal usa <code style="background:#0A1204;padding:1px 5px;border-radius:3px">window.print()</code> puro — depende do diálogo de impressão do navegador, sem geração programática de PDF.</div>
+      </div>
     </div>
   </div>
 
@@ -981,14 +1010,13 @@ const MODALS = {
   usuario:{title:'👤 Usuário final',rows:[
     {i:'🎯',l:'O que é',v:'Qualquer pessoa que abre o link do dashboard no navegador.'},
     {i:'✅',l:'Para que serve',v:'Ver o cronograma, status das tarefas, Gantt e requisições em tempo real.'},
-    {i:'⚠️',l:'Atenção',v:'O dashboard detecta automaticamente se é celular ou computador e redireciona para a versão certa.'}
+    {i:'⚠️',l:'Atenção',v:'O dashboard usa CSS responsivo — o mesmo index.html se adapta ao layout de celular ou computador automaticamente, sem redirecionar para outro arquivo.'}
   ]},
   versoes:{title:'🖥️📱 Duas versões do dashboard',rows:[
     {i:'🖥️',l:'Desktop',v:'Arquivo index.html — 3 abas: Gantt, Status Report (EAP), Requisições.'},
-    {i:'📱',l:'Mobile',v:'Arquivo mobile.html — versão simplificada para celular.'},
-    {i:'🔄',l:'Redirecionamento',v:'Se alguém abrir o link de computador no celular (ou vice-versa), o dashboard redireciona automaticamente.'},
-    {i:'⚠️',l:'Atenção',v:'Qualquer mudança visível no desktop provavelmente precisa ser verificada no mobile também.'}
-  ],tech:'Auto-redirect: userAgent mobile OU innerWidth ≤ 768px'},
+    {i:'📱',l:'Responsivo',v:'index.html se adapta automaticamente ao celular — não há mais arquivo separado.'},
+    {i:'⚠️',l:'Atenção',v:'Qualquer mudança visível no layout deve ser conferida em desktop e celular, já que o CSS responsivo é compartilhado.'}
+  ],tech:'CSS responsivo: @media(max-width:768px) — sem redirect JS, sem arquivo separado'},
   atualizacao:{title:'⏱️ Atualização automática dos dados',rows:[
     {i:'🎯',l:'O que é',v:'Um timer interno que roda a cada 15 minutos e busca os dados mais recentes da planilha.'},
     {i:'✅',l:'Para que serve',v:'Garante que o dashboard mostra informações atuais sem precisar recarregar a página.'},
@@ -1151,7 +1179,7 @@ const MODALS = {
   err_acesso:{title:'🔒 Link não abre / dá erro 404',rows:[
     {i:'🔍',l:'Causa mais comum',v:'GitHub Pages temporariamente indisponível, ou repositório ficou privado.'},
     {i:'🔧',l:'Verifique',v:'Acesse https://github.com/PMO-creator/maz-dashboard e confirme que o repositório está público.'},
-    {i:'🔧',l:'Links',v:'Desktop: https://pmo-creator.github.io/maz-dashboard/ — Mobile: /mobile.html'},
+    {i:'🔧',l:'Link',v:'https://pmo-creator.github.io/maz-dashboard/ — único endereço, responsivo para qualquer dispositivo'},
     {i:'💬',l:'Se persistir',v:'"O link do dashboard está retornando 404 — pode verificar as configurações do GitHub Pages?"'}
   ]},
   err_claude:{title:'🤖 Claude fez mudança e algo parou',rows:[
@@ -1298,7 +1326,7 @@ window.addEventListener('DOMContentLoaded',function(){
     <div style="font-size:40px;margin-bottom:16px">💾</div>
     <div style="font-size:19px;font-weight:700;color:#FF8C42;margin-bottom:12px">Arquivo baixado!</div>
     <div style="font-size:15px;color:#FFBA80;margin-bottom:10px;line-height:1.75">Lembre-se de copiar o arquivo para:</div>
-    <code style="background:#2A1200;border:1px solid #C4581A;padding:10px 14px;border-radius:8px;font-size:12px;color:#FFD0A0;display:block;margin:0 0 18px 0;text-align:left;word-break:break-all;user-select:all;cursor:text">C:\Users\gagui\OneDrive\Documentos\Claude\Projects\IDG - Relatórios de Análise\Manual\DEV_GUIDE.html</code>
+    <code style="background:#2A1200;border:1px solid #C4581A;padding:10px 14px;border-radius:8px;font-size:12px;color:#FFD0A0;display:block;margin:0 0 18px 0;text-align:left;word-break:break-all;user-select:all;cursor:text">C:\Users\gagui\Github\maz-dashboard\Manual\DEV_GUIDE.html</code>
     <div style="font-size:13px;color:#CC7040;margin-bottom:24px">Caso contrário, o doc-sync sobrescreverá suas edições na próxima execução.</div>
     <button onclick="closeSavePopup()" style="background:#C4581A;border:none;color:white;padding:13px 36px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer" onmouseover="this.style.background='#A84515'" onmouseout="this.style.background='#C4581A'">✓ OK, entendido</button>
   </div>

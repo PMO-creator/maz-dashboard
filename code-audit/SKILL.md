@@ -3,8 +3,8 @@ name: code-audit
 description: >
   Auditor de código do Dashboard MAZ 2026. USAR SEMPRE que o dev disser
   "audita", "auditoria", "revisa o código", "code review", "o que mudou",
-  "está seguro commitar?" ou qualquer variação. Analisa index.html e/ou
-  mobile.html completos em busca de problemas de segurança, arquitetura,
+  "está seguro commitar?" ou qualquer variação. Analisa o index.html
+  completo em busca de problemas de segurança, arquitetura,
   qualidade de código, armadilhas JavaScript e dependências externas.
   Roda via Claude Code (terminal) com a pasta maz-dashboard aberta.
 ---
@@ -18,9 +18,8 @@ Eles contêm: regras de trabalho, mapeamento de colunas das planilhas,
 regras de auto-status, armadilhas técnicas conhecidas e estrutura WBS.
 
 **Caminhos importantes:**
-- Repo: `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\`
-- Dashboard desktop: `index.html` (~330 KB)
-- Dashboard mobile: `mobile.html` (~43 KB)
+- Repo: `C:\Users\gagui\Github\maz-dashboard\`
+- Dashboard único (desktop + mobile responsivo): `index.html` (~330 KB) — `mobile.html` removido em 01/07/2026
 - Armadilhas conhecidas: `ONBOARDING.md §9`
 
 ---
@@ -32,9 +31,8 @@ O dev escolhe o modo ao acionar a skill:
 | O que digitar | Modo | Escopo |
 |---|---|---|
 | `"audita o que mudou"` | **Diff** | Só `git diff` atual — leve e rápido |
-| `"auditoria completa"` | **Full** | Lê index.html + mobile.html inteiros |
+| `"auditoria completa"` | **Full** | Lê index.html inteiro |
 | `"audita o index"` | **File** | Só index.html |
-| `"audita o mobile"` | **File** | Só mobile.html |
 
 Se o dev não especificar, perguntar qual modo antes de começar.
 
@@ -65,7 +63,7 @@ Reportar apenas achados reais — não inventar alertas.
 - Fetch sem tratamento de erro que possa vazar dados sensíveis
 
 ### 🟠 Arquitetura
-- Lógica de negócio duplicada entre index.html e mobile.html sem comentário explicativo
+- Mudança de CSS que afeta o breakpoint responsivo (`@media(max-width:768px)`) testada só num tamanho de tela, arriscando quebrar o outro (desktop e mobile compartilham o mesmo CSS)
 - Funções com mais de ~150 linhas sem separação clara de responsabilidades
 - Constantes (API Key, Sheet IDs) alteradas sem justificativa visível
 - Novos campos de planilha consumidos sem atualizar `_parseWBS` ou `_parseREQS`
@@ -91,15 +89,10 @@ Reportar apenas achados reais — não inventar alertas.
 
 ## ETAPA 3 — Verificação das armadilhas conhecidas
 
-Checar explicitamente as armadilhas do `ONBOARDING.md §9`:
-
-| Armadilha | O que verificar |
-|---|---|
-| Dashboard branco | Null bytes, `function` ausente, JS truncado, template literals aninhados |
-| Prioridade REQS | Coluna D (índice 3) sendo usada — nunca coluna B |
-| `node --check` no Node v22 | Se o dev tentar rodar `.html` diretamente (orientar a extrair o `<script>`) |
-| Edit tool com backticks | Aviso se o diff mostrar template literals problemáticos |
-| String CRLF | Se o diff mostrar mudanças só de line endings, orientar sobre normalização |
+Ler `ONBOARDING.md §9` **na íntegra** (não confiar em lista fixa aqui — a
+seção lá é atualizada pelo doc-sync sempre que uma armadilha nova é
+descoberta, então qualquer cópia embutida nesta skill ficaria desatualizada)
+e checar cada armadilha listada contra o código sendo auditado.
 
 ---
 
@@ -141,6 +134,6 @@ Se não houver nenhum achado em todas as categorias:
 ## Regras de conduta
 
 - **Nunca executar** `git add`, `git commit` ou `git push` — só analisar
-- **Nunca alterar** index.html ou mobile.html durante a auditoria
+- **Nunca alterar** index.html durante a auditoria
 - Se o dev pedir para corrigir um achado, sair do modo auditoria e confirmar antes de editar
 - Ser direto: achados críticos primeiro, sem eufemismos
