@@ -6,8 +6,8 @@ description: >
   "atualizar docs", "documentação", "sincronizar manuais", ou quando chamado
   pelo scheduled task diário. Compara o código atual do dashboard com o
   snapshot anterior, identifica mudanças relevantes, e atualiza os documentos
-  afetados (Manual, Onboarding, Ficha Técnica) com aprovação do usuário antes
-  de gravar.
+  afetados (Manual de Uso, Guia Técnico Unificado, Ficha Técnica) com aprovação
+  do usuário antes de gravar.
 ---
 
 # doc-sync — Sincronização de Documentação Dashboard MAZ 2026
@@ -19,11 +19,14 @@ Ele contém: arquitetura técnica, estrutura WBS, paleta de cores, inventário d
 documentos, regras de relevância e mapeamento mudança → documento.
 
 Caminhos importantes:
-- **Repo GitHub local (pasta única):** `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\`
-- **Manuais:** `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\Manual\`
-- **Snapshot de referência:** `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\doc-sync\_snapshot_index.html`
-- **Esta skill:** `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\doc-sync\`
-- **Relatórios de execução:** `C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\doc-sync\reports\`
+- **Repo GitHub local (pasta única):** `C:\Users\gagui\Github\maz-dashboard\`
+- **Manuais:** `C:\Users\gagui\Github\maz-dashboard\Manual\`
+- **Snapshot de referência:** `C:\Users\gagui\Github\maz-dashboard\doc-sync\_snapshot_index.html`
+- **Esta skill:** `C:\Users\gagui\Github\maz-dashboard\doc-sync\`
+- **Relatórios de execução:** `C:\Users\gagui\Github\maz-dashboard\doc-sync\reports\`
+
+> ⚠️ Não usar OneDrive como caminho do repo — o OneDrive corrompe a pasta `.git`
+> ao sincronizar arquivos internos do git (ver `CLAUDE.md` do projeto).
 
 > ⚠️ Regra crítica: NUNCA executar `git add`, `git commit` ou `git push` sem
 > instrução explícita do usuário.
@@ -32,18 +35,27 @@ Caminhos importantes:
 
 ## Fluxo de execução
 
-### ETAPA 1 — Leitura dos arquivos atuais
+### ETAPA 1 — Diff contra o snapshot
 
-Ler os arquivos do repo GitHub local:
-- `index.html` (dashboard desktop)
-- `mobile.html` (dashboard mobile)
+**Nunca ler `index.html` inteiro.** Comparar contra o snapshot de referência via
+diff — só os hunks alterados entram no contexto. Isso é o que evita o consumo
+pesado de tokens da skill.
+
+```bash
+diff "doc-sync/_snapshot_index.html" "index.html"
+# ou, se preferir granularidade de commit:
+git diff -- index.html
+```
+
+Se o diff vier vazio → pular direto para ✅ "Commit limpo" (Etapa 3) sem ler
+mais nada do arquivo.
 
 ---
 
 ### ETAPA 2 — Leitura do snapshot de referência
 
 ```python
-SNAPSHOT_PATH = r"C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\doc-sync\_snapshot_index.html"
+SNAPSHOT_PATH = r"C:\Users\gagui\Github\maz-dashboard\doc-sync\_snapshot_index.html"
 
 # Se não existir: avisar o usuário que é a primeira execução
 if not exists(SNAPSHOT_PATH):
@@ -118,24 +130,31 @@ Se o usuário disser "não" em algum item específico, pular aquele item.
 
 Para cada documento afetado, executar na ordem:
 
-#### 6a. Manual de Uso e Manutenção (versão atual: `_v7.docx`)
+#### 6a. Manual de Uso (só UX — sem seções de manutenção técnica)
 - Usar skill `docx` (unpack → edit XML → repack)
+- Cobre §1-5: visão geral, filtros, Gantt, Status Report, Requisições
 - Editar apenas as seções mapeadas — nunca reescrever o documento inteiro
-- Incrementar versão ao salvar (ex: `_v7.docx` → `_v8.docx`)
+- Incrementar versão ao salvar (ex: `_v11.docx` → `_v12.docx`)
 - Mover versão anterior para `Manual/old_versions/`
 - Tom: linguagem acessível, orientado a tarefa, sem jargão técnico
 
-#### 6b. Guia de Onboarding (versão atual: `_v12.docx`)
+#### 6b. Guia Técnico Unificado (substitui Onboarding + SOP, fundidos em Jul/2026)
 - Usar skill `docx`
-- Editar seções técnicas: §8 Referências, §9 Armadilhas
-- Incrementar versão ao salvar (ex: `_v12.docx` → `_v13.docx`)
+- Cobre: finalidade/escopo, RACI, arquitetura, setup, fluxo de trabalho,
+  rollback, referências técnicas (URLs, Sheets, colunas, funções JS, armadilhas),
+  skills automatizadas (doc-sync, code-audit), métricas de processo
+- Editar seções técnicas relevantes — não duplicar conteúdo entre seções
+- Incrementar versão ao salvar (ex: `_v1.docx` → `_v2.docx`)
 - Mover versão anterior para `Manual/old_versions/`
 - Tom: técnico e preciso, comandos literais quando aplicável
+- **Não recriar Onboarding e SOP como documentos separados** — desde Jul/2026
+  esse conteúdo vive num documento só. Se uma mudança afeta RACI ou fluxo de
+  processo, edita a seção correspondente aqui, não um arquivo novo.
 
-#### 6c. Ficha Técnica (versão atual: `_v3.docx`)
+#### 6c. Ficha Técnica (versão atual: `_v4.docx`)
 - Usar skill `docx`
 - Atualizar apenas URLs, IDs, dependências
-- Incrementar versão ao salvar (ex: `_v3.docx` → `_v4.docx`)
+- Incrementar versão ao salvar (ex: `_v4.docx` → `_v5.docx`)
 - Mover versão anterior para `Manual/old_versions/`
 - Tom: formal, tabular, conciso
 
@@ -156,20 +175,33 @@ Para cada documento afetado, executar na ordem:
 - URL pública: `https://pmo-creator.github.io/maz-dashboard/Manual/DEV_GUIDE.html`
 - Tom: técnico, orientado a desenvolvedor, com exemplos de código quando aplicável
 
+#### 6f. Verificação de arquivamento (obrigatória para 6a–6c)
+
+> Os números de versão citados em 6a/6b/6c (ex: `_v7.docx`) são só exemplos e
+> podem estar desatualizados — a versão real vigente é sempre a que estiver
+> fisicamente na pasta `Manual/`. Antes de editar, confirme com `ls Manual/` qual
+> é a versão atual de cada documento; não confie no número escrito aqui.
+
+Depois de salvar a nova versão de um documento (6a/6b/6c), antes de seguir para a
+ETAPA 7, rode `ls Manual/*<nome-base-do-documento>*` e confirme que a pasta `Manual/`
+raiz tem **exatamente uma** versão `.docx` daquele documento (a que
+acabou de ser criada). Se aparecer mais de uma — a nova mais alguma antiga que
+ficou pra trás de um ciclo anterior — mova TODAS as versões antigas para
+`Manual/old_versions/` antes de encerrar o ciclo. Esse passo existe porque já
+aconteceu de uma versão anterior ficar esquecida na raiz (ex: `_v9` não arquivado
+quando o `_v10` foi criado) — o arquivamento faz parte do mesmo ato de salvar a
+nova versão, não um passo separado que pode ser pulado.
+
 > ⚠️ Regra crítica: NUNCA resumir ou parafrasear comentários vindos da
 > planilha Google Sheets. Sempre exibir texto bruto.
 
 ---
 
-### ETAPA 7 — Geração de PDFs (OBRIGATÓRIA)
+### ETAPA 7 — PDF (não gerar)
 
-> **Por que obrigatório:** GitHub e usuários finais acessam apenas o PDF —
-> o `.docx` é o arquivo de edição, o `.pdf` é o arquivo de consumo.
-> Sem o PDF, a atualização está incompleta.
-
-Para **cada** `.docx` criado ou atualizado, gerar o PDF correspondente
-na mesma pasta. Nunca encerrar um ciclo doc-sync sem verificar que todos os PDFs
-foram gerados e têm tamanho > 0.
+> Decisão do usuário (Jul/2026): o doc-sync não gera mais PDF. Cada ciclo produz
+> só o `.docx` atualizado — quem precisar do PDF exporta manualmente quando for
+> consumir o documento. Não crie, não converta e não verifique PDFs nesta etapa.
 
 ---
 
@@ -179,8 +211,8 @@ Salvar o `index.html` atual como novo snapshot de referência:
 
 ```python
 shutil.copy2(
-    r"C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\index.html",
-    r"C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\doc-sync\_snapshot_index.html"
+    r"C:\Users\gagui\Github\maz-dashboard\index.html",
+    r"C:\Users\gagui\Github\maz-dashboard\doc-sync\_snapshot_index.html"
 )
 ```
 
@@ -194,9 +226,9 @@ Exibir resumo com links diretos:
 ✅ doc-sync concluído — [data]
 
 Documentos atualizados:
-• [Ver Manual vN](computer://C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\Manual\Manual de Uso e Manutenção Dashboard_vN.docx) · [PDF](computer://C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\Manual\Manual de Uso e Manutenção Dashboard_vN.pdf)
-• [Ver Onboarding vN](computer://C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\Manual\Guia de Onboarding_Manutençao Dashboard_MAZ_2026_vN.docx) · [PDF](computer://C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\Manual\Guia de Onboarding_Manutençao Dashboard_MAZ_2026_vN.pdf)
-• [Ver Ficha Técnica vN](computer://C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\Manual\Ficha_Tecnica_Dashboard_MAZ_2026_vN.docx) · [PDF](computer://C:\Users\gagui\OneDrive\Documentos\GitHub\maz-dashboard\Manual\Ficha_Tecnica_Dashboard_MAZ_2026_vN.pdf)
+• [Ver Manual de Uso vN](computer://C:\Users\gagui\Github\maz-dashboard\Manual\Manual de Uso Dashboard_vN.docx)
+• [Ver Guia Técnico Unificado vN](computer://C:\Users\gagui\Github\maz-dashboard\Manual\Guia Tecnico Unificado_MAZ_2026_vN.docx)
+• [Ver Ficha Técnica vN](computer://C:\Users\gagui\Github\maz-dashboard\Manual\Ficha_Tecnica_Dashboard_MAZ_2026_vN.docx)
 
 Salvar relatório em: doc-sync/reports/doc-sync-relatorio-[data].md
 ```
@@ -223,4 +255,4 @@ O doc-sync é executado **manualmente** — não há agendamento automático.
 Para detectar se há mudanças pendentes, peça ao Claude: *"Checa se tem mudanças
 no dashboard desde o último doc-sync"*.
 
-Documentação completa em `Manual/Guia de Onboarding_Manutençao Dashboard_MAZ_2026_vXX.docx §10`.
+Documentação completa em `Manual/Guia Tecnico Unificado_MAZ_2026_vXX.docx` (seção Skills Automatizadas).

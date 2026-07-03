@@ -55,8 +55,9 @@ maz-dashboard/                  ← PASTA ÚNICA (git repo + tudo)
 
 5. **Versões antigas de documentos** → mover para `Manual/old_versions/` ao criar nova versão.
 
-6. **PDF obrigatório** → toda geração de `.docx` deve produzir um `.pdf`
-   correspondente na mesma pasta, no mesmo ato.
+6. **Não gerar PDF automaticamente** (decisão Jul/2026) → doc-sync e demais
+   fluxos produzem só o `.docx`. Quem precisar do PDF exporta manualmente
+   quando for consumir o documento.
 
 7. **Servidor local** → rodar `SERVE_DASHBOARD.bat` (duplo-clique) para preview antes
    de commitar. Ele abre http://localhost:8000 e não interfere com git.
@@ -134,7 +135,7 @@ _runExportPDF, _buildGanttSVGForExport
 ## Fontes de dados do dashboard
 
 - Cronograma: Google Sheets `17nttJ_ShqWztvDWH3l59iNqboLqkviZs3_PM5J3ihdA` — aba `master data`
-- Requisições: Google Sheets `1azrdS4OGO-CWD1ods69i8iZJcwq4oyISdT2n_tm1uJM` — aba `Planilha de Status de Compras Prod`
+- Requisições: Google Sheets `1azrdS4OGO-CWD1ods69i8iZJcwq4oyISdT2n_tu1uJM` — aba `Planilha de Status de Compras Prod`
 
 
 ## ⚡ Riscos de Token — maz-dashboard

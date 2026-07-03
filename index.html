@@ -401,9 +401,6 @@
   .ms-option:hover{background:rgba(138,196,58,.12)}
   .ms-option input{accent-color:var(--accent);width:15px;height:15px;flex-shrink:0;cursor:pointer}
   .ms-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-  .fl-wrap{display:flex;align-items:center;gap:6px;padding:6px 10px 4px;font-size:14px;color:#E2E8F0;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:4px}
-  .fl-btn{padding:2px 10px;border-radius:4px;border:1px solid #64748B;background:transparent;color:#E2E8F0;font-size:14px;cursor:pointer;transition:all .15s}
-  .fl-btn.active{background:#1E293B;color:#F8FAFC;border-color:#8AC43A}
   .ms-divider{border:none;border-top:1px solid rgba(255,255,255,.1);margin:4px 0}
   /* ── Expand dropdown ── */
   .expand-dd-wrap{position:relative;display:inline-block}
@@ -435,7 +432,9 @@
   .task-card{background:#F0F4FA;border-left:5px solid;border-radius:0;padding:14px 18px;margin:0 14px 0 48px;box-shadow:inset 0 -1px 0 #DDE5EF}
   .task-card:last-child{border-radius:0 0 8px 8px;margin-bottom:12px}
   .task-card:hover{background:#E8EEF8}
-  .tc-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+  .tc-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;cursor:pointer}
+  .tc-chev{font-size:11px;color:#64748B;transition:transform .3s;flex-shrink:0;margin-left:auto;padding-top:3px}
+  .tc-details{overflow:hidden;transition:max-height .3s cubic-bezier(.4,0,.2,1)}
   .tc-status{font-size:14px;font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:4px;color:#FFF;white-space:nowrap;flex-shrink:0}
   .tarefa-name{font-size:16px;font-weight:500;color:#0F172A;line-height:1.4;flex:1;word-wrap:break-word;overflow-wrap:break-word;min-width:0}
   .tc-meta{display:flex;gap:14px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
@@ -538,10 +537,6 @@
         <span class="ms-label-text" id="ms-status-label">Todos os status</span><span class="ms-arrow">▾</span>
       </button>
       <div class="ms-menu" id="ms-status-menu">
-        <div class="fl-wrap">Filtrar por:
-          <button id="fl-marco" class="fl-btn active" onclick="setFilterLevel('marco');event.stopPropagation()">Marco</button>
-          <button id="fl-tarefa" class="fl-btn" onclick="setFilterLevel('tarefa');event.stopPropagation()">Tarefa</button>
-        </div>
         <label class="ms-option ms-all-opt"><input type="checkbox" id="ms-status-chk-all" checked onchange="onMsAll('status',this)"><span style="font-weight:700;font-style:italic;color:#8AC43A">Todos</span></label>
         <hr class="ms-divider">
         <label class="ms-option"><input type="checkbox" value="Atrasado" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#FF2525"></span>Atrasado</label>
@@ -907,7 +902,6 @@ const REQS = [];
 let rootOpen=true, groupOpen=new Array(WBS.length).fill(false), commentOpen={}, marcoOpen={}, reqOpen=true;
 let groupOpen_Dir=[], commentOpen_Dir={}, marcoOpen_Dir={};
 let ganttMode='monthly'; // 'monthly' | 'weekly'
-let filterLevel='marco'; // 'marco' | 'tarefa'
   var modoEstrito=false;
 
 // ── AUTO STATUS (data-driven, roda antes de tudo) ───────────────────────────
@@ -1048,8 +1042,10 @@ function switchTab(name){
   if(n2lfabDir)n2lfabDir.style.display='none';
   var n2pfab=document.getElementById('n2-publish-fab');
   var n2lfab=document.getElementById('n2-lock-fab');
+  var n2pptfab=document.getElementById('n2-ppt-fab');
   if(n2pfab)n2pfab.style.display='none';
   if(n2lfab)n2lfab.style.display='none';
+  if(n2pptfab)n2pptfab.style.display='none';
   var _bfoco=document.getElementById('btn-foco');
   if(_bfoco)_bfoco.style.display=(name==='eap')?'':'none';
   if(name==='eap'){updateN2Fab();}
@@ -1392,17 +1388,8 @@ function matchesFilter(g, m, f){
   const tx = !q || g.name.toLowerCase().includes(q) ||
     (m ? (m.name.toLowerCase().includes(q)||(m.resp&&m.resp.toLowerCase().includes(q))) : g.children.some(c=>c.name.toLowerCase().includes(q)||(c.resp&&c.resp.toLowerCase().includes(q))));
   const dt = !m ? true : (modoEstrito ? dateInRange(m, f.dateStart, f.dateEnd) : true);
-  // Status bottom-up: filho manda
-  const stLow=(f.status||[]).map(s=>s.toLowerCase());
-  function stOk(v){ return !stLow.length||stLow.includes((v||'A iniciar').toLowerCase()); }
-  function marcoPass(marco){
-    return stOk(marco.status||'A iniciar');
-  }
-  let st;
-  if(f.status.length===0){ st=true; }
-  else if(m){ st=(m.tasks&&m.tasks.length)?m.tasks.some(marcoPass):stOk(m.status); }
-  else { st=g.children.some(c=>(c.tasks&&c.tasks.length)?c.tasks.some(marcoPass):stOk(c.status)); }
-  return st && tx && dt;
+  // Status e responsável são checados à parte (nível de tarefa), via grupoHasMatchingLeaf
+  return tx && dt;
 }
 
 function abrevNome(n){
@@ -2071,6 +2058,7 @@ function abrevNome(n){
 function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
   const tasks = m.tasks||[];
   if(!tasks.length) return '';
+  let _tcSeq = 0;
 
   function taskCard(t, n2Id){
     const mc  = sc(t.status||'A iniciar');
@@ -2088,10 +2076,13 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
     const progVal = progTxt ? escH(progTxt) : (isAtrasado ? NPA : NP);
     const encVal  = encTxt  ? escH(encTxt)  : (isAtrasado ? NPA : NP);
     const isCancelado=(t.status||'').toLowerCase().includes('cancelado');
+    const detailsId = 'td-'+gi+'-'+mi+'-'+(_tcSeq++);
     let h = `<div class="task-card"${n2Id?' id="taskcard-'+n2Id+'"':''} style="border-color:${mc}">`;
-    h += `<div class="tc-header">`;
+    h += `<div class="tc-header" onclick="toggleTaskDetails('${detailsId}',event)">`;
     if(n2Id) h += `<input type="checkbox" class="n2-check" id="n2c-${n2Id}" onclick="toggleN2Task('${n2Id}',event)">`;
-    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span></div>`;
+    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span>`;
+    h += `<span class="tc-chev" id="tdchev-${detailsId}" style="transform:rotate(-90deg)">\u25bc</span></div>`;
+    h += `<div class="tc-details" id="tdw-${detailsId}" style="max-height:0">`;
     if(dateStr||t.resp){
       h += `<div class="tc-meta">`;
       if(dateStr) h += `<span class="tc-date">\uD83D\uDCC5 ${dateStr}</span>`;
@@ -2101,30 +2092,27 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
     h += `<div class="tc-fields">`;
     h += `<div class="tc-field"><span class="tc-label">Progresso:</span><span class="tc-text ${progCls}">${progVal}</span></div>`;
     h += `<div class="tc-field"><span class="tc-label">Encaminhamentos:</span><span class="tc-text ${encCls}">${encVal}</span></div>`;
-    h += `</div></div>`;
+    h += `</div></div></div>`;
     return h;
   }
 
-  // Filtro bottom-up: só renderiza marcos/tarefas que passam no status filter
+  // Status e Responsável sempre no nível de tarefa: só entra/aparece quem
+  // (folha) bate nos critérios ativos, mesmo que o marco em si não bata.
   const sfLow=(statusFilter||[]).map(s=>s.toLowerCase());
   function sfOk(v){ return !sfLow.length||sfLow.includes((v||'A iniciar').toLowerCase()); }
   const rfActive = respFilter && respFilter.length>0;
-  let visTasks = (!statusFilter||statusFilter.length===0) ? tasks : tasks.filter(t=>{
-    if(t.tipo==='marco'){
-      return sfOk(t.status);
-    }
-    return sfOk(t.status);
-  });
-  // Resp filter: oculta marcos sem o respons\u00e1vel selecionado
-  if(rfActive){
-    visTasks=visTasks.filter(t=>{
-      if(t.tipo==='marco'){
-        if(t.resp&&respFilter.includes(t.resp))return true; // marco.resp bate \u2192 mostra tudo
-        return(t.subtasks||[]).some(s=>s.resp&&respFilter.includes(s.resp));
-      }
-      return t.resp&&respFilter.includes(t.resp);
-    });
+  const filterActive = sfLow.length>0 || rfActive;
+  function leafOk(leaf){
+    const sOk = !sfLow.length || sfOk(leaf.status);
+    const rOk = !rfActive || (leaf.resp && respFilter.includes(leaf.resp));
+    return sOk && rOk;
   }
+  function nodeHasMatchingLeaf(node){
+    const subs=node.subtasks||[];
+    if(!subs.length) return leafOk(node);
+    return subs.some(leafOk);
+  }
+  let visTasks = filterActive ? tasks.filter(nodeHasMatchingLeaf) : tasks;
   let html = `<div class="marco-comment-panel" id="cpanel-${gi}-${mi}" style="max-height:0">`;
   visTasks.forEach((t,ti)=>{
     if(t.tipo === 'marco'){
@@ -2134,11 +2122,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
       const de  = t.end   ? fmtBRshort(t.end)   : '';
       const dateStr = [ds,de].filter(Boolean).join('\u2192');
       const allSubs = t.subtasks||[];
-      const statusSubs = (!statusFilter||statusFilter.length===0||filterLevel==='marco') ? allSubs : allSubs.filter(s=>sfOk(s.status));
-      // Se marco.resp bate \u2192 todas as tarefas; sen\u00e3o \u2192 s\u00f3 as do respons\u00e1vel
-      const subs = rfActive&&!(t.resp&&respFilter.includes(t.resp))
-        ? statusSubs.filter(s=>s.resp&&respFilter.includes(s.resp))
-        : statusSubs;
+      const subs = filterActive ? allSubs.filter(leafOk) : allSubs;
       const hasSubs = subs.length > 0;
       const mKey = gi+'_'+mi+'_'+ti;
       const mIsOpen = !!marcoOpen[mKey];
@@ -2172,6 +2156,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
 function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
   const tasks = m.tasks||[];
   if(!tasks.length) return '';
+  let _tcSeqDir = 0;
   function taskCard_Dir(t, n2Id){
     const mc  = sc(t.status||'A iniciar');
     const sl_ = sl(t.status||'A iniciar');
@@ -2188,10 +2173,13 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
     const progVal = progTxt ? escH(progTxt) : (isAtrasado ? NPA : NP);
     const encVal  = encTxt  ? escH(encTxt)  : (isAtrasado ? NPA : NP);
     const isCancelado=(t.status||'').toLowerCase().includes('cancelado');
+    const detailsId = 'td-dir-'+gi+'-'+mi+'-'+(_tcSeqDir++);
     let h = `<div class="task-card"${n2Id?' id="taskcard-dir-'+n2Id+'"':''} style="border-color:${mc}">`;
-    h += `<div class="tc-header">`;
+    h += `<div class="tc-header" onclick="toggleTaskDetails('${detailsId}',event)">`;
     if(n2Id) h += `<input type="checkbox" class="n2-check n2-check-dir" id="n2c-dir-${n2Id}" onclick="toggleN2Task_Dir('${n2Id}',event)">`;
-    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span></div>`;
+    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span>`;
+    h += `<span class="tc-chev" id="tdchev-${detailsId}" style="transform:rotate(-90deg)">▼</span></div>`;
+    h += `<div class="tc-details" id="tdw-${detailsId}" style="max-height:0">`;
     if(dateStr||t.resp){
       h += `<div class="tc-meta">`;
       if(dateStr) h += `<span class="tc-date">📅 ${dateStr}</span>`;
@@ -2201,22 +2189,24 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
     h += `<div class="tc-fields">`;
     h += `<div class="tc-field"><span class="tc-label">Progresso:</span><span class="tc-text ${progCls}">${progVal}</span></div>`;
     h += `<div class="tc-field"><span class="tc-label">Encaminhamentos:</span><span class="tc-text ${encCls}">${encVal}</span></div>`;
-    h += `</div></div>`;
+    h += `</div></div></div>`;
     return h;
   }
   const sfLow=(statusFilter||[]).map(s=>s.toLowerCase());
   function sfOk(v){ return !sfLow.length||sfLow.includes((v||'A iniciar').toLowerCase()); }
   const rfActive = respFilter && respFilter.length>0;
-  let visTasks = (!statusFilter||statusFilter.length===0) ? tasks : tasks.filter(t=>sfOk(t.status));
-  if(rfActive){
-    visTasks=visTasks.filter(t=>{
-      if(t.tipo==='marco'){
-        if(t.resp&&respFilter.includes(t.resp))return true;
-        return(t.subtasks||[]).some(s=>s.resp&&respFilter.includes(s.resp));
-      }
-      return t.resp&&respFilter.includes(t.resp);
-    });
+  const filterActive = sfLow.length>0 || rfActive;
+  function leafOk(leaf){
+    const sOk = !sfLow.length || sfOk(leaf.status);
+    const rOk = !rfActive || (leaf.resp && respFilter.includes(leaf.resp));
+    return sOk && rOk;
   }
+  function nodeHasMatchingLeaf(node){
+    const subs=node.subtasks||[];
+    if(!subs.length) return leafOk(node);
+    return subs.some(leafOk);
+  }
+  let visTasks = filterActive ? tasks.filter(nodeHasMatchingLeaf) : tasks;
   let html = `<div class="marco-comment-panel" id="dir-cpanel-${gi}-${mi}" style="max-height:0">`;
   visTasks.forEach((t,ti)=>{
     if(t.tipo === 'marco'){
@@ -2226,10 +2216,7 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
       const de  = t.end   ? fmtBRshort(t.end)   : '';
       const dateStr = [ds,de].filter(Boolean).join('→');
       const allSubs = t.subtasks||[];
-      const statusSubs = (!statusFilter||statusFilter.length===0||filterLevel==='marco') ? allSubs : allSubs.filter(s=>sfOk(s.status));
-      const subs = rfActive&&!(t.resp&&respFilter.includes(t.resp))
-        ? statusSubs.filter(s=>s.resp&&respFilter.includes(s.resp))
-        : statusSubs;
+      const subs = filterActive ? allSubs.filter(leafOk) : allSubs;
       const hasSubs = subs.length > 0;
       const mKey = gi+'_'+mi+'_'+ti;
       const mIsOpen = !!marcoOpen_Dir[mKey];
@@ -2269,7 +2256,7 @@ function renderTree_Dir(){
   let html=''; let vg=0,vm=0;
   WBS_DIR.forEach((g,gi)=>{
     let vis=g.children.filter(m=>matchesFilter(g,m,f));
-    if(f.resp.length>0) vis=vis.filter(m=>grupoHasResp(m,f.resp));
+    if(f.status.length>0||f.resp.length>0) vis=vis.filter(m=>grupoHasMatchingLeaf(m,f));
     const hasFilter=f.status.length>0||f.resp.length>0||f.search||f.dateStart||f.dateEnd;
     if(vis.length===0 && hasFilter) return;
     vg++;vm+=vis.length;
@@ -2526,12 +2513,37 @@ function closeComparativoModal(){
   if(modal)modal.style.display='none';
 }
 
+// Responsável sempre no nível de tarefa (folha) — o marco não é mais um
+// "atalho": ter um dono oficial não faz aparecer as tarefas de outra pessoa.
 function grupoHasResp(m,fResp){
-  if(!fResp.length)return true;
-  if(m.resp&&fResp.includes(m.resp))return true;
-  return(m.tasks||[]).some(t=>
-    (t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp))
-  );
+  if(!fResp||!fResp.length)return true;
+  const tasks=m.tasks||[];
+  if(!tasks.length) return !!(m.resp&&fResp.includes(m.resp));
+  return tasks.some(t=>{
+    const subs=t.subtasks||[];
+    if(!subs.length) return !!(t.resp&&fResp.includes(t.resp));
+    return subs.some(s=>s.resp&&fResp.includes(s.resp));
+  });
+}
+// Status e Responsável juntos (ou isolados): exige que seja a MESMA tarefa
+// (folha) batendo nos critérios ativos — evita mostrar marcos de outra
+// pessoa/status só porque o grupo, no agregado, também bate.
+function grupoHasMatchingLeaf(m,f){
+  const fStatus=f.status||[], fResp=f.resp||[];
+  if(!fStatus.length&&!fResp.length) return true;
+  const stLow=fStatus.map(s=>s.toLowerCase());
+  function leafOk(leaf){
+    const sOk=!stLow.length||stLow.includes((leaf.status||'A iniciar').toLowerCase());
+    const rOk=!fResp.length||(leaf.resp&&fResp.includes(leaf.resp));
+    return sOk&&rOk;
+  }
+  const tasks=m.tasks||[];
+  if(!tasks.length) return leafOk(m);
+  return tasks.some(t=>{
+    const subs=t.subtasks||[];
+    if(!subs.length) return leafOk(t);
+    return subs.some(leafOk);
+  });
 }
 function renderTree(){
   const f=getFilters();
@@ -2540,7 +2552,7 @@ function renderTree(){
 
   WBS.forEach((g,gi)=>{
     let vis=g.children.filter(m=>matchesFilter(g,m,f));
-    if(f.resp.length>0) vis=vis.filter(m=>grupoHasResp(m,f.resp));
+    if(f.status.length>0||f.resp.length>0) vis=vis.filter(m=>grupoHasMatchingLeaf(m,f));
     const hasFilter=f.status.length>0||f.resp.length>0||f.search||f.dateStart||f.dateEnd;
     if(vis.length===0 && hasFilter) return;
     vg++;vm+=vis.length;
@@ -2683,6 +2695,24 @@ function toggleMarco(gi,mi,ti,ev){
     if(chev)chev.style.transform='rotate(-90deg)';
   }
 }
+function toggleTaskDetails(id,ev){
+  if(ev)ev.stopPropagation();
+  const el=document.getElementById(`tdw-${id}`);
+  if(!el)return;
+  const chev=document.getElementById(`tdchev-${id}`);
+  const isOpen=el.dataset.open==='1';
+  if(isOpen){
+    if(el.style.maxHeight==='none'||el.style.maxHeight==='')el.style.maxHeight='2000px';
+    requestAnimationFrame(()=>el.style.maxHeight='0');
+    if(chev)chev.style.transform='rotate(-90deg)';
+    el.dataset.open='0';
+  } else {
+    el.style.maxHeight='2000px';
+    setTimeout(()=>{if(el.dataset.open==='1')el.style.maxHeight='none';},350);
+    if(chev)chev.style.transform='';
+    el.dataset.open='1';
+  }
+}
 function expandAll(){groupOpen=new Array(WBS.length).fill(true);commentOpen={};renderTree();if(!rootOpen)toggleRoot();}
 function updateWBSWarning(badList){
   const count=badList.length;
@@ -2747,13 +2777,6 @@ const EAP_PASSWORD = 'maz2026';
 function _showEapModal(){var m=document.getElementById('eap-pw-modal');if(m)m.style.display='flex';var inp=document.getElementById('eap-pw-input');if(inp){inp.value='';setTimeout(function(){inp.focus();},80);}var err=document.getElementById('eap-pw-error');if(err)err.textContent='';}
 function _closeEapModal(){var m=document.getElementById('eap-pw-modal');if(m)m.style.display='none';}
 function _submitEapPassword(){var inp=document.getElementById('eap-pw-input');var err=document.getElementById('eap-pw-error');if(!inp)return;if(inp.value===EAP_PASSWORD){sessionStorage.setItem('eap_unlocked','1');_closeEapModal();switchTab('eap');}else{if(err)err.textContent='Senha incorreta. Tente novamente.';inp.value='';inp.focus();}}
-function setFilterLevel(level){
-  filterLevel=level;
-  const bm=document.getElementById('fl-marco'),bt=document.getElementById('fl-tarefa');
-  if(bm)bm.classList.toggle('active',level==='marco');
-  if(bt)bt.classList.toggle('active',level==='tarefa');
-  applyFilter();
-}
 function toggleModoEstrito(){
   modoEstrito=!modoEstrito;
   var btn=document.getElementById('btn-foco');
@@ -2767,7 +2790,7 @@ function updatePeriodoBtn(){
   var de=document.getElementById('filter-date-end').value||'';
   var hasDate=!!(ds||de);
   btn.disabled=!hasDate;
-  var lbl=filterLevel==='tarefa'?'Tarefas do Período':'Marcos do Período';
+  var lbl='Tarefas do Período';
   btn.textContent='📅 '+lbl;
   if(!hasDate&&modoEstrito){modoEstrito=false;btn.classList.remove('active');}
 }
@@ -3300,7 +3323,7 @@ function renderGanttForEixo(gi){
       datedTasks.filter(t=>inRange(t.start,t.end)&&(!fStatus.length||fStatus.includes(t.status))).forEach((t,ti)=>{
         if(fResp.length>0){const mm=(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp));if(!mm)return;}
         const datedSubs=(t.subtasks||[]).filter(s=>s.start||s.end);
-        const filteredSubs=datedSubs.filter(s=>inRange(s.start,s.end)&&(!fStatus.length||filterLevel==='marco'||fStatus.includes(s.status)));
+        const filteredSubs=datedSubs.filter(s=>inRange(s.start,s.end)&&(!fStatus.length||fStatus.includes(s.status)));
         const visSubs=fResp.length>0&&!(t.resp&&fResp.includes(t.resp))?filteredSubs.filter(s=>s.resp&&fResp.includes(s.resp)):filteredSubs;
         const hasSubs=visSubs.length>0;
         const marcoExp=!!ganttMarcoExpanded[gi+'_'+ri+'_'+ti];
@@ -3735,7 +3758,7 @@ function renderGanttForEixoDir(gi){
       datedTasks.filter(t=>inRange(t.start,t.end)&&(!fStatus.length||fStatus.includes(t.status))).forEach((t,ti)=>{
         if(fResp.length>0){const mm=(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp));if(!mm)return;}
         const datedSubs=(t.subtasks||[]).filter(s=>s.start||s.end);
-        const filteredSubs=datedSubs.filter(s=>inRange(s.start,s.end)&&(!fStatus.length||filterLevel==='marco'||fStatus.includes(s.status)));
+        const filteredSubs=datedSubs.filter(s=>inRange(s.start,s.end)&&(!fStatus.length||fStatus.includes(s.status)));
         const visSubs=fResp.length>0&&!(t.resp&&fResp.includes(t.resp))?filteredSubs.filter(s=>s.resp&&fResp.includes(s.resp)):filteredSubs;
         const hasSubs=visSubs.length>0;
         const marcoExp=!!ganttMarcoExpandedDir[gi+'_'+ri+'_'+ti];

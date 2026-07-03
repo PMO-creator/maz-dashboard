@@ -8,8 +8,7 @@
 
 **Museu das Amazônias (MAZ) 2026** é uma exposição de longa duração gerenciada pelo IDG (Instituto de Desenvolvimento e Gestão). O dashboard é uma ferramenta interna de gestão de projetos que exibe o cronograma, status, requisições e indicadores da exposição em tempo real.
 
-- **URL pública (desktop):** https://pmo-creator.github.io/maz-dashboard/
-- **URL pública (mobile):** https://pmo-creator.github.io/maz-dashboard/mobile.html
+- **URL pública:** https://pmo-creator.github.io/maz-dashboard/ (arquivo único, responsivo desktop + mobile — `mobile.html` removido em 01/07/2026)
 - **Repositório GitHub:** https://github.com/PMO-creator/maz-dashboard
 - **Conta GitHub:** pmo-creator (exposicoeseprojetos@gmail.com)
 
@@ -20,8 +19,7 @@
 | Componente | Detalhe |
 |---|---|
 | Hospedagem | GitHub Pages — branch `main` |
-| Arquivo desktop | `index.html` (single-file, ~332KB) |
-| Arquivo mobile | `mobile.html` (~43KB) |
+| Arquivo único | `index.html` (single-file, desktop + mobile responsivo, ~330KB) |
 | Dados WBS | Google Sheets API v4 — leitura ao vivo pelo browser |
 | Dados REQS | Google Sheets API v4 — leitura ao vivo pelo browser |
 | Auto-refresh | 15 minutos (`AUTO_REFRESH_MS = 15 * 60 * 1000`) |
@@ -124,56 +122,61 @@ Eixo  = pior status dos seus grupos
 
 ## 4. Inventário de documentos
 
-### 4.1 Manual de Uso e Manutenção Dashboard
+> ⚠️ Estrutura consolidada em Jul/2026 — Onboarding e SOP eram ~70% conteúdo
+> duplicado (setup, fluxo de trabalho, índices de coluna, auto-status,
+> armadilhas, rollback) e foram fundidos num documento só. Guia do Usuário
+> Final (pptx) está descontinuado — não existe versão ativa desde então.
 
-- **Arquivo atual:** `Manual de Uso e Manutenção Dashboard_v6.docx` + `_v6.pdf`
+### 4.1 Manual de Uso Dashboard
+
+- **Arquivo atual:** ver `ls Manual/` para a versão vigente (não confiar em número fixo aqui)
 - **Público-alvo:** Gestores do projeto, equipe IDG — usuários do dashboard no dia a dia. Nível: não-técnico.
 - **Tom:** Orientado a tarefa, direto, linguagem acessível. Sem jargão de código.
-- **O que cobre:** Como usar o dashboard (filtros, abas, visualizações, Gantt, Requisições), legenda de cores, fluxo de atualização de dados.
+- **O que cobre:** SÓ como usar o dashboard (filtros, abas, visualizações, Gantt, Requisições), legenda de cores. **Não cobre** atualização de dados, publicação no GitHub ou modificação de código — isso é conteúdo do Guia Técnico Unificado, não do Manual de Uso.
 - **Seções críticas:**
-  - §3.5 Legenda de Cores — tabela Status/Cor/Significado
-  - §3.3 Barra de filtros — Status, Eixo, Data, Responsável
-  - §3.4 VISUALIZAÇÃO dropdown — Eixos/Grupo/Marco/Tarefas
-  - §4 Aba Status Report (EAP)
-  - §5 Aba Gantt
-  - §6 Aba Requisições
+  - Legenda de Cores — tabela Status/Cor/Significado
+  - Barra de filtros — Status, Eixo, Data, Responsável
+  - VISUALIZAÇÃO dropdown — Eixos/Grupo/Marco/Tarefas
+  - Aba Status Report (EAP)
+  - Aba Gantt
+  - Aba Requisições
 - **Versionar quando:** Qualquer mudança na UX, novos filtros, novas abas, comportamento alterado de feature existente, nova legenda de status.
 
-### 4.2 Guia de Onboarding — Manutenção Dashboard
+### 4.2 Guia Técnico Unificado (substitui Guia de Onboarding + SOP, fundidos Jul/2026)
 
-- **Arquivo atual:** `Guia de Onboarding_Manutençao Dashboard_MAZ_2026_v12.docx`
-- **Público-alvo:** Desenvolvedor que vai manter o código. Nível: técnico, mas pode ser iniciante em JS.
+- **Arquivo atual:** ver `ls Manual/` para a versão vigente
+- **Público-alvo:** Desenvolvedor que vai manter o código, e eventualmente a TI do cliente. Nível: técnico, mas pode ser iniciante em JS.
 - **Tom:** Técnico, preciso. Comandos git literais. Sem abstrações.
-- **O que cobre:** Arquitetura, boas práticas, configuração, fluxo de trabalho (teste → push → produção), reverter versões, referências técnicas (URLs, Sheets IDs, colunas, funções JS), armadilhas conhecidas.
+- **O que cobre:** Finalidade/escopo, RACI (papéis e responsabilidades), arquitetura, boas práticas, configuração inicial, fluxo de trabalho (teste → push → produção), reverter versões/rollback, referências técnicas (URLs, Sheets IDs, colunas, funções JS, auto-status), armadilhas conhecidas, skills automatizadas (doc-sync, code-audit), métricas de processo.
 - **Seções críticas:**
-  - §1 Arquitetura + fluxo de dados
-  - §2 Boas práticas (o que fazer / o que nunca fazer)
-  - §3 Configuração inicial (git clone, API key)
-  - §5 Fluxo de trabalho
-  - §8 Referências técnicas (URLs, Sheets, colunas, funções JS, filtros)
-  - §9 Armadilhas técnicas conhecidas
-- **Versionar quando:** Qualquer mudança técnica — nova função JS relevante, novo parâmetro, mudança de URL, novo campo no Sheets, nova armadilha descoberta, novo fluxo de publicação.
+  - Arquitetura + fluxo de dados
+  - RACI — papéis e responsabilidades
+  - Configuração inicial (git clone, API key)
+  - Fluxo de trabalho
+  - Referências técnicas (URLs, Sheets, colunas, funções JS, filtros)
+  - Armadilhas técnicas conhecidas
+  - Rollback
+- **Versionar quando:** Qualquer mudança técnica — nova função JS relevante, novo parâmetro, mudança de URL, novo campo no Sheets, nova armadilha descoberta, novo fluxo de publicação, mudança de RACI/processo.
+- **Regra:** não recriar Onboarding e SOP como arquivos separados. Todo conteúdo técnico de manutenção vive aqui, num documento só.
 
 ### 4.3 Ficha Técnica Dashboard
 
-- **Arquivo atual:** `Ficha_Tecnica_Dashboard_MAZ_2026_v3.docx` + `_v3.pdf`
+- **Arquivo atual:** ver `ls Manual/` para a versão vigente
 - **Público-alvo:** Stakeholders, gestores seniores, TI. Leitura pontual para entender o que é o sistema.
 - **Tom:** Conciso, formal, informativo. Uma página de referência.
 - **O que cobre:** URLs, repositório, conta GitHub, fontes de dados, arquitetura em tabela, API key, conta de serviço.
 - **Versionar quando:** Mudança de URL, repositório, conta, ID de planilha, dependência externa (ex: troca de biblioteca CDN).
 
-### 4.4 Guia do Usuário Final
+### 4.4 [DESCONTINUADO] Guia do Usuário Final
 
-- **Arquivo atual:** `Guia como usar Dashboard_Usuário final_MAZ_2026_v3.pptx` + `_v3.pdf`
-- **Público-alvo:** Usuários finais do projeto — equipe da exposição, parceiros. Nível: leigo total.
-- **Tom:** Visual, simples, passo a passo com capturas de tela descritas. Máximo 1 ideia por slide.
-- **O que cobre:** Como acessar o dashboard, navegar entre abas, usar filtros, interpretar status, ver o Gantt, consultar requisições.
-- **Versionar quando:** Mudança visual significativa (novo botão visível, nova aba, novo fluxo de navegação), mudança de URL de acesso.
+Pptx descontinuado (última versão v2, arquivada em `Manual/old_versions/`). Não
+recriar automaticamente — se o usuário pedir esse formato de volta, perguntar
+antes de gerar.
 
 ### 4.5 ONBOARDING.md (repo)
 
 - **Arquivo atual:** `maz-dashboard/ONBOARDING.md`
-- **Público-alvo:** Desenvolvedor novo que clonou o repo. Lê diretamente no GitHub sem precisar baixar nada. Nível: técnico.
+- **Público-alvo:** Desenvolvedor novo que clonou o repo, e eu (Claude) para manutenção assistida. Lê diretamente no GitHub sem precisar baixar nada. Nível: técnico.
 - **Tom:** Técnico, direto. Comandos literais. Tabelas de referência rápida.
 - **O que cobre:** Arquitetura, boas práticas, configuração inicial, fluxo de trabalho, referências técnicas (URLs, Sheets, colunas, funções JS, filtros), armadilhas.
 - **Seções críticas:**
@@ -181,8 +184,8 @@ Eixo  = pior status dos seus grupos
   - §3 Estrutura de pastas de trabalho
   - §7 Referências técnicas (colunas das planilhas, auto-status, filtros)
   - §8 Armadilhas técnicas
-- **Versionar quando:** Qualquer mudança técnica que afetaria o Guia de Onboarding docx — nova função JS relevante, novo parâmetro, mudança de coluna no Sheets, nova armadilha, novo fluxo de trabalho, mudança na estrutura de pastas.
-- **Importante:** É o complemento em Markdown do Guia de Onboarding docx. Quando o docx é atualizado para nova versão, o ONBOARDING.md também deve ser atualizado com as mesmas informações técnicas.
+- **Versionar quando:** Qualquer mudança técnica que afetaria o Guia Técnico Unificado — nova função JS relevante, novo parâmetro, mudança de coluna no Sheets, nova armadilha, novo fluxo de trabalho, mudança na estrutura de pastas.
+- **Importante:** É o complemento em Markdown do Guia Técnico Unificado. Quando o docx é atualizado para nova versão, o ONBOARDING.md também deve ser atualizado com as mesmas informações técnicas.
 
 ---
 
@@ -199,7 +202,7 @@ Eixo  = pior status dos seus grupos
 | Novo status ou cor de status | Adição de novo valor de status |
 | Nova armadilha técnica | Bug descoberto e corrigido que outros devs precisam saber |
 | Mudança de dependência externa | Versão do Chart.js, novo CDN |
-| Novo arquivo adicionado | mobile.html criado, novo script, SERVE_DASHBOARD.bat |
+| Novo arquivo adicionado | Novo script auxiliar, SERVE_DASHBOARD.bat |
 
 ### ❌ NÃO RELEVANTE — não atualiza docs
 
@@ -216,23 +219,23 @@ Eixo  = pior status dos seus grupos
 
 ## 6. Mapeamento: tipo de mudança → documentos afetados
 
-| Mudança | Manual v7 | Onboarding v12 | Ficha Técnica v3 | Guia Usuário v3 | ONBOARDING.md |
-|---|---|---|---|---|---|
-| Novo filtro visível | ✅ §3.3 | ✅ §8 | ❌ | ✅ slide filtros | ✅ §7 filtros |
-| Nova aba no dashboard | ✅ nova seção | ✅ §1+§8 | ❌ | ✅ novo slide | ✅ §1+§7 |
-| Novo botão no header | ✅ §3 | ❌ | ❌ | ✅ | ❌ |
-| Nova coluna lida do Sheets | ❌ | ✅ §8 colunas | ❌ | ❌ | ✅ §7 colunas |
-| Mudança de URL | ✅ se menciona URL | ✅ §8 URLs | ✅ | ✅ acesso | ✅ §7 URLs |
-| Mudança ID planilha/aba | ❌ | ✅ §8 | ✅ | ❌ | ✅ §7 |
-| Novo status/cor | ✅ §3.5 legenda | ✅ §8 | ❌ | ✅ legenda | ✅ §7 auto-status |
-| Nova armadilha técnica | ❌ | ✅ §9 | ❌ | ❌ | ✅ §8 |
-| Mudança de dependência CDN | ❌ | ✅ §1 arquitetura | ✅ | ❌ | ✅ §1 |
-| Novo arquivo no repo | ❌ | ✅ §1+§5 | ❌ | ❌ | ✅ §3 estrutura pastas |
-| mobile.html alterado | ❌ (se não muda UX) | ✅ §8 mobile | ❌ | ✅ se UX muda | ✅ §7 mobile |
-| Mudança de comportamento EAP | ✅ §4 | ✅ §8 | ❌ | ✅ | ❌ |
-| Mudança de comportamento Gantt | ✅ §5 | ✅ §8 | ❌ | ✅ | ❌ |
-| Mudança de comportamento REQS | ✅ §6 | ✅ §8 | ❌ | ✅ | ✅ §7 filtros REQS |
-| Mudança na estrutura de pastas | ❌ | ✅ §3+§5 | ❌ | ❌ | ✅ §3 |
+| Mudança | Manual de Uso | Guia Técnico Unificado | Ficha Técnica | ONBOARDING.md |
+|---|---|---|---|---|
+| Novo filtro visível | ✅ | ✅ referências | ❌ | ✅ §7 filtros |
+| Nova aba no dashboard | ✅ nova seção | ✅ arquitetura+referências | ❌ | ✅ §1+§7 |
+| Novo botão no header | ✅ | ❌ | ❌ | ❌ |
+| Nova coluna lida do Sheets | ❌ | ✅ referências colunas | ❌ | ✅ §7 colunas |
+| Mudança de URL | ✅ se menciona URL | ✅ referências URLs | ✅ | ✅ §7 URLs |
+| Mudança ID planilha/aba | ❌ | ✅ referências | ✅ | ✅ §7 |
+| Novo status/cor | ✅ legenda | ✅ referências | ❌ | ✅ §7 auto-status |
+| Nova armadilha técnica | ❌ | ✅ armadilhas | ❌ | ✅ §8 |
+| Mudança de dependência CDN | ❌ | ✅ arquitetura | ✅ | ✅ §1 |
+| Novo arquivo no repo | ❌ | ✅ arquitetura+fluxo | ❌ | ✅ §3 estrutura pastas |
+| Mudança de comportamento EAP | ✅ | ✅ referências | ❌ | ❌ |
+| Mudança de comportamento Gantt | ✅ | ✅ referências | ❌ | ❌ |
+| Mudança de comportamento REQS | ✅ | ✅ referências filtros | ❌ | ✅ §7 filtros REQS |
+| Mudança na estrutura de pastas | ❌ | ✅ configuração+fluxo | ❌ | ✅ §3 |
+| Mudança de RACI/processo | ❌ | ✅ RACI | ❌ | ❌ |
 
 ---
 
