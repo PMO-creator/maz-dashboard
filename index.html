@@ -3246,16 +3246,18 @@ function renderReqs(){
   const badge=document.getElementById('req-search-badge');
   if(badge)badge.textContent=reqSearchTerm?`${filtered.length} resultado${filtered.length!==1?'s':''}`:filtered.length+' requisições';
   const sortByReq=(a,b)=>(parseInt(a.req)||0)-(parseInt(b.req)||0);
-  const _grpCotacao=['Em cotação','Cotação em análise','Cotação finalizada'];
-  const _grpNaoIniciada=['Não iniciada'];
-  const _grpCancelada=['Cancelado'];
-  const _grpExplicit=[..._grpCotacao,..._grpNaoIniciada,..._grpCancelada];
-  const _grpCompras=REQ_STATUS_ORDER.filter(s=>!_grpExplicit.includes(s));
+  const _normTipo=(t)=>((t||'').toString().trim().toLowerCase().includes('cota')?'COTAÇÃO':'COMPRAS');
+  const _grpCotacaoStatuses=['Em cotação','Cotação em análise','Cotação finalizada'];
+  const _grpAmbiguousStatuses=['Não iniciada','Cancelado'];
+  const _reqGroupKey=(r)=>{
+    const st=r.status||'';
+    if(_grpCotacaoStatuses.includes(st))return 'COTAÇÃO';
+    if(_grpAmbiguousStatuses.includes(st))return _normTipo(r.tipo);
+    return 'COMPRAS';
+  };
   const REQ_GROUPS=[
-    {label:'COTAÇÃO',color:'#6366F1',statuses:_grpCotacao},
-    {label:'COMPRAS',color:'#16A34A',statuses:_grpCompras},
-    {label:'NÃO INICIADA',color:'#6B7280',statuses:_grpNaoIniciada},
-    {label:'CANCELADA',color:'#1F2937',statuses:_grpCancelada},
+    {label:'COMPRAS',color:'#16A34A',key:'COMPRAS'},
+    {label:'COTAÇÃO',color:'#6366F1',key:'COTAÇÃO'},
   ];
   const buildQuadro=(status,items)=>{
     const c=REQ_STATUS_COLORS[status]||{bg:'#F1F5F9',fg:'#6B7280'};
@@ -3288,9 +3290,11 @@ function renderReqs(){
   };
   const grid=document.getElementById('req-quadros');
   grid.innerHTML=REQ_GROUPS.map(g=>{
-    const groupItems=filtered.filter(r=>g.statuses.includes(r.status||''));
+    const groupItems=filtered.filter(r=>_reqGroupKey(r)===g.key);
     if(!groupItems.length)return '';
-    const subQuadros=g.statuses.map(s=>{
+    const _extraStatuses=[...new Set(groupItems.map(r=>r.status||'').filter(s=>s&&!REQ_STATUS_ORDER.includes(s)))].sort();
+    const _statusesPresent=[...REQ_STATUS_ORDER,..._extraStatuses].filter(s=>groupItems.some(r=>(r.status||'')===s));
+    const subQuadros=_statusesPresent.map(s=>{
       const items=groupItems.filter(r=>(r.status||'')===s).sort(sortByReq);
       return items.length?buildQuadro(s,items):'';
     }).join('');
@@ -4422,7 +4426,7 @@ function _parseREQS(rows) {
     if(/^\d+\.0$/.test(req)) req=req.slice(0,-2);
     let prio=(r[3]||'').toString().trim();
     if(/^\d+\.0$/.test(prio)) prio=prio.slice(0,-2);
-    return{req,prio,comp:(r[1]||'').toString().trim(),desc:(r[4]||'').toString().trim(),status:(r[5]||'').toString().trim(),forn:(r[6]||'').toString().trim(),arr:_fmtDate((r[10]||'').toString().trim()),fin:_fmtDate((r[12]||'').toString().trim())};
+    return{req,prio,comp:(r[1]||'').toString().trim(),desc:(r[5]||'').toString().trim(),status:(r[6]||'').toString().trim(),forn:(r[7]||'').toString().trim(),arr:_fmtDate((r[11]||'').toString().trim()),fin:_fmtDate((r[13]||'').toString().trim())};
   }).filter(Boolean);
 }
 
