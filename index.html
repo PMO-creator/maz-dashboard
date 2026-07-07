@@ -3259,8 +3259,22 @@ function renderReqs(){
     {label:'COMPRAS',color:'#16A34A',key:'COMPRAS'},
     {label:'COTAÇÃO',color:'#6366F1',key:'COTAÇÃO'},
   ];
-  const buildQuadro=(status,items)=>{
+  const REQ_EXTRA_COLS={
+    'COTAÇÃO':[
+      {label:'Data Limite',field:'dataLimite',type:'date'},
+      {label:'Observação',field:'obs',type:'text'},
+    ],
+    'COMPRAS':[
+      {label:'Chegada do Material',field:'chegadaMaterial',type:'date'},
+      {label:'Finalização do Serviço',field:'finalizacaoServico',type:'date'},
+      {label:'Advogado',field:'advogado',type:'text'},
+      {label:'Observação',field:'obs',type:'text'},
+    ],
+  };
+  const _advogadoStatuses=['Projuris','Contrato em assinatura'];
+  const buildQuadro=(status,items,groupKey)=>{
     const c=REQ_STATUS_COLORS[status]||{bg:'#F1F5F9',fg:'#6B7280'};
+    const cols=(REQ_EXTRA_COLS[groupKey]||[]).filter(col=>col.field!=='advogado'||_advogadoStatuses.includes(status));
     return `<div class="req-quadro">
       <div class="req-quadro-header" style="background:${c.fg}" onclick="toggleQuadro(this)">
         <span class="req-quadro-title">${status}</span>
@@ -3271,17 +3285,20 @@ function renderReqs(){
       </div>
       <div class="req-quadro-body" style="max-height:0" data-open="0">
         <table class="req-q-table">
-          <thead><tr><th>Req #</th><th>Fornecedor</th><th>Descrição</th><th>Comprador</th><th>Status</th><th>Chegada do Material</th><th>Finalização do Serviço</th></tr></thead>
+          <thead><tr><th>Req #</th><th>Fornecedor</th><th>Descrição</th><th>Comprador</th><th>Status</th>${cols.map(col=>`<th>${col.label}</th>`).join('')}</tr></thead>
           <tbody>${items.map(r=>{
             const sc2=REQ_STATUS_COLORS[r.status]||{bg:'#F1F5F9',fg:'#64748B'};
+            const extraTds=cols.map(col=>{
+              const v=r[col.field]||'';
+              return col.type==='date'?`<td class="req-q-date">${fmtBR(v.substring(0,10))}</td>`:`<td>${escH(v)}</td>`;
+            }).join('');
             return `<tr>
               <td class="req-q-num" style="background:#2F4A18;color:#FFF;padding:6px 12px;border-radius:6px;text-align:center">${escH(r.req)}</td>
               <td style="font-size:16px;font-weight:600">${escH(r.forn)}</td>
               <td style="font-size:16px;font-weight:600">${escH(r.desc)}</td>
               <td class="req-q-comp">${escH(r.comp)}</td>
               <td><span class="req-status-chip" style="background:${sc2.bg};color:${sc2.fg}">${escH(r.status)}</span></td>
-              <td class="req-q-date">${fmtBR((r.arr||'').substring(0,10))}</td>
-              <td class="req-q-date">${fmtBR((r.fin||'').substring(0,10))}</td>
+              ${extraTds}
             </tr>`;
           }).join('')}</tbody>
         </table>
@@ -3296,7 +3313,7 @@ function renderReqs(){
     const _statusesPresent=[...REQ_STATUS_ORDER,..._extraStatuses].filter(s=>groupItems.some(r=>(r.status||'')===s));
     const subQuadros=_statusesPresent.map(s=>{
       const items=groupItems.filter(r=>(r.status||'')===s).sort(sortByReq);
-      return items.length?buildQuadro(s,items):'';
+      return items.length?buildQuadro(s,items,g.key):'';
     }).join('');
     return `<div class="req-group">
       <div class="req-group-header" style="background:${g.color}" onclick="toggleQuadro(this)">
@@ -4426,7 +4443,7 @@ function _parseREQS(rows) {
     if(/^\d+\.0$/.test(req)) req=req.slice(0,-2);
     let prio=(r[3]||'').toString().trim();
     if(/^\d+\.0$/.test(prio)) prio=prio.slice(0,-2);
-    return{req,prio,comp:(r[1]||'').toString().trim(),desc:(r[5]||'').toString().trim(),status:(r[6]||'').toString().trim(),forn:(r[7]||'').toString().trim(),arr:_fmtDate((r[11]||'').toString().trim()),fin:_fmtDate((r[13]||'').toString().trim())};
+    return{req,prio,comp:(r[1]||'').toString().trim(),tipo:(r[4]||'').toString().trim(),desc:(r[5]||'').toString().trim(),status:(r[6]||'').toString().trim(),forn:(r[7]||'').toString().trim(),obs:(r[8]||'').toString().trim(),advogado:(r[10]||'').toString().trim(),dataLimite:_fmtDate((r[12]||'').toString().trim()),chegadaMaterial:_fmtDate((r[13]||'').toString().trim()),finalizacaoServico:_fmtDate((r[15]||'').toString().trim())};
   }).filter(Boolean);
 }
 
