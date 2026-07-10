@@ -148,7 +148,7 @@
     .mb-date,.mb-resp,.mb-status{font-size:13px}
     .task-card{margin:0 8px 0 28px;padding:10px 12px}
     .tarefa-name{font-size:14px}
-    .tc-date,.tc-resp{font-size:14px}
+    .tc-date,.tc-resp,.tc-forn{font-size:14px}
     .tc-label{font-size:12px;min-width:120px}
     .tc-text{font-size:13px}
 
@@ -440,6 +440,7 @@
   .tc-meta{display:flex;gap:14px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
   .tc-date{font-size:19px;color:#334155;font-weight:500}
   .tc-resp{font-size:19px;color:#1E293B;background:#DDE8F4;padding:3px 10px;border-radius:8px;font-weight:600}
+  .tc-forn{font-size:19px;color:#9A3412;background:#FED7AA;padding:3px 10px;border-radius:8px;font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
   .tc-fields{display:flex;flex-direction:column;gap:8px;border-top:1px solid #DDE5EF;padding-top:10px;margin-top:4px}
   .tc-field{display:flex;gap:10px;align-items:flex-start}
   .tc-label{font-size:16px;font-weight:800;letter-spacing:.5px;color:#1E3A5F;min-width:190px;flex-shrink:0;padding-top:2px;text-transform:uppercase}
@@ -742,12 +743,12 @@
 <button id="n2-fab" onclick="toggleN2Filter()" style="display:none;position:fixed;bottom:82px;right:28px;z-index:1000;padding:11px 20px;border:none;border-radius:21px;font-size:16px;font-weight:700;cursor:pointer;background:#3D6218;color:#B8E85C;box-shadow:0 4px 16px rgba(0,0,0,.3);align-items:center;gap:8px">📋 Pauta N2 · 0</button>
 <button id="n2-clear-fab" onclick="clearN2Selection()" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
 <button id="n2-publish-fab" onclick="publishN2Pauta()" style="display:none;position:fixed;bottom:140px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#1A3A8A;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📤 Publicar pauta</button>
-<button id="n2-ppt-fab" onclick="exportN2PPT()" style="display:none;position:fixed;bottom:200px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#065F46;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📊 Exportar PPT</button>
+<button id="n2-ppt-fab" onclick="exportN2PPT()" style="display:none;position:fixed;bottom:200px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#065F46;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📄 Exportar HTML</button>
 <button id="n2-lock-fab" onclick="unlockN2Edit()" title="Desbloquear edição" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1001;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#5C3A8A;color:white;box-shadow:0 4px 12px rgba(0,0,0,.3)">🔓 Desbloquear</button>
 <button id="n2-fab-dir" onclick="toggleN2Filter_Dir()" style="display:none;position:fixed;bottom:82px;right:28px;z-index:1000;padding:11px 20px;border:none;border-radius:21px;font-size:16px;font-weight:700;cursor:pointer;background:#3D6218;color:#B8E85C;box-shadow:0 4px 16px rgba(0,0,0,.3);align-items:center;gap:8px">📋 Pauta N2 · 0</button>
 <button id="n2-clear-fab-dir" onclick="clearN2Selection_Dir()" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
 <button id="n2-publish-fab-dir" onclick="publishN2Pauta_Dir()" style="display:none;position:fixed;bottom:140px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#1A3A8A;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📤 Publicar pauta</button>
-<button id="n2-ppt-fab-dir" onclick="exportN2PPT_Dir()" style="display:none;position:fixed;bottom:200px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#065F46;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📊 Exportar PPT</button>
+<button id="n2-ppt-fab-dir" onclick="exportN2PPT_Dir()" style="display:none;position:fixed;bottom:200px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#065F46;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📄 Exportar HTML</button>
 <button id="n2-lock-fab-dir" onclick="unlockN2Edit_Dir()" title="Desbloquear edição" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1001;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#5C3A8A;color:white;box-shadow:0 4px 12px rgba(0,0,0,.3)">🔓 Desbloquear</button>
 
   <div id="tab-reqs" class="tab-panel">
@@ -1654,20 +1655,24 @@ function abrevNome(n){
     var url=_base+'?n2='+arr.join(',')+'&ph='+_n2Hash(pin);
     _showN2Modal(url);
   }
-  function exportN2PPT(){
-    var arr=loadN2();
-    if(!arr.length){alert('Nenhuma tarefa selecionada para exportar.');return;}
-    if(typeof PptxGenJS==='undefined'){alert('Biblioteca de PPT não carregada. Verifique a conexão e recarregue a página.');return;}
-
-    // Usa os filtros ATIVOS para replicar exatamente o que está visível no dashboard
+  // ── EXPORT N2 -> HTML NAVEGAVEL (substitui o antigo export PPT) ──────────────
+  function _dateStamp(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function _downloadHTML(html,filename){
+    var blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  }
+  function _buildN2HTMLDoc(wbsArr,arr,isDir){
     var currentFilters=getFilters();
     var sfArr=currentFilters.status||[];
     var sfLow=sfArr.map(function(s){return s.toLowerCase();});
     function sfOk(v){return !sfLow.length||sfLow.indexOf((v||'A iniciar').toLowerCase())>=0;}
-
     var selected=new Set(arr);
     var byEixo=[];
-    WBS.forEach(function(eixo,gi){
+    wbsArr.forEach(function(eixo,gi){
       var vis=eixo.children.filter(function(m){return matchesFilter(eixo,m,currentFilters);});
       if(currentFilters.resp&&currentFilters.resp.length>0)vis=vis.filter(function(m){return grupoHasResp(m,currentFilters.resp);});
       var grupoItems=[];
@@ -1690,183 +1695,190 @@ function abrevNome(n){
       });
       if(grupoItems.length)byEixo.push({eixo:eixo,grupos:grupoItems});
     });
-    if(!byEixo.length){alert('Nenhuma tarefa selecionada encontrada com os filtros atuais.');return;}
+    if(!byEixo.length){alert('Nenhuma tarefa selecionada encontrada com os filtros atuais.');return null;}
 
-    // Cores via objeto STATUS do dashboard
-    function stColor(s){return (STATUS[s]||STATUS['A iniciar']).color.replace('#','');}
-    function stLabel(s){return (STATUS[s]||STATUS['A iniciar']).label;}
+    var GRUPO_BG='#2F4A18',MARCO_BG='#F5FAF0',TASK_BG='#F7FAFF',TASK_BORDER='#DDE8F5',TEXT_DARK='#1A2E0A';
+    var NP='Não preenchido',NPA='⚠ Não preenchido';
 
-    // Estimativa de linhas (conservadora) para dimensionar caixas dinamicamente
-    function estLines(text,charsPerLine){
-      return Math.max(1,Math.ceil(((text||'').length)/charsPerLine));
+    function taskCardHTML(task){
+      var tc=sc(task.status),tl=sl(task.status);
+      var tds=task.start?fmtBRshort(task.start):'',tde=task.end?fmtBRshort(task.end):'';
+      var tdateStr=[tds,tde].filter(Boolean).join(' → ');
+      var progTxt=(task.progresso&&task.progresso.trim())?task.progresso.trim():'';
+      var encTxt=(task.encaminhamento&&task.encaminhamento.trim())?task.encaminhamento.trim():'';
+      var progEmpty=!progTxt,encEmpty=!encTxt;
+      var progVal=progTxt?escH(progTxt):NPA;
+      var encVal=encTxt?escH(encTxt):NPA;
+      var h='<div class="exp-task" style="background:'+TASK_BG+';border:1px solid '+TASK_BORDER+';border-left:4px solid '+tc+'">';
+      h+='<div class="exp-task-head">';
+      h+='<span class="exp-chip" style="background:'+tc+'">'+escH(tl)+'</span>';
+      h+='<span class="exp-task-name">'+escH(task.tarefa||'')+'</span>';
+      if(tdateStr)h+='<span class="exp-meta">📅 '+escH(tdateStr)+'</span>';
+      if(task.resp)h+='<span class="exp-meta">👤 '+escH(abrevNome(task.resp))+'</span>';
+      if(task.fornecedor)h+='<span class="exp-meta exp-forn" title="'+escH(task.fornecedor)+'">🏢 '+escH(task.fornecedor)+'</span>';
+      h+='</div>';
+      h+='<div class="exp-field'+(progEmpty?' exp-empty':'')+'"><b>Progresso:</b> <span class="exp-fval" data-ph="'+NPA+'">'+progVal+'</span></div>';
+      h+='<div class="exp-field'+(encEmpty?' exp-empty':'')+'"><b>Encaminhamentos:</b> <span class="exp-fval" data-ph="'+NPA+'">'+encVal+'</span></div>';
+      h+='</div>';
+      return h;
     }
-    // chars/linha para cada tamanho de fonte / largura aproximada
-    var CPL14=51;   // 16pt em ~7.3" (nome do marco)
-    var CPL11=69;   // 13pt em ~7.6" (nome da tarefa)
-    var CPL10=108;  // 12pt em ~12" (progresso/encaminhamento)
-    // altura por linha (polegadas)
-    var LH14=0.32; var LH11=0.27; var LH10=0.25;
 
-    // Constantes de layout
-    var W=13.33,H=7.5,ML=0.3,CW=W-ML-0.3;
-    var SAFE_BOTTOM=H-0.48;
-    var BG='1E2E0D',BG2='2F4A18',ACCENT='8AC43A',ACCENTD='4A7A1E';
-    var TEXT_DARK='1A2E0A',TEXT_LIGHT='E2E8F0',MUTED='94A3B8';
-    var NP='NÃO PREENCHIDO';
+    function marcoHTML(marcoData){
+      var marco=marcoData.task;
+      var tasksToShow=marcoData.subtasks.length>0?marcoData.subtasks:[marco];
+      var mc=sc(marco.status),ml_=sl(marco.status);
+      var ds=marco.start?fmtBRshort(marco.start):'',de=marco.end?fmtBRshort(marco.end):'';
+      var dateStr=[ds,de].filter(Boolean).join(' → ');
+      var h='<div class="exp-marco" style="background:'+MARCO_BG+';border:2px solid '+mc+'">';
+      h+='<div class="exp-marco-head">';
+      h+='<span class="exp-chip" style="background:'+mc+'">'+escH(ml_)+'</span>';
+      h+='<span class="exp-marco-name">'+escH(marco.tarefa||'')+'</span>';
+      if(dateStr)h+='<span class="exp-meta">📅 '+escH(dateStr)+'</span>';
+      if(marco.resp)h+='<span class="exp-meta">👤 '+escH(abrevNome(marco.resp))+'</span>';
+      h+='</div>';
+      if(tasksToShow.length>1){
+        h+='<details class="exp-tasks" open><summary>'+tasksToShow.length+' tarefas</summary><div class="exp-tasks-body">';
+        h+=tasksToShow.map(taskCardHTML).join('');
+        h+='</div></details>';
+      } else {
+        h+='<div class="exp-tasks-flat">'+tasksToShow.map(taskCardHTML).join('')+'</div>';
+      }
+      h+='</div>';
+      return h;
+    }
+
+    function grupoHTML(grupoData){
+      var grupo=grupoData.grupo,marcos=grupoData.marcos;
+      var h='<details class="exp-grupo" open>';
+      h+='<summary class="exp-grupo-header" style="background:'+GRUPO_BG+'"><span class="exp-chevron">▶</span>'+escH(grupo.name)+'<span class="exp-count">'+marcos.length+' marco'+(marcos.length!==1?'s':'')+'</span></summary>';
+      h+='<div class="exp-grupo-body">'+marcos.map(marcoHTML).join('')+'</div>';
+      h+='</details>';
+      return h;
+    }
+
+    function eixoHTML(eixoData){
+      var eixo=eixoData.eixo,grupos=eixoData.grupos;
+      var bg=eixo.color||'#6BA030';
+      var txt=_eixoTextColor(eixo.color);
+      var idBg=sc(eixo.status);
+      var n=grupos.reduce(function(s,g){return s+g.marcos.length;},0);
+      var h='<details class="exp-eixo" open>';
+      h+='<summary class="exp-eixo-header" style="background:'+bg+';color:'+txt+'"><span class="exp-chevron">▶</span><span class="exp-eixo-id" style="background:'+idBg+'">'+escH(eixo.id)+'</span>'+escH(eixo.name)+'<span class="exp-count" style="color:'+txt+'">'+n+' item'+(n!==1?'s':'')+'</span></summary>';
+      h+='<div class="exp-eixo-body">'+grupos.map(grupoHTML).join('')+'</div>';
+      h+='</details>';
+      return h;
+    }
 
     var now=new Date();
     var MBR=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
     var DBR=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
     var dateFull=DBR[now.getDay()]+', '+now.getDate()+' de '+MBR[now.getMonth()]+'. de '+now.getFullYear();
-    var dateShort=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
-
-    var pptx=new PptxGenJS();
-    pptx.layout='LAYOUT_WIDE';pptx.author='IDG PMO';pptx.subject='Pauta N2 — MAZ 2026';
+    var totalItems=byEixo.reduce(function(s,e){return s+e.grupos.reduce(function(ss,g){return ss+g.marcos.length;},0);},0);
     var logoEl=document.querySelector('.header-logo');
     var logoData=logoEl?logoEl.src:null;
+    var subtitle='Pauta — Museu das Amazônias 2026'+(isDir?' (Diretoria)':'');
 
-    function addFooter(sl){
-      sl.addShape('rect',{x:0,y:H-0.32,w:W,h:0.32,fill:{color:ACCENTD},line:{type:'none'}});
-      sl.addText('IDG PMO · MAZ 2026',{x:ML,y:H-0.30,w:CW/2,h:0.28,fontSize:13,bold:true,color:TEXT_DARK,fontFace:'Calibri'});
-      sl.addText(dateShort,{x:ML+CW/2,y:H-0.30,w:CW/2,h:0.28,fontSize:13,color:TEXT_DARK,align:'right',fontFace:'Calibri'});
-    }
+    var css=''
+      +'*{box-sizing:border-box}'
+      +'body{margin:0;font-family:Calibri,Segoe UI,Arial,sans-serif;background:#1E2E0D;color:#E2E8F0}'
+      +'.exp-wrap{max-width:1100px;margin:0 auto;padding:24px 18px 60px}'
+      +'.exp-header{text-align:center;padding:28px 10px 22px;border-bottom:2px solid #4A7A1E;margin-bottom:20px}'
+      +'.exp-header img{height:64px;margin-bottom:14px}'
+      +'.exp-header h1{color:#8AC43A;font-size:34px;margin:0 0 6px}'
+      +'.exp-header h2{color:#E2E8F0;font-weight:400;font-size:18px;margin:0 0 10px}'
+      +'.exp-header .exp-sub{color:#94A3B8;font-size:14px}'
+      +'.exp-toolbar{display:flex;gap:10px;justify-content:center;margin-bottom:22px}'
+      +'.exp-toolbar button{background:#2F4A18;color:#E2E8F0;border:1px solid #4A7A1E;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}'
+      +'.exp-toolbar button:hover{background:#4A7A1E}'
+      +'.exp-eixo{margin-bottom:12px;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.3)}'
+      +'.exp-eixo-header{list-style:none;cursor:pointer;padding:14px 16px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px}'
+      +'.exp-eixo-header::-webkit-details-marker{display:none}'
+      +'.exp-eixo-id{background:rgba(0,0,0,.2);padding:2px 10px;border-radius:4px;font-size:15px}'
+      +'.exp-count{margin-left:auto;font-size:14px;background:rgba(0,0,0,.15);padding:3px 10px;border-radius:12px}'
+      +'.exp-chevron{transition:transform .2s;font-size:12px}'
+      +'details[open]>.exp-eixo-header .exp-chevron,details[open]>.exp-grupo-header .exp-chevron{transform:rotate(90deg)}'
+      +'.exp-eixo-body{background:#25390F;padding:10px}'
+      +'.exp-grupo{margin-bottom:8px;border-radius:6px;overflow:hidden}'
+      +'.exp-grupo-header{list-style:none;cursor:pointer;background:#2F4A18;color:#FFF;padding:9px 14px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}'
+      +'.exp-grupo-header::-webkit-details-marker{display:none}'
+      +'.exp-grupo-body{padding:8px 6px}'
+      +'.exp-marco{border-radius:6px;padding:10px 12px;margin-bottom:8px}'
+      +'.exp-marco-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:6px}'
+      +'.exp-marco-name{font-weight:700;color:'+TEXT_DARK+';font-size:15px;flex:1;min-width:180px}'
+      +'.exp-chip{color:#FFF;font-weight:700;font-size:11px;padding:3px 9px;border-radius:4px;white-space:nowrap}'
+      +'.exp-meta{color:#1E293B;font-size:12px;white-space:nowrap}'
+      +'.exp-forn{max-width:180px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle}'
+      +'.exp-tasks summary{cursor:pointer;font-size:12px;color:#374151;margin:4px 0}'
+      +'.exp-tasks-body,.exp-tasks-flat{display:flex;flex-direction:column;gap:6px}'
+      +'.exp-task{border-radius:5px;padding:8px 10px}'
+      +'.exp-task-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:4px}'
+      +'.exp-task-name{color:'+TEXT_DARK+';font-size:13px;font-weight:600;flex:1;min-width:160px}'
+      +'.exp-field{font-size:12px;color:'+TEXT_DARK+';margin-top:2px}'
+      +'.exp-field.exp-empty{color:#DC2626;font-weight:700}'
+      +'.exp-fval[contenteditable="true"]{outline:2px dashed #3B82F6;outline-offset:2px;background:#EFF6FF;border-radius:3px;padding:1px 4px;cursor:text}'
+      +'.exp-toolbar button.exp-save-btn{background:#1A3A8A;border-color:#1A3A8A}'
+      +'.exp-toolbar button.exp-save-btn:hover{background:#24499E}'
+      +'.exp-footer{text-align:center;color:#94A3B8;font-size:12px;margin-top:30px;padding-top:14px;border-top:1px solid #4A7A1E}'
+      +'@media(max-width:640px){.exp-eixo-header{font-size:16px}.exp-marco-name{min-width:120px}}';
 
-    // === SLIDE DE CAPA ===
-    var cover=pptx.addSlide();cover.background={color:BG};addFooter(cover);
-    if(logoData){try{cover.addImage({data:logoData,x:W/2-1.8,y:0.7,w:3.6,h:1.35});}catch(e){}}
-    cover.addShape('rect',{x:ML+1.5,y:2.3,w:CW-3,h:0.05,fill:{color:ACCENT},line:{type:'none'}});
-    cover.addText('Reunião N2',{x:ML,y:2.5,w:CW,h:1.1,fontSize:58,bold:true,color:ACCENT,align:'center',fontFace:'Calibri'});
-    cover.addText('Pauta — Museu das Amazônias 2026',{x:ML,y:3.72,w:CW,h:0.75,fontSize:30,color:TEXT_LIGHT,align:'center',fontFace:'Calibri'});
-    cover.addText(dateFull,{x:ML,y:4.6,w:CW,h:0.44,fontSize:20,color:MUTED,align:'center',fontFace:'Calibri'});
-    var totalItems=byEixo.reduce(function(s,e){return s+e.grupos.reduce(function(ss,g){return ss+g.marcos.length;},0);},0);
-    cover.addText(totalItems+' item'+(totalItems!==1?'s':'')+' selecionado'+(totalItems!==1?'s':''),{x:ML,y:5.16,w:CW,h:0.38,fontSize:18,color:MUTED,align:'center',fontFace:'Calibri'});
+    var expScript='<script>'
+      +'var _expEditing=false;'
+      +'function _expToggleEdit(){'
+      +'_expEditing=!_expEditing;'
+      +'document.querySelectorAll(".exp-fval").forEach(function(el){el.contentEditable=_expEditing;});'
+      +'var b=document.getElementById("exp-edit-btn");if(b)b.textContent=_expEditing?"\ud83d\udd12 Bloquear edi\u00e7\u00e3o":"\u270f\ufe0f Editar campos";'
+      +'var s=document.getElementById("exp-save-btn");if(s)s.style.display=_expEditing?"inline-block":"none";'
+      +'}'
+      +'document.addEventListener("focusin",function(e){'
+      +'var t=e.target;if(t.classList&&t.classList.contains("exp-fval")&&t.getAttribute("contenteditable")==="true"){'
+      +'if(t.textContent.trim()===t.getAttribute("data-ph"))t.textContent="";'
+      +'}});'
+      +'document.addEventListener("focusout",function(e){'
+      +'var t=e.target;if(t.classList&&t.classList.contains("exp-fval")){'
+      +'var field=t.closest(".exp-field");var txt=t.textContent.replace(/\\s+/g," ").trim();'
+      +'if(txt===""){t.textContent=t.getAttribute("data-ph");}'
+      +'if(field)field.classList.toggle("exp-empty",txt==="");'
+      +'}});'
+      +'function _expSaveHTML(){'
+      +'document.querySelectorAll(".exp-fval").forEach(function(el){el.contentEditable="false";});'
+      +'var b=document.getElementById("exp-edit-btn");if(b)b.textContent="\u270f\ufe0f Editar campos";'
+      +'var s=document.getElementById("exp-save-btn");if(s)s.style.display="none";'
+      +'_expEditing=false;'
+      +'var d=new Date();var stamp=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");'
+      +'var out="<!doctype html>\\n"+document.documentElement.outerHTML;'
+      +'var blob=new Blob([out],{type:"text/html;charset=utf-8"});'
+      +'var url=URL.createObjectURL(blob);'
+      +'var a=document.createElement("a");a.href=url;a.download="Pauta_N2_editada_"+stamp+".html";document.body.appendChild(a);a.click();'
+      +'document.body.removeChild(a);'
+      +'setTimeout(function(){URL.revokeObjectURL(url);},1000);'
+      +'}'
+      +'<\/script>';
 
-    // === SLIDES DE CONTEÚDO ===
-    byEixo.forEach(function(eixoData){
-      var eixo=eixoData.eixo,grupos=eixoData.grupos;
-      var slide=null,y=0;
+    var html='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">'
+      +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+      +'<title>Pauta N2'+(isDir?' Diretoria':'')+' — MAZ 2026</title>'
+      +'<style>'+css+'</style></head><body><div class="exp-wrap">'
+      +'<div class="exp-header">'
+      +(logoData?'<img src="'+logoData+'" alt="MAZ">':'')
+      +'<h1>Reunião N2</h1><h2>'+escH(subtitle)+'</h2>'
+      +'<div class="exp-sub">'+escH(dateFull)+' · '+totalItems+' item'+(totalItems!==1?'s':'')+' selecionado'+(totalItems!==1?'s':'')+'</div>'
+      +'</div>'
+      +'<div class="exp-toolbar"><button onclick="document.querySelectorAll(\'details\').forEach(function(d){d.open=true;})">Expandir tudo</button>'
+      +'<button onclick="document.querySelectorAll(\'details\').forEach(function(d){d.open=false;})">Recolher tudo</button>'
+      +'<button id="exp-edit-btn" onclick="_expToggleEdit()">\u270f\ufe0f Editar campos</button>'
+      +'<button id="exp-save-btn" class="exp-save-btn" onclick="_expSaveHTML()" style="display:none">\ud83d\udcbe Salvar altera\u00e7\u00f5es</button></div>'
+      +byEixo.map(eixoHTML).join('')
+      +'<div class="exp-footer">IDG PMO · MAZ 2026 · Gerado em '+escH(dateFull)+'</div>'
+      +'</div>'+expScript+'</body></html>';
+    return html;
+  }
 
-      function addEixoSlide(cont){
-        slide=pptx.addSlide();slide.background={color:BG};addFooter(slide);y=0.2;
-        // Header do eixo — fontes NÃO aumentadas
-        slide.addShape('rect',{x:ML,y:y,w:CW,h:0.54,fill:{color:BG2},line:{color:ACCENTD,width:1}});
-        slide.addShape('rect',{x:ML+0.1,y:y+0.09,w:0.38,h:0.36,fill:{color:ACCENTD},line:{type:'none'}});
-        slide.addText(eixo.id,{x:ML+0.1,y:y+0.09,w:0.38,h:0.36,fontSize:14,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-        slide.addText(eixo.name.toUpperCase()+(cont?' (cont.)':''),{x:ML+0.58,y:y+0.09,w:CW-0.7,h:0.36,fontSize:17,bold:true,color:'FFFFFF',valign:'middle',fontFace:'Calibri'});
-        y+=0.68;
-      }
-      function ensureSpace(neededH){if(!slide||y+neededH>SAFE_BOTTOM)addEixoSlide(!!slide);}
-
-      addEixoSlide(false);
-
-      grupos.forEach(function(grupoData){
-        var grupo=grupoData.grupo,marcos=grupoData.marcos;
-        var grupoH=0.36;
-        ensureSpace(grupoH);
-        // FIX 1: cor branca + negrito no nome do grupo
-        slide.addShape('rect',{x:ML+0.1,y:y,w:CW-0.2,h:grupoH,fill:{color:'264D0A'},line:{type:'none'}});
-        slide.addText(grupo.name,{x:ML+0.2,y:y,w:CW-0.4,h:grupoH,fontSize:15,bold:true,color:'FFFFFF',valign:'middle',fontFace:'Calibri'});
-        y+=grupoH+0.04;
-
-        marcos.forEach(function(marcoData){
-          var marco=marcoData.task;
-          var tasksToShow=marcoData.subtasks.length>0?marcoData.subtasks:[marco];
-          var mc=stColor(marco.status),ml_=stLabel(marco.status);
-          var ds=marco.start?fmtBRshort(marco.start):'',de=marco.end?fmtBRshort(marco.end):'';
-          var dateStr=[ds,de].filter(Boolean).join('→');
-
-          // FIX 2: altura dinâmica do marco band baseada no tamanho do nome
-          var marcoNameLines=estLines(marco.tarefa,CPL14);
-          var marcoNameH=Math.max(0.32,marcoNameLines*LH14);
-          var marcoBandH=Math.max(0.58,marcoNameH+0.26); // 0.13 topo + conteudo + 0.13 base
-
-          ensureSpace(marcoBandH+0.06);
-          slide.addShape('rect',{x:ML+0.1,y:y,w:CW-0.2,h:marcoBandH,fill:{color:'F5FAF0'},line:{color:mc,width:3}});
-          // Status badge (topo-alinhado)
-          slide.addShape('rect',{x:ML+0.2,y:y+0.13,w:1.7,h:0.32,fill:{color:mc},line:{type:'none'}});
-          slide.addText(ml_,{x:ML+0.2,y:y+0.13,w:1.7,h:0.32,fontSize:13,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-          // N2 badge
-          slide.addShape('rect',{x:ML+2.02,y:y+0.15,w:0.40,h:0.28,fill:{color:BG},line:{color:ACCENT,width:1}});
-          slide.addText('N2',{x:ML+2.02,y:y+0.15,w:0.40,h:0.28,fontSize:12,bold:true,color:ACCENT,align:'center',valign:'middle',fontFace:'Calibri'});
-          // Nome do marco com altura calculada
-          slide.addText(marco.tarefa||'',{x:ML+2.54,y:y+0.13,w:CW-5.1,h:marcoNameH,fontSize:16,bold:true,color:TEXT_DARK,valign:'top',wrap:true,fontFace:'Calibri'});
-          // Datas e responsável (topo-alinhados)
-          if(dateStr)slide.addText('📅 '+dateStr,{x:ML+CW-2.4,y:y+0.13,w:1.4,h:0.32,fontSize:13,color:'1E293B',valign:'middle',fontFace:'Calibri'});
-          if(marco.resp)slide.addText('👤 '+abrevNome(marco.resp),{x:ML+CW-0.9,y:y+0.13,w:0.88,h:0.32,fontSize:12,color:'1E293B',valign:'top',wrap:true,lineSpacingMultiple:0.85,fontFace:'Calibri'});
-          y+=marcoBandH+0.06;
-
-          // Task cards
-          tasksToShow.forEach(function(task){
-            var tc=stColor(task.status),tl=stLabel(task.status);
-            var tds=task.start?fmtBRshort(task.start):'',tde=task.end?fmtBRshort(task.end):'';
-            var tdateStr=[tds,tde].filter(Boolean).join('→');
-
-            // FIX 3: sempre mostra Progresso e Encaminhamentos
-            var progTxt=(task.progresso&&task.progresso.trim())?task.progresso.trim():'';
-            var encTxt=(task.encaminhamento&&task.encaminhamento.trim())?task.encaminhamento.trim():'';
-            var isAtrasado=(task.status||'').toLowerCase().indexOf('atraso')>=0;
-            var progVal=progTxt||NP;
-            var encVal=encTxt||NP;
-            var progEmpty=!progTxt, encEmpty=!encTxt;
-            var progColor=progEmpty?'DC2626':TEXT_DARK;
-            var encColor=encEmpty?'DC2626':TEXT_DARK;
-            var progValOpts={fontSize:12,color:progColor};if(progEmpty){progValOpts.bold=true;}
-            var encValOpts={fontSize:12,color:encColor};if(encEmpty){encValOpts.bold=true;}
-
-            // FIX 2: alturas dinâmicas para nome, progresso e encaminhamento
-            var taskNameLines=estLines(task.tarefa,CPL11);
-            var taskNameH=Math.max(0.30,taskNameLines*LH11);
-            var topH=Math.max(0.44,taskNameH+0.14); // 0.07 topo + nome + 0.07 base
-
-            var progLines=estLines('Progresso: '+progVal,CPL10);
-            var progH=Math.max(0.28,progLines*LH10+0.10);
-
-            var encLines=estLines('Encaminhamentos: '+encVal,CPL10);
-            var encH=Math.max(0.28,encLines*LH10+0.10);
-
-            var taskH=topH+progH+encH;
-            ensureSpace(taskH+0.08);
-
-            // Card de fundo
-            slide.addShape('rect',{x:ML+0.2,y:y,w:CW-0.3,h:taskH,fill:{color:'F7FAFF'},line:{color:'DDE8F5',width:1}});
-            // Borda lateral colorida
-            slide.addShape('rect',{x:ML+0.2,y:y,w:0.06,h:taskH,fill:{color:tc},line:{type:'none'}});
-            // Status badge da tarefa
-            slide.addShape('rect',{x:ML+0.34,y:y+0.07,w:1.5,h:0.30,fill:{color:tc},line:{type:'none'}});
-            slide.addText(tl,{x:ML+0.34,y:y+0.07,w:1.5,h:0.30,fontSize:12,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-            // Nome da tarefa com altura calculada
-            slide.addText(task.tarefa||'',{x:ML+1.94,y:y+0.07,w:CW-4.8,h:taskNameH,fontSize:13,color:TEXT_DARK,valign:'top',wrap:true,fontFace:'Calibri'});
-            // Datas e resp
-            if(tdateStr)slide.addText('📅 '+tdateStr,{x:ML+CW-2.4,y:y+0.07,w:1.4,h:0.30,fontSize:12,color:'1E293B',valign:'middle',fontFace:'Calibri'});
-            if(task.resp)slide.addText('👤 '+abrevNome(task.resp),{x:ML+CW-0.9,y:y+0.07,w:0.88,h:0.30,fontSize:11,color:'1E293B',valign:'top',wrap:true,lineSpacingMultiple:0.85,fontFace:'Calibri'});
-
-            // Linha separadora entre header e campos
-            slide.addShape('rect',{x:ML+0.26,y:y+topH,w:CW-0.38,h:0.01,fill:{color:'DDE8F5'},line:{type:'none'}});
-
-            // Progresso (sempre presente)
-            slide.addText(
-              [{text:'Progresso: ',options:{bold:true,fontSize:12,color:'374151'}},{text:(progEmpty?'⚠️ ':'')+progVal,options:progValOpts}],
-              {x:ML+0.34,y:y+topH+0.02,w:CW-0.52,h:progH-0.02,fontFace:'Calibri',wrap:true}
-            );
-            // Linha separadora
-            slide.addShape('rect',{x:ML+0.26,y:y+topH+progH,w:CW-0.38,h:0.01,fill:{color:'DDE8F5'},line:{type:'none'}});
-
-            // Encaminhamentos (sempre presente)
-            slide.addText(
-              [{text:'Encaminhamentos: ',options:{bold:true,fontSize:12,color:'374151'}},{text:(encEmpty?'⚠️ ':'')+encVal,options:encValOpts}],
-              {x:ML+0.34,y:y+topH+progH+0.02,w:CW-0.52,h:encH-0.02,fontFace:'Calibri',wrap:true}
-            );
-
-            y+=taskH+0.09;
-          });
-          y+=0.1;
-        });
-        y+=0.16;
-      });
-    });
-
-    var fname='Pauta_N2_'+now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'.pptx';
-    pptx.writeFile({fileName:fname});
+  function exportN2PPT(){
+    var arr=loadN2();
+    if(!arr.length){alert('Nenhuma tarefa selecionada para exportar.');return;}
+    var html=_buildN2HTMLDoc(WBS,arr,false);
+    if(!html)return;
+    _downloadHTML(html,'Pauta_N2_'+_dateStamp(new Date())+'.html');
   }
   function unlockN2Edit(){
     var ph=new URLSearchParams(window.location.search).get('ph')||'';
@@ -2110,156 +2122,9 @@ function abrevNome(n){
   function exportN2PPT_Dir(){
     var arr=loadN2_Dir();
     if(!arr.length){alert('Nenhuma tarefa selecionada para exportar.');return;}
-    if(typeof PptxGenJS==='undefined'){alert('Biblioteca de PPT não carregada. Verifique a conexão e recarregue a página.');return;}
-    var currentFilters=getFilters();
-    var sfArr=currentFilters.status||[];
-    var sfLow=sfArr.map(function(s){return s.toLowerCase();});
-    function sfOk(v){return !sfLow.length||sfLow.indexOf((v||'A iniciar').toLowerCase())>=0;}
-    var selected=new Set(arr);
-    var byEixo=[];
-    WBS_DIR.forEach(function(eixo,gi){
-      var vis=eixo.children.filter(function(m){return matchesFilter(eixo,m,currentFilters);});
-      if(currentFilters.resp&&currentFilters.resp.length>0)vis=vis.filter(function(m){return grupoHasResp(m,currentFilters.resp);});
-      var grupoItems=[];
-      vis.forEach(function(grupo,mi){
-        var tasks=grupo.tasks||[];
-        var visTasks=sfLow.length===0?tasks:tasks.filter(function(t){return sfOk(t.status);});
-        var marcoItems=[];
-        visTasks.forEach(function(task,ti){
-          if(task.tipo==='marco'){
-            var allSubs=task.subtasks||[];
-            var selectedSubs=[];
-            allSubs.forEach(function(s,si){
-              var id=gi+':'+mi+':'+ti+':'+si;
-              if(selected.has(id))selectedSubs.push(s);
-            });
-            if(selectedSubs.length>0){marcoItems.push({task:task,subtasks:selectedSubs});}
-          }
-        });
-        if(marcoItems.length)grupoItems.push({grupo:grupo,marcos:marcoItems});
-      });
-      if(grupoItems.length)byEixo.push({eixo:eixo,grupos:grupoItems});
-    });
-    if(!byEixo.length){alert('Nenhuma tarefa selecionada encontrada com os filtros atuais.');return;}
-    function stColor(s){return (STATUS[s]||STATUS['A iniciar']).color.replace('#','');}
-    function stLabel(s){return (STATUS[s]||STATUS['A iniciar']).label;}
-    function estLines(text,charsPerLine){return Math.max(1,Math.ceil(((text||'').length)/charsPerLine));}
-    var CPL14=51;var CPL11=69;var CPL10=108;
-    var LH14=0.32;var LH11=0.27;var LH10=0.25;
-    var W=13.33,H=7.5,ML=0.3,CW=W-ML-0.3;
-    var SAFE_BOTTOM=H-0.48;
-    var BG='1E2E0D',BG2='2F4A18',ACCENT='8AC43A',ACCENTD='4A7A1E';
-    var TEXT_DARK='1A2E0A',TEXT_LIGHT='E2E8F0',MUTED='94A3B8';
-    var NP='NÃO PREENCHIDO';
-    var now=new Date();
-    var MBR=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-    var DBR=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
-    var dateFull=DBR[now.getDay()]+', '+now.getDate()+' de '+MBR[now.getMonth()]+'. de '+now.getFullYear();
-    var dateShort=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
-    var pptx=new PptxGenJS();
-    pptx.layout='LAYOUT_WIDE';pptx.author='IDG PMO';pptx.subject='Pauta N2 — MAZ 2026 (Diretoria)';
-    var logoEl=document.querySelector('.header-logo');
-    var logoData=logoEl?logoEl.src:null;
-    function addFooter(sl){
-      sl.addShape('rect',{x:0,y:H-0.32,w:W,h:0.32,fill:{color:ACCENTD},line:{type:'none'}});
-      sl.addText('IDG PMO · MAZ 2026',{x:ML,y:H-0.30,w:CW/2,h:0.28,fontSize:13,bold:true,color:TEXT_DARK,fontFace:'Calibri'});
-      sl.addText(dateShort,{x:ML+CW/2,y:H-0.30,w:CW/2,h:0.28,fontSize:13,color:TEXT_DARK,align:'right',fontFace:'Calibri'});
-    }
-    var cover=pptx.addSlide();cover.background={color:BG};addFooter(cover);
-    if(logoData){try{cover.addImage({data:logoData,x:W/2-1.8,y:0.7,w:3.6,h:1.35});}catch(e){}}
-    cover.addShape('rect',{x:ML+1.5,y:2.3,w:CW-3,h:0.05,fill:{color:ACCENT},line:{type:'none'}});
-    cover.addText('Reunião N2',{x:ML,y:2.5,w:CW,h:1.1,fontSize:58,bold:true,color:ACCENT,align:'center',fontFace:'Calibri'});
-    cover.addText('Pauta — Museu das Amazônias 2026',{x:ML,y:3.72,w:CW,h:0.75,fontSize:30,color:TEXT_LIGHT,align:'center',fontFace:'Calibri'});
-    cover.addText(dateFull,{x:ML,y:4.6,w:CW,h:0.44,fontSize:20,color:MUTED,align:'center',fontFace:'Calibri'});
-    var totalItems=byEixo.reduce(function(s,e){return s+e.grupos.reduce(function(ss,g){return ss+g.marcos.length;},0);},0);
-    cover.addText(totalItems+' item'+(totalItems!==1?'s':'')+' selecionado'+(totalItems!==1?'s':''),{x:ML,y:5.16,w:CW,h:0.38,fontSize:18,color:MUTED,align:'center',fontFace:'Calibri'});
-    byEixo.forEach(function(eixoData){
-      var eixo=eixoData.eixo,grupos=eixoData.grupos;
-      var slide=null,y=0;
-      function addEixoSlide(cont){
-        slide=pptx.addSlide();slide.background={color:BG};addFooter(slide);y=0.2;
-        slide.addShape('rect',{x:ML,y:y,w:CW,h:0.54,fill:{color:BG2},line:{color:ACCENTD,width:1}});
-        slide.addShape('rect',{x:ML+0.1,y:y+0.09,w:0.38,h:0.36,fill:{color:ACCENTD},line:{type:'none'}});
-        slide.addText(eixo.id,{x:ML+0.1,y:y+0.09,w:0.38,h:0.36,fontSize:14,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-        slide.addText(eixo.name.toUpperCase()+(cont?' (cont.)':''),{x:ML+0.58,y:y+0.09,w:CW-0.7,h:0.36,fontSize:17,bold:true,color:'FFFFFF',valign:'middle',fontFace:'Calibri'});
-        y+=0.68;
-      }
-      function ensureSpace(neededH){if(!slide||y+neededH>SAFE_BOTTOM)addEixoSlide(!!slide);}
-      addEixoSlide(false);
-      grupos.forEach(function(grupoData){
-        var grupo=grupoData.grupo,marcos=grupoData.marcos;
-        var grupoH=0.36;
-        ensureSpace(grupoH);
-        slide.addShape('rect',{x:ML+0.1,y:y,w:CW-0.2,h:grupoH,fill:{color:'264D0A'},line:{type:'none'}});
-        slide.addText(grupo.name,{x:ML+0.2,y:y,w:CW-0.4,h:grupoH,fontSize:15,bold:true,color:'FFFFFF',valign:'middle',fontFace:'Calibri'});
-        y+=grupoH+0.04;
-        marcos.forEach(function(marcoData){
-          var marco=marcoData.task;
-          var tasksToShow=marcoData.subtasks.length>0?marcoData.subtasks:[marco];
-          var mc=stColor(marco.status),ml_=stLabel(marco.status);
-          var ds=marco.start?fmtBRshort(marco.start):'',de=marco.end?fmtBRshort(marco.end):'';
-          var dateStr=[ds,de].filter(Boolean).join('→');
-          var marcoNameLines=estLines(marco.tarefa,CPL14);
-          var marcoNameH=Math.max(0.32,marcoNameLines*LH14);
-          var marcoBandH=Math.max(0.58,marcoNameH+0.26);
-          ensureSpace(marcoBandH+0.06);
-          slide.addShape('rect',{x:ML+0.1,y:y,w:CW-0.2,h:marcoBandH,fill:{color:'F5FAF0'},line:{color:mc,width:3}});
-          slide.addShape('rect',{x:ML+0.2,y:y+0.13,w:1.7,h:0.32,fill:{color:mc},line:{type:'none'}});
-          slide.addText(ml_,{x:ML+0.2,y:y+0.13,w:1.7,h:0.32,fontSize:13,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-          slide.addShape('rect',{x:ML+2.02,y:y+0.15,w:0.40,h:0.28,fill:{color:BG},line:{color:ACCENT,width:1}});
-          slide.addText('N2',{x:ML+2.02,y:y+0.15,w:0.40,h:0.28,fontSize:12,bold:true,color:ACCENT,align:'center',valign:'middle',fontFace:'Calibri'});
-          slide.addText(marco.tarefa||'',{x:ML+2.54,y:y+0.13,w:CW-5.1,h:marcoNameH,fontSize:16,bold:true,color:TEXT_DARK,valign:'top',wrap:true,fontFace:'Calibri'});
-          if(dateStr)slide.addText('📅 '+dateStr,{x:ML+CW-2.4,y:y+0.13,w:1.4,h:0.32,fontSize:13,color:'1E293B',valign:'middle',fontFace:'Calibri'});
-          if(marco.resp)slide.addText('👤 '+abrevNome(marco.resp),{x:ML+CW-0.9,y:y+0.13,w:0.88,h:0.32,fontSize:12,color:'1E293B',valign:'top',wrap:true,lineSpacingMultiple:0.85,fontFace:'Calibri'});
-          y+=marcoBandH+0.06;
-          tasksToShow.forEach(function(task){
-            var tc=stColor(task.status),tl=stLabel(task.status);
-            var tds=task.start?fmtBRshort(task.start):'',tde=task.end?fmtBRshort(task.end):'';
-            var tdateStr=[tds,tde].filter(Boolean).join('→');
-            var progTxt=(task.progresso&&task.progresso.trim())?task.progresso.trim():'';
-            var encTxt=(task.encaminhamento&&task.encaminhamento.trim())?task.encaminhamento.trim():'';
-            var progVal=progTxt||NP;
-            var encVal=encTxt||NP;
-            var progEmpty=!progTxt,encEmpty=!encTxt;
-            var progColor=progEmpty?'DC2626':TEXT_DARK;
-            var encColor=encEmpty?'DC2626':TEXT_DARK;
-            var progValOpts={fontSize:12,color:progColor};if(progEmpty){progValOpts.bold=true;}
-            var encValOpts={fontSize:12,color:encColor};if(encEmpty){encValOpts.bold=true;}
-            var taskNameLines=estLines(task.tarefa,CPL11);
-            var taskNameH=Math.max(0.30,taskNameLines*LH11);
-            var topH=Math.max(0.44,taskNameH+0.14);
-            var progLines=estLines('Progresso: '+progVal,CPL10);
-            var progH=Math.max(0.28,progLines*LH10+0.10);
-            var encLines=estLines('Encaminhamentos: '+encVal,CPL10);
-            var encH=Math.max(0.28,encLines*LH10+0.10);
-            var taskH=topH+progH+encH;
-            ensureSpace(taskH+0.08);
-            slide.addShape('rect',{x:ML+0.2,y:y,w:CW-0.3,h:taskH,fill:{color:'F7FAFF'},line:{color:'DDE8F5',width:1}});
-            slide.addShape('rect',{x:ML+0.2,y:y,w:0.06,h:taskH,fill:{color:tc},line:{type:'none'}});
-            slide.addShape('rect',{x:ML+0.34,y:y+0.07,w:1.5,h:0.30,fill:{color:tc},line:{type:'none'}});
-            slide.addText(tl,{x:ML+0.34,y:y+0.07,w:1.5,h:0.30,fontSize:12,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-            slide.addText(task.tarefa||'',{x:ML+1.94,y:y+0.07,w:CW-4.8,h:taskNameH,fontSize:13,color:TEXT_DARK,valign:'top',wrap:true,fontFace:'Calibri'});
-            if(tdateStr)slide.addText('📅 '+tdateStr,{x:ML+CW-2.4,y:y+0.07,w:1.4,h:0.30,fontSize:12,color:'1E293B',valign:'middle',fontFace:'Calibri'});
-            if(task.resp)slide.addText('👤 '+abrevNome(task.resp),{x:ML+CW-0.9,y:y+0.07,w:0.88,h:0.30,fontSize:11,color:'1E293B',valign:'top',wrap:true,lineSpacingMultiple:0.85,fontFace:'Calibri'});
-            slide.addShape('rect',{x:ML+0.26,y:y+topH,w:CW-0.38,h:0.01,fill:{color:'DDE8F5'},line:{type:'none'}});
-            slide.addText(
-              [{text:'Progresso: ',options:{bold:true,fontSize:12,color:'374151'}},{text:(progEmpty?'⚠️ ':'')+progVal,options:progValOpts}],
-              {x:ML+0.34,y:y+topH+0.02,w:CW-0.52,h:progH-0.02,fontFace:'Calibri',wrap:true}
-            );
-            slide.addShape('rect',{x:ML+0.26,y:y+topH+progH,w:CW-0.38,h:0.01,fill:{color:'DDE8F5'},line:{type:'none'}});
-            slide.addText(
-              [{text:'Encaminhamentos: ',options:{bold:true,fontSize:12,color:'374151'}},{text:(encEmpty?'⚠️ ':'')+encVal,options:encValOpts}],
-              {x:ML+0.34,y:y+topH+progH+0.02,w:CW-0.52,h:encH-0.02,fontFace:'Calibri',wrap:true}
-            );
-            y+=taskH+0.09;
-          });
-          y+=0.1;
-        });
-        y+=0.16;
-      });
-    });
-    var fname='Pauta_N2_DIR_'+now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'.pptx';
-    pptx.writeFile({fileName:fname});
+    var html=_buildN2HTMLDoc(WBS_DIR,arr,true);
+    if(!html)return;
+    _downloadHTML(html,'Pauta_N2_DIR_'+_dateStamp(new Date())+'.html');
   }
 
 function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
@@ -2294,6 +2159,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
       h += `<div class="tc-meta">`;
       if(dateStr) h += `<span class="tc-date">\uD83D\uDCC5 ${dateStr}</span>`;
       if(t.resp)  h += `<span class="tc-resp">\uD83D\uDC64 ${escH(abrevNome(t.resp))}</span>`;
+      if(t.fornecedor) h += `<span class="tc-forn" title="${escH(t.fornecedor)}">\uD83C\uDFE2 ${escH(t.fornecedor)}</span>`;
       h += `</div>`;
     }
     h += `<div class="tc-fields">`;
@@ -2392,6 +2258,7 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
       h += `<div class="tc-meta">`;
       if(dateStr) h += `<span class="tc-date">📅 ${dateStr}</span>`;
       if(t.resp)  h += `<span class="tc-resp">👤 ${escH(abrevNome(t.resp))}</span>`;
+      if(t.fornecedor) h += `<span class="tc-forn" title="${escH(t.fornecedor)}">🏢 ${escH(t.fornecedor)}</span>`;
       h += `</div>`;
     }
     h += `<div class="tc-fields">`;
@@ -4434,7 +4301,7 @@ function _eixoTextColor(hex){
   return lum>0.6?'#1A2E0A':'#FFFFFF';
 }
 function _parseWBS(rows, rowColors, rowColorsB) {
-  const CE=1,CG=2,CM=3,CT=4,CR=6,CS=7,CST=8,CEN=9;
+  const CE=1,CG=2,CM=3,CT=4,CFO=5,CR=6,CS=7,CST=8,CEN=9;
   const {pC,eC,weekLabel}=_findWeekCols(rows);
   const eixoOrder=[],eixoMap={};
   const badRows=[];
@@ -4476,11 +4343,11 @@ function _parseWBS(rows, rowColors, rowColorsB) {
       }
     }
     if(!eixo||!grupo) continue;
-    if(!eixoMap[eixo]){const _eixoColor=(rowColorsB&&rowColorsB.length>0)?_rgbToHex(rowColorsB[_wbsRowNum-1]):null;eixoMap[eixo]={groupOrder:[],groups:{},color:_eixoColor};eixoOrder.push(eixo);}
+    if(!eixoMap[eixo]){const _eixoColor='#949494';eixoMap[eixo]={groupOrder:[],groups:{},color:_eixoColor};eixoOrder.push(eixo);}
     const em=eixoMap[eixo];
     if(!em.groups[grupo]){em.groups[grupo]={summary:null,tasks:[]};em.groupOrder.push(grupo);}
     const gm=em.groups[grupo];
-    const _ra=(typeof AREAS_DEF!=="undefined")?AREAS_DEF.map(function(a,ai){return _isAreaChecked(row[a.idx])?ai:-1;}).filter(function(x){return x>=0;}):[]; const obj={tarefa,resp:_sg(row,CR),status:_sg(row,CS),start:_fmtDate(_sg(row,CST)),end:_fmtDate(_sg(row,CEN)),progresso:_sg(row,pC),encaminhamento:_sg(row,eC),areas:_ra};
+    const _ra=(typeof AREAS_DEF!=="undefined")?AREAS_DEF.map(function(a,ai){return _isAreaChecked(row[a.idx])?ai:-1;}).filter(function(x){return x>=0;}):[]; const obj={tarefa,resp:_sg(row,CR),fornecedor:_sg(row,CFO),status:_sg(row,CS),start:_fmtDate(_sg(row,CST)),end:_fmtDate(_sg(row,CEN)),progresso:_sg(row,pC),encaminhamento:_sg(row,eC),areas:_ra};
     if(tarefa===grupo){gm.summary=obj;}
     else if(marco&&tarefa===marco){gm.tasks.push({...obj,tipo:'marco',subtasks:[]});}
     else if(gm.tasks.length&&gm.tasks[gm.tasks.length-1].tipo==='marco'){gm.tasks[gm.tasks.length-1].subtasks.push(obj);}

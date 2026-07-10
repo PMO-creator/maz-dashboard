@@ -74,60 +74,64 @@ Invocar a skill `doc-sync` diretamente no chat Cowork com maz-dashboard montado.
 
 ## Índice de Funções — index.html
 
-### 🔧 Utilitários (734–861)
+Sem números de linha (o arquivo muda de tamanho a cada edição — números ficam
+errados rápido). Para localizar, usar sempre `grep -n "nomeDaFuncao" index.html`.
+
+### 🔧 Utilitários
 fmtBR, fmtBRshort, escH, escSVG, getISOWeek, hl, abrevNome
 
-### ⏳ Loading / Estado UI (822–826)
+### ⏳ Loading / Estado UI
 showLoading, hideLoading, showConnErr, hideConnErr, retrySheets
 
-### 🗂️ Navegação (835)
+### 🗂️ Navegação
 switchTab
 
-### 🔍 Filtros (870–1629)
+### 🔍 Filtros
 buildRespFilter, getFilters, dateInRange, matchesFilter,
 resetAllFilters, clearDates, applyFilter, updateFilterChip,
 setFilterLevel, toggleModoEstrito, updatePeriodoBtn
 
-### 📊 KPIs e Charts (914–1052)
+### 📊 KPIs e Charts
 renderKPIs, renderCharts, preprocessStatuses
 
-### 🌳 Árvore WBS / EAP (1367–1539)
+### 🌳 Árvore WBS / EAP
 renderTree, toggleRoot, toggleGroup, toggleComment,
 toggleMarco, expandAll, collapseAll, buildCommentPanel,
 expandAllEixosEAP, expandAllMarcosEAP, expandAllTarefasEAP
 
-### 📋 N2 Pauta (1114–1247)
+### 📋 N2 Pauta
 loadN2, saveN2, toggleN2Marco, updateN2Fab,
-clearN2Selection, applyN2Filter, publishN2Pauta, unlockN2Edit
+clearN2Selection, applyN2Filter, publishN2Pauta, unlockN2Edit,
+exportN2PPT (gera o export em HTML navegável, nome mantido por compatibilidade)
 
-### 🛒 Requisições (1702–1953)
+### 🛒 Requisições
 buildReqStatusDropdown, buildReqFornDropdown,
 renderReqKPIs, renderReqs, toggleReqs, clearReqFilters
 
-### 📅 Gantt (1960–2480)
+### 📅 Gantt
 renderGanttSection, toggleGantt, toggleGanttGroup,
 expandAllGantt, renderGanttForEixo, setGanttMode,
 expandAllTarefasGantt, expandLevel
 
-### 🗺️ Áreas (2736–2963)
+### 🗺️ Áreas
 buildAreasFilter, renderAreasTab, renderAreaGantt,
 toggleAreaSection, toggleAreaMarco, setAreasGanttMode
 
-### 🏛️ Diretoria — Gantt/EAP/N2/Comparativo (adicionado 01/07/2026)
+### 🏛️ Diretoria — Gantt/EAP/N2/Comparativo
 preprocessStatusesDiretoria, renderKPIs_Dir, renderTree_Dir, buildCommentPanel_Dir,
 toggleGroup_Dir, toggleComment_Dir, toggleMarco_Dir, collapseAll_Dir,
 expandAllEixosEAP_Dir, expandAllMarcosEAP_Dir, expandAllTarefasEAP_Dir,
 renderGanttSectionDir, renderGanttForEixoDir, toggleGanttDir, setGanttModeDir,
 expandAllGanttDir, collapseAllGanttDir,
 loadN2_Dir, saveN2_Dir, toggleN2Task_Dir, updateN2Fab_Dir, publishN2Pauta_Dir,
-unlockN2Edit_Dir, exportN2PPT_Dir,
+unlockN2Edit_Dir, exportN2PPT_Dir (gera o export em HTML navegável, nome mantido por compatibilidade),
 buildComparativoModal, openComparativoModal, closeComparativoModal
 
-### ☁️ Google Sheets / Dados (2509–2654)
-fetchSheet, fetchSheetColors, loadSheetsData,
-_parseWBS, _parseREQS, _sg, _fmtDate, _worstStatus
+### ☁️ Google Sheets / Dados
+fetchSheet, fetchSheetColors (aceita coluna como parâmetro: 'E' para detectar linha de tarefa, 'B' para cor do eixo), loadSheetsData,
+_parseWBS, _parseREQS, _sg, _fmtDate, _worstStatus, _rgbToHex, _eixoTextColor
 
-### 📄 Export PDF (3145–3311)
+### 📄 Export PDF
 openExportPDFWizard, pdfWizNext, pdfWizBack,
 _runExportPDF, _buildGanttSVGForExport
 
@@ -172,5 +176,5 @@ Regra universal: grep primeiro, editar depois. Nunca abrir o arquivo completo.
 | JS truncado | Verificar `</script>` no final antes de editar |
 | Prioridade REQS | Usar coluna D (índice 3) — nunca coluna B |
 | `node --check` | Extrair bloco `<script>` para `.js` temporário |
-| Edit tool falha | Usar PowerShell `ReadAllBytes` em vez do Edit tool |
-| String não encontrada | Normalizar CRLF: `.Replace("\`r\`n", "\`n")` antes de substituir |
+| Edit tool falha | Usar Python `str.replace()` via bash em vez do Edit tool (ver regra 3) |
+| String não encontrada | Normalizar CRLF: `content.replace("\r\n","\n")` antes de substituir, converter de volta antes de gravar |
