@@ -128,8 +128,13 @@ unlockN2Edit_Dir, exportN2PPT_Dir (gera o export em HTML navegável, nome mantid
 buildComparativoModal, openComparativoModal, closeComparativoModal
 
 ### ☁️ Google Sheets / Dados
-fetchSheet, fetchSheetColors (aceita coluna como parâmetro: 'E' para detectar linha de tarefa, 'B' para cor do eixo), loadSheetsData,
-_parseWBS, _parseREQS, _sg, _fmtDate, _worstStatus, _rgbToHex, _eixoTextColor
+fetchSheet, fetchSheetColors (aceita coluna como parâmetro: usada com 'E' para detectar linha de tarefa), loadSheetsData,
+_parseWBS, _parseREQS, _sg, _fmtDate, _worstStatus, _eixoTextColor
+
+### 🎨 Cor dos eixos
+Fixa em `EIXO_FIXED_COLOR = '#949494'` (decisão da diretoria, Jul/2026) — não vem mais da coluna B
+da planilha. `_eixoTextColor(hex)` só escolhe a cor do texto (claro/escuro) por contraste contra
+essa cor de fundo fixa.
 
 ### 📄 Export PDF
 openExportPDFWizard, pdfWizNext, pdfWizBack,

@@ -6,7 +6,6 @@
 <title>EAP – MAZ 2026 | Dashboard Interativo</title>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/svg2pdf.js@2.2.3/dist/svg2pdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js" integrity="sha384-Cck14aA9cifjYolcnjebXRfWGkz5ltHMBiG4px/j8GS+xQcb7OhNQWZYyWjQ+UwQ" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
 <style>
   :root{
@@ -957,12 +956,12 @@ function preprocessStatuses(){
     if(item.status==='Feito'||item.status==='Cancelado/Congelado'||item.status==='Cancelado') return;
     if(item.status==='A iniciar'){
       if(!item.start||item.start.length<10){ item.status='Definir datas'; return; }
-      const start=new Date(item.start);
+      const start=_pLocal(item.start);
       if(start<today){ item.status='Risco de atraso'; return; }
       return;
     }
     if(!item.end||item.end.length<10) return;
-    const end=new Date(item.end);
+    const end=_pLocal(item.end);
     if(end<today){ item.status='Atrasado'; return; }
     if(end<=d7){ item.status='Risco de atraso'; return; }
   };
@@ -1181,7 +1180,7 @@ function renderKPIs(){
   const _projEnd=_projDates.length?_projDates.reduce((a,b)=>a>b?a:b):null;
   let heroColor='#05C46B';
   if(_projStart&&_projEnd&&_projStart<_projEnd){
-    const _now=new Date();const _s=new Date(_projStart);const _e=new Date(_projEnd);
+    const _now=new Date();const _s=_pLocal(_projStart);const _e=_pLocal(_projEnd);
     const _totalMs=_e-_s;const _elapsedMs=Math.max(0,_now-_s);
     const _expectedPct=Math.min(100,Math.round(_elapsedMs/_totalMs*100));
     const _diff=pctMarcos-_expectedPct;
@@ -1282,7 +1281,7 @@ function renderKPIs_Dir(){
   const _projEnd=_projDates.length?_projDates.reduce((a,b)=>a>b?a:b):null;
   let heroColor='#05C46B';
   if(_projStart&&_projEnd&&_projStart<_projEnd){
-    const _now=new Date();const _s=new Date(_projStart);const _e=new Date(_projEnd);
+    const _now=new Date();const _s=_pLocal(_projStart);const _e=_pLocal(_projEnd);
     const _totalMs=_e-_s;const _elapsedMs=Math.max(0,_now-_s);
     const _expectedPct=Math.min(100,Math.round(_elapsedMs/_totalMs*100));
     const _diff=pctMarcos-_expectedPct;
@@ -3388,8 +3387,8 @@ function renderGanttForEixo(gi){
   function inRange(start,end){
     if(_skipDate||(!fDS&&!fDE))return true;
     if(!start&&!end)return false;
-    const s=start?new Date(start):null,e=end?new Date(end):null;
-    const fs=fDS?new Date(fDS):null,fe=fDE?new Date(fDE):null;
+    const s=start?_pLocal(start):null,e=end?_pLocal(end):null;
+    const fs=_pLocal(fDS),fe=_pLocal(fDE);
     if(fs&&e&&e<fs)return false;
     if(fe&&s&&s>fe)return false;
     return true;
@@ -3437,7 +3436,7 @@ function renderGanttForEixo(gi){
   // ── Dimensões e range ──────────────────────────────────────────────────────
   const isWeekly = ganttMode==='weekly';
   const LW=400, TW=1800;
-  const CS=new Date('2026-01-01'), CE=new Date('2026-12-31');
+  const CS=_pLocal('2026-01-01'), CE=_pLocal('2026-12-31');
   const GRH=68, TRH=50, SRH=38;
   const HY=isWeekly?22:24, HM=isWeekly?36:48, HW=isWeekly?32:0;
   const HH=HY+HM+HW;
@@ -3479,7 +3478,7 @@ function renderGanttForEixo(gi){
 
   // Holofote range de filtro (sR)
   if(fDS||fDE){
-    const rStart=fDS?new Date(fDS):CS, rEnd=fDE?new Date(fDE):CE;
+    const rStart=fDS?_pLocal(fDS):CS, rEnd=fDE?_pLocal(fDE):CE;
     const rx1=pxR(rStart), rx2=pxR(rEnd), rw=Math.max(2,rx2-rx1);
     sR+=`<rect x="${rx1.toFixed(1)}" y="${HH}" width="${rw.toFixed(1)}" height="${H-HH}" fill="rgba(255,207,0,0.28)"/>`;
     sR+=`<line x1="${rx1.toFixed(1)}" y1="${HH}" x2="${rx1.toFixed(1)}" y2="${H}" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4,3" opacity="0.9"/>`;
@@ -3525,10 +3524,10 @@ function renderGanttForEixo(gi){
       // Barra (sR)
       if(g.start&&g.end){
         const clipL=fDS&&g.start<fDS, clipR=fDE&&g.end>fDE;
-        const fullBx=Math.max(0,pxR(new Date(g.start)));
-        const fullEx=Math.max(fullBx+6,pxR(new Date(g.end)));
-        const clampBx=clipL?pxR(new Date(fDS)):fullBx;
-        const clampEx=clipR?pxR(new Date(fDE)):fullEx;
+        const fullBx=Math.max(0,pxR(_pLocal(g.start)));
+        const fullEx=Math.max(fullBx+6,pxR(_pLocal(g.end)));
+        const clampBx=clipL?pxR(_pLocal(fDS)):fullBx;
+        const clampEx=clipR?pxR(_pLocal(fDE)):fullEx;
         const solidW=Math.max(4,clampEx-clampBx), by=cy+11, bh=rh-22;
         if(clipL&&clampBx>fullBx){const gw=clampBx-fullBx;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="${col}" opacity="0.18"/>`;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.55"/>`;}
         sR+=`<rect x="${clampBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="${(clipL&&clampBx>fullBx)||clipR?0:4}" fill="${col}" opacity="0.88"/>`;
@@ -3551,10 +3550,10 @@ function renderGanttForEixo(gi){
       // Barra (sR)
       if(t.start&&t.end){
         const clipL=fDS&&t.start<fDS, clipR=fDE&&t.end>fDE;
-        const fullBx=Math.max(0,pxR(new Date(t.start)));
-        const fullEx=Math.max(fullBx+4,pxR(new Date(t.end)));
-        const clampBx=clipL?pxR(new Date(fDS)):fullBx;
-        const clampEx=clipR?pxR(new Date(fDE)):fullEx;
+        const fullBx=Math.max(0,pxR(_pLocal(t.start)));
+        const fullEx=Math.max(fullBx+4,pxR(_pLocal(t.end)));
+        const clampBx=clipL?pxR(_pLocal(fDS)):fullBx;
+        const clampEx=clipR?pxR(_pLocal(fDE)):fullEx;
         const solidW=Math.max(3,clampEx-clampBx), by=cy+7, bh=rh-14;
         if(clipL&&clampBx>fullBx){const gw=clampBx-fullBx;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="${col}" opacity="0.15"/>`;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;}
         sR+=`<rect x="${clampBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="${(clipL&&clampBx>fullBx)||clipR?0:3}" fill="${col}" opacity="0.75"/>`;
@@ -3563,7 +3562,7 @@ function renderGanttForEixo(gi){
         sR+=`<text x="${(fullEx+5).toFixed(1)}" y="${(by+bh/2+5).toFixed(1)}" font-size="16" font-weight="700" fill="#111827">${fmtBRshort(t.end)}</text>`;
         if(clipR&&fullEx>clampEx){const gw=fullEx-clampEx;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="${col}" opacity="0.15"/>`;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;}
       } else if(t.start){
-        const dx=pxR(new Date(t.start));
+        const dx=pxR(_pLocal(t.start));
         sR+=`<polygon points="${dx},${cy+5} ${dx+7},${cy+rh/2} ${dx},${cy+rh-5} ${dx-7},${cy+rh/2}" fill="${col}"/>`;
       }
 
@@ -3577,8 +3576,8 @@ function renderGanttForEixo(gi){
       sL+=`<text x="59" y="${(cy+rh/2+4).toFixed(1)}" font-size="11" fill="#0F172A" font-weight="550">${escSVG(nm)}</text>`;
       // Barra (sR)
       if(t.start&&t.end){
-        const fullBx=Math.max(0,pxR(new Date(t.start)));
-        const fullEx=Math.max(fullBx+3,pxR(new Date(t.end)));
+        const fullBx=Math.max(0,pxR(_pLocal(t.start)));
+        const fullEx=Math.max(fullBx+3,pxR(_pLocal(t.end)));
         const solidW=Math.max(3,fullEx-fullBx), by=cy+5, bh=rh-10;
         sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="2" fill="${col}" opacity="0.6"/>`;
         if(solidW>44)sR+=`<text x="${(fullBx+solidW/2).toFixed(1)}" y="${(by+bh/2+3.5).toFixed(1)}" text-anchor="middle" font-size="10" fill="#FFF" font-weight="600">${escSVG(sl(t.status||'A iniciar'))}</text>`;
@@ -3830,8 +3829,8 @@ function renderGanttForEixoDir(gi){
   function inRange(start,end){
     if(_skipDate||(!fDS&&!fDE))return true;
     if(!start&&!end)return false;
-    const s=start?new Date(start):null,e=end?new Date(end):null;
-    const fs=fDS?new Date(fDS):null,fe=fDE?new Date(fDE):null;
+    const s=start?_pLocal(start):null,e=end?_pLocal(end):null;
+    const fs=_pLocal(fDS),fe=_pLocal(fDE);
     if(fs&&e&&e<fs)return false;
     if(fe&&s&&s>fe)return false;
     return true;
@@ -3867,7 +3866,7 @@ function renderGanttForEixoDir(gi){
   });
   const isWeekly=ganttModeDir==='weekly';
   const LW=400,TW=1800;
-  const CS=new Date('2026-01-01'),CE=new Date('2026-12-31');
+  const CS=_pLocal('2026-01-01'),CE=_pLocal('2026-12-31');
   const GRH=68,TRH=50,SRH=38;
   const HY=isWeekly?22:24,HM=isWeekly?36:48,HW=isWeekly?32:0;
   const HH=HY+HM+HW;
@@ -3899,7 +3898,7 @@ function renderGanttForEixoDir(gi){
     });
   }
   if(fDS||fDE){
-    const rStart=fDS?new Date(fDS):CS,rEnd=fDE?new Date(fDE):CE;
+    const rStart=fDS?_pLocal(fDS):CS,rEnd=fDE?_pLocal(fDE):CE;
     const rx1=pxR(rStart),rx2=pxR(rEnd),rw=Math.max(2,rx2-rx1);
     sR+=`<rect x="${rx1.toFixed(1)}" y="${HH}" width="${rw.toFixed(1)}" height="${H-HH}" fill="rgba(255,207,0,0.28)"/>`;
     sR+=`<line x1="${rx1.toFixed(1)}" y1="${HH}" x2="${rx1.toFixed(1)}" y2="${H}" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4,3" opacity="0.9"/>`;
@@ -3924,8 +3923,8 @@ function renderGanttForEixoDir(gi){
       if(row.hasTasks)sL+=`<rect x="0" y="${cy}" width="${LW}" height="${rh}" fill="transparent" cursor="pointer" onclick="toggleGanttGroupDir(${gi},${row.ri})"/>`;
       if(g.start&&g.end){
         const clipL=fDS&&g.start<fDS,clipR=fDE&&g.end>fDE;
-        const fullBx=Math.max(0,pxR(new Date(g.start))),fullEx=Math.max(fullBx+6,pxR(new Date(g.end)));
-        const clampBx=clipL?pxR(new Date(fDS)):fullBx,clampEx=clipR?pxR(new Date(fDE)):fullEx;
+        const fullBx=Math.max(0,pxR(_pLocal(g.start))),fullEx=Math.max(fullBx+6,pxR(_pLocal(g.end)));
+        const clampBx=clipL?pxR(_pLocal(fDS)):fullBx,clampEx=clipR?pxR(_pLocal(fDE)):fullEx;
         const solidW=Math.max(4,clampEx-clampBx),by=cy+11,bh=rh-22;
         if(clipL&&clampBx>fullBx){const gw=clampBx-fullBx;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="${col}" opacity="0.18"/>`;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.55"/>`;}
         sR+=`<rect x="${clampBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="${(clipL&&clampBx>fullBx)||clipR?0:4}" fill="${col}" opacity="0.88"/>`;
@@ -3944,8 +3943,8 @@ function renderGanttForEixoDir(gi){
       if(row.hasSubs)sL+=`<rect x="0" y="${cy}" width="${LW}" height="${rh}" fill="transparent" cursor="pointer" onclick="toggleGanttMarcoDir(${gi},${row.parentRi},${row.ti})"/>`;
       if(t.start&&t.end){
         const clipL=fDS&&t.start<fDS,clipR=fDE&&t.end>fDE;
-        const fullBx=Math.max(0,pxR(new Date(t.start))),fullEx=Math.max(fullBx+4,pxR(new Date(t.end)));
-        const clampBx=clipL?pxR(new Date(fDS)):fullBx,clampEx=clipR?pxR(new Date(fDE)):fullEx;
+        const fullBx=Math.max(0,pxR(_pLocal(t.start))),fullEx=Math.max(fullBx+4,pxR(_pLocal(t.end)));
+        const clampBx=clipL?pxR(_pLocal(fDS)):fullBx,clampEx=clipR?pxR(_pLocal(fDE)):fullEx;
         const solidW=Math.max(3,clampEx-clampBx),by=cy+7,bh=rh-14;
         if(clipL&&clampBx>fullBx){const gw=clampBx-fullBx;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="${col}" opacity="0.15"/>`;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;}
         sR+=`<rect x="${clampBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="${(clipL&&clampBx>fullBx)||clipR?0:3}" fill="${col}" opacity="0.75"/>`;
@@ -3954,7 +3953,7 @@ function renderGanttForEixoDir(gi){
         sR+=`<text x="${(fullEx+5).toFixed(1)}" y="${(by+bh/2+5).toFixed(1)}" font-size="16" font-weight="700" fill="#111827">${fmtBRshort(t.end)}</text>`;
         if(clipR&&fullEx>clampEx){const gw=fullEx-clampEx;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="${col}" opacity="0.15"/>`;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;}
       } else if(t.start){
-        const dx=pxR(new Date(t.start));
+        const dx=pxR(_pLocal(t.start));
         sR+=`<polygon points="${dx},${cy+5} ${dx+7},${cy+rh/2} ${dx},${cy+rh-5} ${dx-7},${cy+rh/2}" fill="${col}"/>`;
       }
     } else {
@@ -3964,7 +3963,7 @@ function renderGanttForEixoDir(gi){
       const nm=(t.tarefa||'').length>48?(t.tarefa||'').slice(0,46)+'...':(t.tarefa||'');
       sL+=`<text x="59" y="${(cy+rh/2+4).toFixed(1)}" font-size="11" fill="#0F172A" font-weight="550">${escSVG(nm)}</text>`;
       if(t.start&&t.end){
-        const fullBx=Math.max(0,pxR(new Date(t.start))),fullEx=Math.max(fullBx+3,pxR(new Date(t.end)));
+        const fullBx=Math.max(0,pxR(_pLocal(t.start))),fullEx=Math.max(fullBx+3,pxR(_pLocal(t.end)));
         const solidW=Math.max(3,fullEx-fullBx),by=cy+5,bh=rh-10;
         sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="2" fill="${col}" opacity="0.6"/>`;
         if(solidW>44)sR+=`<text x="${(fullBx+solidW/2).toFixed(1)}" y="${(by+bh/2+3.5).toFixed(1)}" text-anchor="middle" font-size="10" fill="#FFF" font-weight="600">${escSVG(sl(t.status||'A iniciar'))}</text>`;
@@ -4289,18 +4288,15 @@ function _findWeekCols(rows) {
   return (pC>=0&&eC>=0)?{pC,eC,weekLabel:''}:{pC:37,eC:39,weekLabel:''};
 }
 
-function _rgbToHex(c){
-  if(!c) return null;
-  const r=Math.round((c.red||0)*255), g=Math.round((c.green||0)*255), b=Math.round((c.blue||0)*255);
-  return '#'+[r,g,b].map(function(x){return x.toString(16).padStart(2,'0');}).join('');
-}
+// Cor fixa dos eixos (decisão da diretoria — não vem mais da coluna B da planilha)
+const EIXO_FIXED_COLOR='#949494';
 function _eixoTextColor(hex){
   if(!hex) return '#FFFFFF';
   const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
   const lum=(0.299*r+0.587*g+0.114*b)/255;
   return lum>0.6?'#1A2E0A':'#FFFFFF';
 }
-function _parseWBS(rows, rowColors, rowColorsB) {
+function _parseWBS(rows, rowColors) {
   const CE=1,CG=2,CM=3,CT=4,CFO=5,CR=6,CS=7,CST=8,CEN=9;
   const {pC,eC,weekLabel}=_findWeekCols(rows);
   const eixoOrder=[],eixoMap={};
@@ -4343,7 +4339,7 @@ function _parseWBS(rows, rowColors, rowColorsB) {
       }
     }
     if(!eixo||!grupo) continue;
-    if(!eixoMap[eixo]){const _eixoColor='#949494';eixoMap[eixo]={groupOrder:[],groups:{},color:_eixoColor};eixoOrder.push(eixo);}
+    if(!eixoMap[eixo]){eixoMap[eixo]={groupOrder:[],groups:{},color:EIXO_FIXED_COLOR};eixoOrder.push(eixo);}
     const em=eixoMap[eixo];
     if(!em.groups[grupo]){em.groups[grupo]={summary:null,tasks:[]};em.groupOrder.push(grupo);}
     const gm=em.groups[grupo];
@@ -4386,22 +4382,21 @@ async function loadSheetsData() {
   const btnReq=document.getElementById('btn-req-refresh');
   if(btnReq){btnReq.disabled=true;btnReq.innerHTML='<span class="spinning">⟳</span> Atualizando...';}
   const fetchAll=async()=>{
-    let wbsRows, wbsColors=[], wbsColorsB=[], reqsRows=null, reqsOk=false;
-    [wbsRows, wbsColors, wbsColorsB] = await Promise.all([
+    let wbsRows, wbsColors=[], reqsRows=null, reqsOk=false;
+    [wbsRows, wbsColors] = await Promise.all([
       fetchSheet(CRONOGRAMA_ID, CRONOGRAMA_SHEET),
-      fetchSheetColors(CRONOGRAMA_ID, CRONOGRAMA_SHEET, 'E').catch(function(){return [];}),
-      fetchSheetColors(CRONOGRAMA_ID, CRONOGRAMA_SHEET, 'B').catch(function(){return [];})
+      fetchSheetColors(CRONOGRAMA_ID, CRONOGRAMA_SHEET, 'E').catch(function(){return [];})
     ]);
     try { reqsRows = await fetchSheet(REQS_SHEET_ID, REQS_SHEET_NAME); reqsOk=true; }
     catch(e){ console.warn('REQS não atualizado:',e.message); }
-    return {wbsRows, wbsColors, wbsColorsB, reqsRows, reqsOk};
+    return {wbsRows, wbsColors, reqsRows, reqsOk};
   };
   const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('Tempo limite excedido (15s)')),TIMEOUT_MS));
   try {
-    const {wbsRows, wbsColors, wbsColorsB, reqsRows, reqsOk} = await Promise.race([fetchAll(), timeout]);
+    const {wbsRows, wbsColors, reqsRows, reqsOk} = await Promise.race([fetchAll(), timeout]);
     _rawWBSRows=wbsRows;
     _detectAreaCols(wbsRows);
-    const {wbs:newWBS,weekLabel,badRows:_wbsBad}=_parseWBS(wbsRows, wbsColors||[], wbsColorsB||[]);
+    const {wbs:newWBS,weekLabel,badRows:_wbsBad}=_parseWBS(wbsRows, wbsColors||[]);
     WBS.length=0; newWBS.forEach(e=>WBS.push(e));updateWBSWarning(_wbsBad);
     WBS_DIR.length=0; JSON.parse(JSON.stringify(newWBS)).forEach(e=>WBS_DIR.push(e));
     if(reqsRows){ const newREQS=_parseREQS(reqsRows); REQS.length=0; newREQS.forEach(r=>REQS.push(r)); }
@@ -4614,8 +4609,8 @@ function _getAreasFS(){
 }
 function _areasInRange(s,e,fDS,fDE){
   if(!fDS&&!fDE)return true;if(!s&&!e)return false;
-  var sd=s?new Date(s):null,ed=e?new Date(e):null;
-  var fsd=fDS?new Date(fDS):null,fed=fDE?new Date(fDE):null;
+  var sd=_pLocal(s),ed=_pLocal(e);
+  var fsd=_pLocal(fDS),fed=_pLocal(fDE);
   if(fsd&&ed&&ed<fsd)return false;if(fed&&sd&&sd>fed)return false;return true;
 }
 function renderAreasTab(){
@@ -4698,7 +4693,7 @@ function renderAreaGantt(ai){
   }
   var isW=(areasGanttMode==='weekly');
   var LW=500,TW=4500;
-  var CS=new Date('2026-01-01'),CE=new Date('2027-06-30');
+  var CS=_pLocal('2026-01-01'),CE=_pLocal('2027-06-30');
   var MRH=62,TRH=46;
   var HY=20,HM=28,HW=44;
   var HH=HY+HM+HW;
@@ -4783,7 +4778,7 @@ function renderAreaGantt(ai){
   }
 
   if(fs.fDS||fs.fDE){
-    var rS=fs.fDS?new Date(fs.fDS):CS,rE=fs.fDE?new Date(fs.fDE):CE;
+    var rS=fs.fDS?_pLocal(fs.fDS):CS,rE=fs.fDE?_pLocal(fs.fDE):CE;
     var rx1=px(rS),rx2=px(rE),rw=Math.max(2,rx2-rx1);
     sR+='<rect x="'+rx1.toFixed(1)+'" y="'+HH+'" width="'+rw.toFixed(1)+'" height="'+(H-HH)+'" fill="rgba(255,207,0,0.28)"/>';
     sR+='<line x1="'+rx1.toFixed(1)+'" y1="'+HH+'" x2="'+rx1.toFixed(1)+'" y2="'+H+'" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4,3" opacity="0.9"/>';
@@ -4819,7 +4814,7 @@ function renderAreaGantt(ai){
       if(fr){var rn=fr.length>14?fr.slice(0,13)+'…':fr;sL+='<text x="'+(LW-10)+'" y="'+(cy3+rh/2+6).toFixed(1)+'" font-size="14" fill="#475569" text-anchor="end">'+escSVG(rn)+'</text>';}
       if(hasC)sL+='<rect x="0" y="'+cy3+'" width="'+LW+'" height="'+rh+'" fill="transparent" cursor="pointer" onclick="toggleAreaMarco('+ai+','+row.mi+')"/>';
       if(m.start&&m.end){
-        var bx=px(new Date(m.start)),bx2=px(new Date(m.end)),bw=Math.max(8,bx2-bx);
+        var bx=px(_pLocal(m.start)),bx2=px(_pLocal(m.end)),bw=Math.max(8,bx2-bx);
         var bh=28,by=cy3+(rh-bh)/2;
         sR+='<rect x="'+bx.toFixed(1)+'" y="'+by.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+bh+'" fill="'+col+'" rx="5" opacity="0.88"/>';
         if(bw>60)sR+='<text x="'+(bx+bw/2).toFixed(1)+'" y="'+(by+bh/2+5.5).toFixed(1)+'" font-size="15" fill="#FFF" font-weight="700" text-anchor="middle">'+escSVG(sl(m.status||'A iniciar'))+'</text>';
@@ -4863,7 +4858,7 @@ function renderAreaGantt(ai){
       }
       sL+='<circle cx="'+(LW-10)+'" cy="'+(cy3+rh/2).toFixed(1)+'" r="6" fill="'+col+'"/>';
       if(t.start&&t.end){
-        var _tS=new Date(t.start),_tE=new Date(t.end);
+        var _tS=_pLocal(t.start),_tE=_pLocal(t.end);
         var _bh=19,_by=cy3+(rh-_bh)/2;
         var _firstBx=null,_firstBw=0,_lastBx=0,_lastBx2=0,_lastBw=0;
         weeks.forEach(function(_w,_wi){
@@ -4892,7 +4887,7 @@ function renderAreaGantt(ai){
   sL+='</svg>';
   wrap.style.display='flex';
   wrap.innerHTML='<div style="position:sticky;left:0;z-index:2;flex-shrink:0">'+sL+'</div><div style="overflow-x:auto;flex:1">'+sR+'</div>';
-  var _scrollTarget=fs.fDS?px(new Date(fs.fDS)):(px(new Date())-200);
+  var _scrollTarget=fs.fDS?px(_pLocal(fs.fDS)):(px(new Date())-200);
   var _rPanel=wrap.querySelector('div:last-child');
   if(_rPanel)_rPanel.scrollLeft=Math.max(0,_scrollTarget-60);
   wrap.addEventListener('mouseover',function(e){
@@ -4977,15 +4972,15 @@ function pdfWizNext(){
     var fde2=document.getElementById('pdf-fde');_pdfW.fDE=fde2?fde2.value:'';
     var vr=document.querySelector('input[name="pdf-view"]:checked');_pdfW.view=vr?vr.value:'monthly';
     if(_pdfW.fDS&&!_pdfW.fDE){
-      var _autoEnd=new Date(_pdfW.fDS);_autoEnd.setDate(_autoEnd.getDate()+30);
-      var _ceMax=new Date('2027-06-30');
+      var _autoEnd=_pLocal(_pdfW.fDS);_autoEnd.setDate(_autoEnd.getDate()+30);
+      var _ceMax=_pLocal('2027-06-30');
       if(+_autoEnd>+_ceMax)_autoEnd=_ceMax;
       _pdfW.fDE=_autoEnd.toISOString().slice(0,10);
       if(fde2)fde2.value=_pdfW.fDE;
     }
     if(!_pdfW.fDS&&_pdfW.fDE){
-      var _autoSt=new Date(_pdfW.fDE);_autoSt.setDate(_autoSt.getDate()-30);
-      var _csMin=new Date('2026-01-01');
+      var _autoSt=_pLocal(_pdfW.fDE);_autoSt.setDate(_autoSt.getDate()-30);
+      var _csMin=_pLocal('2026-01-01');
       if(+_autoSt<+_csMin)_autoSt=_csMin;
       _pdfW.fDS=_autoSt.toISOString().slice(0,10);
       if(fds2)fds2.value=_pdfW.fDS;
