@@ -4222,7 +4222,7 @@ let _refreshTimer = null;
 
 async function fetchSheet(spreadsheetId, sheetName) {
   const encodedSheet = encodeURIComponent(sheetName);
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodedSheet}!A1:BJ2000?key=${SHEETS_API_KEY}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodedSheet}!A1:CE2000?key=${SHEETS_API_KEY}`;
   const resp = await fetch(url, {referrerPolicy:'origin'});
   if (!resp.ok) throw new Error(`Sheets API: HTTP ${resp.status} — ${await resp.text()}`);
   return (await resp.json()).values || [];
@@ -4483,12 +4483,14 @@ function _detectAreaCols(rows){
   if(foyer<0){console.warn('AREAS: coluna FOYER nao encontrada, usando indices fixos');return;}
   AREAS_DEF.forEach(function(a,ai){a.idx=foyer+ai;});
 }
+var AREAS_EIXO_NOME='MONTAGEM DE EXPO DE LONGA';
 function _buildAreasData(){
-  // Itera todos os eixos: tarefas de area estao distribuidas em multiplos eixos (ex: COMPRAS, PROJETO EXPOGRAFICO)
+  // Aba Areas considera apenas o eixo AREAS_EIXO_NOME; os demais eixos ficam fora deste dataset.
   var buckets=AREAS_DEF.map(function(a){
     return{areaIdx:a.idx,areaName:a.name,areaColor:a.color,marcos:[],totalTasks:0,doneTasks:0,status:'A iniciar'};
   });
   WBS.forEach(function(eixo){
+    if(eixo.name!==AREAS_EIXO_NOME)return;
     (eixo.children||[]).forEach(function(grupo){
       (grupo.tasks||[]).forEach(function(marco){
         var subs=marco.tipo==='marco'?(marco.subtasks||[]):[marco];
@@ -5027,6 +5029,12 @@ async function _drawSlicedSectionToPDF(pdf,buildFn,label,colorHex,state,pgW,pgH,
   while(rowIdx<totalRows){
     var curSep=state.first?0:sepH;
     if(!state.first&&state.curY+curSep+bandH+20>pgH-3){pdf.addPage();state.curY=margin;curSep=0;}
+    // Pre-check antes de gravar a faixa: se nem a primeira linha caberia depois dela, quebra a página agora (sem desenhar nada) em vez de deixar a faixa órfã na página atual.
+    var projBodyBudget=Math.max(1,(pgH-(state.curY+curSep+bandH)-gapH-3)/scale)-plan.HH;
+    if(projBodyBudget<plan.rowHeights[rowIdx]&&!state._triedFresh){
+      state._triedFresh=true;pdf.addPage();state.curY=margin;continue;
+    }
+    state._triedFresh=false;
     if(curSep>0&&state.prevColor){var pc=_hexRGB(state.prevColor);pdf.setFillColor(pc[0],pc[1],pc[2]);pdf.rect(0,state.curY,pgW,curSep,'F');state.curY+=curSep;}
     var bc=_hexRGB(colorHex);pdf.setFillColor(bc[0],bc[1],bc[2]);pdf.rect(0,state.curY,pgW,bandH,'F');
     pdf.setFontSize(11);pdf.setFont(undefined,'bold');pdf.setTextColor(255,255,255);
@@ -5037,12 +5045,7 @@ async function _drawSlicedSectionToPDF(pdf,buildFn,label,colorHex,state,pgW,pgH,
     var bodyBudget=availSvgUnits-plan.HH;
     var endIdx=rowIdx,acc=0;
     while(endIdx<totalRows&&acc+plan.rowHeights[endIdx]<=bodyBudget){acc+=plan.rowHeights[endIdx];endIdx++;}
-    if(endIdx===rowIdx){
-      if(!state._triedFresh){state._triedFresh=true;pdf.addPage();state.curY=margin;continue;}
-      endIdx=rowIdx+1;
-    } else {
-      state._triedFresh=false;
-    }
+    if(endIdx===rowIdx)endIdx=rowIdx+1;
     var svgStr=buildFn(rowIdx,endIdx,false);
     if(svgStr){
       var tmp=document.createElement('div');
