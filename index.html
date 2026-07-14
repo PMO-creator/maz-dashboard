@@ -6,7 +6,6 @@
 <title>EAP – MAZ 2026 | Dashboard Interativo</title>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/svg2pdf.js@2.2.3/dist/svg2pdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js" integrity="sha384-Cck14aA9cifjYolcnjebXRfWGkz5ltHMBiG4px/j8GS+xQcb7OhNQWZYyWjQ+UwQ" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
 <style>
   :root{
@@ -14,7 +13,7 @@
     --border:#E2E8F0;--text:#1E293B;--muted:#64748B;
     --accent:#8AC43A;--accentD:#6BA030;
     --feito:#05C46B;--andam:#1A56FF;--atraso:#FF2525;
-    --risco:#FF6B00;--iniciar:#5A6E85;--definir:#92400E;--cancel:#374151;
+    --risco:#FFD966;--iniciar:#5A6E85;--definir:#92400E;--cancel:#374151;
     --radius:10px;--gap:32px;
   }
   @keyframes loader-spin{to{transform:rotate(360deg)}}
@@ -148,7 +147,7 @@
     .mb-date,.mb-resp,.mb-status{font-size:13px}
     .task-card{margin:0 8px 0 28px;padding:10px 12px}
     .tarefa-name{font-size:14px}
-    .tc-date,.tc-resp{font-size:14px}
+    .tc-date,.tc-resp,.tc-forn{font-size:14px}
     .tc-label{font-size:12px;min-width:120px}
     .tc-text{font-size:13px}
 
@@ -222,11 +221,11 @@
   .group-header:hover{background:#5A9828}
   .group-color-bar{width:5px;flex-shrink:0;align-self:stretch}
   .group-inner{display:flex;align-items:center;gap:10px;flex:1;padding:11px 14px 11px 12px}
-  .group-toggle{font-size:15px;color:rgba(255,255,255,.8);width:18px;text-align:center;flex-shrink:0;transition:transform .25s}
+  .group-toggle{font-size:15px;color:var(--eixo-text,rgba(255,255,255,.8));width:18px;text-align:center;flex-shrink:0;transition:transform .25s}
   .group-id{font-size:20px;font-weight:700;color:#FFF;padding:4px 11px;border-radius:4px;flex-shrink:0;min-width:42px;text-align:center;background:rgba(0,0,0,.2)}
-  .eixo-name{font-size:22px;font-weight:700;color:#FFF;flex:1}
+  .eixo-name{font-size:22px;font-weight:700;color:var(--eixo-text,#FFF);flex:1}
   .group-period{font-size:10px;color:rgba(255,255,255,.7);white-space:nowrap}
-  .group-count{font-size:19px;font-weight:700;color:#FFF;background:rgba(0,0,0,.15);padding:4px 11px;border-radius:12px;white-space:nowrap}
+  .group-count{font-size:19px;font-weight:700;color:var(--eixo-text,#FFF);background:rgba(0,0,0,.15);padding:4px 11px;border-radius:12px;white-space:nowrap}
   .status-chip{font-size:18px;font-weight:700;letter-spacing:.5px;padding:5px 12px;border-radius:4px;color:#FFF;white-space:nowrap;flex-shrink:0}
   .marco-list{overflow:hidden;transition:max-height .3s cubic-bezier(.4,0,.2,1);background:#C8E09A;border-top:1px solid var(--border)}
   .marco-wrap{border-bottom:1px solid #EEF2F6}
@@ -322,10 +321,10 @@
   .gantt-card:last-child{border-bottom:none}
   .gantt-card-header{display:flex;align-items:center;gap:12px;padding:13px 18px;cursor:pointer;user-select:none;transition:background .15s;background:#6BA030}
   .gantt-card-header:hover{background:#5A9828}
-  .gantt-chevron{font-size:14px;color:#FFF;transition:transform .3s;flex-shrink:0;width:16px}
+  .gantt-chevron{font-size:14px;color:var(--eixo-text,#FFF);transition:transform .3s;flex-shrink:0;width:16px}
   .gantt-eixo-id{font-size:18px;font-weight:800;color:#FFF;padding:3px 10px;border-radius:5px;flex-shrink:0;min-width:32px;text-align:center;background:rgba(0,0,0,.2)}
-  .gantt-eixo-name{font-size:24px;font-weight:700;color:#FFF;flex:1}
-  .gantt-eixo-count{font-size:17px;font-weight:700;color:#FFF;background:rgba(0,0,0,.15);padding:3px 10px;border-radius:12px;white-space:nowrap}
+  .gantt-eixo-name{font-size:24px;font-weight:700;color:var(--eixo-text,#FFF);flex:1}
+  .gantt-eixo-count{font-size:17px;font-weight:700;color:var(--eixo-text,#FFF);background:rgba(0,0,0,.15);padding:3px 10px;border-radius:12px;white-space:nowrap}
   .gantt-status-chip{font-size:16px;font-weight:700;padding:4px 11px;border-radius:4px;color:#FFF;white-space:nowrap;flex-shrink:0}
   .gantt-body{overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
   .gantt-svg-wrap{padding:0 0 18px;background:#FAFBFC;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
@@ -440,6 +439,7 @@
   .tc-meta{display:flex;gap:14px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
   .tc-date{font-size:19px;color:#334155;font-weight:500}
   .tc-resp{font-size:19px;color:#1E293B;background:#DDE8F4;padding:3px 10px;border-radius:8px;font-weight:600}
+  .tc-forn{font-size:19px;color:#9A3412;background:#FED7AA;padding:3px 10px;border-radius:8px;font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
   .tc-fields{display:flex;flex-direction:column;gap:8px;border-top:1px solid #DDE5EF;padding-top:10px;margin-top:4px}
   .tc-field{display:flex;gap:10px;align-items:flex-start}
   .tc-label{font-size:16px;font-weight:800;letter-spacing:.5px;color:#1E3A5F;min-width:190px;flex-shrink:0;padding-top:2px;text-transform:uppercase}
@@ -469,10 +469,10 @@
 /* ── Modo Foco ── */
 .btn-foco{padding:7px 14px;border-radius:6px;border:1px solid rgba(255,255,255,.25);font-size:15px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.07);color:rgba(255,255,255,.75);transition:all .2s;white-space:nowrap}
 .btn-foco:disabled{opacity:.35;cursor:not-allowed}
-.btn-foco.active{background:#FF8C00;color:#000;border-color:#FF8C00;box-shadow:0 0 10px rgba(255,140,0,.4)}
-.btn-foco:not(:disabled):not(.active):hover{background:rgba(255,140,0,.2);color:#FFA500}
+.btn-foco.active{background:#FFD700;color:#000;border-color:#FFD700;box-shadow:0 0 10px rgba(255,215,0,.4)}
+.btn-foco:not(:disabled):not(.active):hover{background:rgba(255,215,0,.2);color:#FFD700}
 .marco-foco-dimmed{opacity:.3;transition:opacity .25s}
-.foco-badge{font-size:11px;font-weight:700;color:#FFA500;background:rgba(255,140,0,.12);border:1px solid rgba(255,140,0,.35);border-radius:10px;padding:2px 8px;margin-left:8px;white-space:nowrap}
+.foco-badge{font-size:11px;font-weight:700;color:#FFD700;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.35);border-radius:10px;padding:2px 8px;margin-left:8px;white-space:nowrap}
 
 /* ── Modal Comparativo ─────────────────────────────────────────── */
 #comp-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:10001;background:rgba(0,0,0,.6);align-items:center;justify-content:center}
@@ -540,7 +540,7 @@
         <label class="ms-option ms-all-opt"><input type="checkbox" id="ms-status-chk-all" checked onchange="onMsAll('status',this)"><span style="font-weight:700;font-style:italic;color:#8AC43A">Todos</span></label>
         <hr class="ms-divider">
         <label class="ms-option"><input type="checkbox" value="Atrasado" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#FF2525"></span>Atrasado</label>
-        <label class="ms-option"><input type="checkbox" value="Risco de atraso" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#FF6B00"></span>Risco de atraso</label>
+        <label class="ms-option"><input type="checkbox" value="Risco de atraso" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#FFD966"></span>Risco de atraso</label>
         <label class="ms-option"><input type="checkbox" value="Em andamento" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#1A56FF"></span>Em andamento</label>
         <label class="ms-option"><input type="checkbox" value="Feito" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#05C46B"></span>Feito</label>
         <label class="ms-option"><input type="checkbox" value="A iniciar" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#5A6E85"></span>A iniciar</label>
@@ -742,12 +742,12 @@
 <button id="n2-fab" onclick="toggleN2Filter()" style="display:none;position:fixed;bottom:82px;right:28px;z-index:1000;padding:11px 20px;border:none;border-radius:21px;font-size:16px;font-weight:700;cursor:pointer;background:#3D6218;color:#B8E85C;box-shadow:0 4px 16px rgba(0,0,0,.3);align-items:center;gap:8px">📋 Pauta N2 · 0</button>
 <button id="n2-clear-fab" onclick="clearN2Selection()" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
 <button id="n2-publish-fab" onclick="publishN2Pauta()" style="display:none;position:fixed;bottom:140px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#1A3A8A;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📤 Publicar pauta</button>
-<button id="n2-ppt-fab" onclick="exportN2PPT()" style="display:none;position:fixed;bottom:200px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#065F46;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📊 Exportar PPT</button>
+<button id="n2-ppt-fab" onclick="exportN2PPT()" style="display:none;position:fixed;bottom:200px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#065F46;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📄 Exportar HTML</button>
 <button id="n2-lock-fab" onclick="unlockN2Edit()" title="Desbloquear edição" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1001;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#5C3A8A;color:white;box-shadow:0 4px 12px rgba(0,0,0,.3)">🔓 Desbloquear</button>
 <button id="n2-fab-dir" onclick="toggleN2Filter_Dir()" style="display:none;position:fixed;bottom:82px;right:28px;z-index:1000;padding:11px 20px;border:none;border-radius:21px;font-size:16px;font-weight:700;cursor:pointer;background:#3D6218;color:#B8E85C;box-shadow:0 4px 16px rgba(0,0,0,.3);align-items:center;gap:8px">📋 Pauta N2 · 0</button>
 <button id="n2-clear-fab-dir" onclick="clearN2Selection_Dir()" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
 <button id="n2-publish-fab-dir" onclick="publishN2Pauta_Dir()" style="display:none;position:fixed;bottom:140px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#1A3A8A;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📤 Publicar pauta</button>
-<button id="n2-ppt-fab-dir" onclick="exportN2PPT_Dir()" style="display:none;position:fixed;bottom:200px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#065F46;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📊 Exportar PPT</button>
+<button id="n2-ppt-fab-dir" onclick="exportN2PPT_Dir()" style="display:none;position:fixed;bottom:200px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#065F46;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📄 Exportar HTML</button>
 <button id="n2-lock-fab-dir" onclick="unlockN2Edit_Dir()" title="Desbloquear edição" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1001;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#5C3A8A;color:white;box-shadow:0 4px 12px rgba(0,0,0,.3)">🔓 Desbloquear</button>
 
   <div id="tab-reqs" class="tab-panel">
@@ -897,9 +897,9 @@
 
 <script>
 const STATUS = {
-  'Feito':               {color:'#05C46B',label:'FEITO'},
-  'Em andamento':        {color:'#1A56FF',label:'EM AND.'},
-  'Risco de atraso':     {color:'#FF6B00',label:'RISCO'},
+  'Feito':               {color:'#1A56FF',label:'FEITO'},
+  'Em andamento':        {color:'#05C46B',label:'EM AND.'},
+  'Risco de atraso':     {color:'#FFD966',label:'RISCO'},
   'Atrasado':            {color:'#FF2525',label:'ATRASADO'},
   'A iniciar':           {color:'#5A6E85',label:'A INICIAR'},
   'Definir datas':       {color:'#92400E',label:'DEF. DATAS'},
@@ -956,12 +956,12 @@ function preprocessStatuses(){
     if(item.status==='Feito'||item.status==='Cancelado/Congelado'||item.status==='Cancelado') return;
     if(item.status==='A iniciar'){
       if(!item.start||item.start.length<10){ item.status='Definir datas'; return; }
-      const start=new Date(item.start);
+      const start=_pLocal(item.start);
       if(start<today){ item.status='Risco de atraso'; return; }
       return;
     }
     if(!item.end||item.end.length<10) return;
-    const end=new Date(item.end);
+    const end=_pLocal(item.end);
     if(end<today){ item.status='Atrasado'; return; }
     if(end<=d7){ item.status='Risco de atraso'; return; }
   };
@@ -1180,7 +1180,7 @@ function renderKPIs(){
   const _projEnd=_projDates.length?_projDates.reduce((a,b)=>a>b?a:b):null;
   let heroColor='#05C46B';
   if(_projStart&&_projEnd&&_projStart<_projEnd){
-    const _now=new Date();const _s=new Date(_projStart);const _e=new Date(_projEnd);
+    const _now=new Date();const _s=_pLocal(_projStart);const _e=_pLocal(_projEnd);
     const _totalMs=_e-_s;const _elapsedMs=Math.max(0,_now-_s);
     const _expectedPct=Math.min(100,Math.round(_elapsedMs/_totalMs*100));
     const _diff=pctMarcos-_expectedPct;
@@ -1281,7 +1281,7 @@ function renderKPIs_Dir(){
   const _projEnd=_projDates.length?_projDates.reduce((a,b)=>a>b?a:b):null;
   let heroColor='#05C46B';
   if(_projStart&&_projEnd&&_projStart<_projEnd){
-    const _now=new Date();const _s=new Date(_projStart);const _e=new Date(_projEnd);
+    const _now=new Date();const _s=_pLocal(_projStart);const _e=_pLocal(_projEnd);
     const _totalMs=_e-_s;const _elapsedMs=Math.max(0,_now-_s);
     const _expectedPct=Math.min(100,Math.round(_elapsedMs/_totalMs*100));
     const _diff=pctMarcos-_expectedPct;
@@ -1370,7 +1370,7 @@ function renderCharts(){
     data:{labels,
       datasets:[
         {label:'Atrasado',     data:WBS.map(g=>g.children.filter(c=>c.status==='Atrasado').length),        backgroundColor:'#DC2626CC',borderRadius:2},
-        {label:'Risco',        data:WBS.map(g=>g.children.filter(c=>c.status==='Risco de atraso').length), backgroundColor:'#EA580CCC',borderRadius:2},
+        {label:'Risco',        data:WBS.map(g=>g.children.filter(c=>c.status==='Risco de atraso').length), backgroundColor:'#FFD966CC',borderRadius:2},
         {label:'Em Andamento', data:WBS.map(g=>g.children.filter(c=>c.status==='Em andamento').length),    backgroundColor:'#2563EBCC',borderRadius:2},
         {label:'Feito',        data:WBS.map(g=>g.children.filter(c=>c.status==='Feito').length),           backgroundColor:'#16A34ACC',borderRadius:2},
         {label:'Outros',       data:WBS.map(g=>g.children.filter(c=>!['Atrasado','Risco de atraso','Em andamento','Feito'].includes(c.status)).length),backgroundColor:'#94A3B8CC',borderRadius:2},
@@ -1654,20 +1654,24 @@ function abrevNome(n){
     var url=_base+'?n2='+arr.join(',')+'&ph='+_n2Hash(pin);
     _showN2Modal(url);
   }
-  function exportN2PPT(){
-    var arr=loadN2();
-    if(!arr.length){alert('Nenhuma tarefa selecionada para exportar.');return;}
-    if(typeof PptxGenJS==='undefined'){alert('Biblioteca de PPT não carregada. Verifique a conexão e recarregue a página.');return;}
-
-    // Usa os filtros ATIVOS para replicar exatamente o que está visível no dashboard
+  // ── EXPORT N2 -> HTML NAVEGAVEL (substitui o antigo export PPT) ──────────────
+  function _dateStamp(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function _downloadHTML(html,filename){
+    var blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  }
+  function _buildN2HTMLDoc(wbsArr,arr,isDir){
     var currentFilters=getFilters();
     var sfArr=currentFilters.status||[];
     var sfLow=sfArr.map(function(s){return s.toLowerCase();});
     function sfOk(v){return !sfLow.length||sfLow.indexOf((v||'A iniciar').toLowerCase())>=0;}
-
     var selected=new Set(arr);
     var byEixo=[];
-    WBS.forEach(function(eixo,gi){
+    wbsArr.forEach(function(eixo,gi){
       var vis=eixo.children.filter(function(m){return matchesFilter(eixo,m,currentFilters);});
       if(currentFilters.resp&&currentFilters.resp.length>0)vis=vis.filter(function(m){return grupoHasResp(m,currentFilters.resp);});
       var grupoItems=[];
@@ -1690,183 +1694,190 @@ function abrevNome(n){
       });
       if(grupoItems.length)byEixo.push({eixo:eixo,grupos:grupoItems});
     });
-    if(!byEixo.length){alert('Nenhuma tarefa selecionada encontrada com os filtros atuais.');return;}
+    if(!byEixo.length){alert('Nenhuma tarefa selecionada encontrada com os filtros atuais.');return null;}
 
-    // Cores via objeto STATUS do dashboard
-    function stColor(s){return (STATUS[s]||STATUS['A iniciar']).color.replace('#','');}
-    function stLabel(s){return (STATUS[s]||STATUS['A iniciar']).label;}
+    var GRUPO_BG='#2F4A18',MARCO_BG='#F5FAF0',TASK_BG='#F7FAFF',TASK_BORDER='#DDE8F5',TEXT_DARK='#1A2E0A';
+    var NP='Não preenchido',NPA='⚠ Não preenchido';
 
-    // Estimativa de linhas (conservadora) para dimensionar caixas dinamicamente
-    function estLines(text,charsPerLine){
-      return Math.max(1,Math.ceil(((text||'').length)/charsPerLine));
+    function taskCardHTML(task){
+      var tc=sc(task.status),tl=sl(task.status);
+      var tds=task.start?fmtBRshort(task.start):'',tde=task.end?fmtBRshort(task.end):'';
+      var tdateStr=[tds,tde].filter(Boolean).join(' → ');
+      var progTxt=(task.progresso&&task.progresso.trim())?task.progresso.trim():'';
+      var encTxt=(task.encaminhamento&&task.encaminhamento.trim())?task.encaminhamento.trim():'';
+      var progEmpty=!progTxt,encEmpty=!encTxt;
+      var progVal=progTxt?escH(progTxt):NPA;
+      var encVal=encTxt?escH(encTxt):NPA;
+      var h='<div class="exp-task" style="background:'+TASK_BG+';border:1px solid '+TASK_BORDER+';border-left:4px solid '+tc+'">';
+      h+='<div class="exp-task-head">';
+      h+='<span class="exp-chip" style="background:'+tc+'">'+escH(tl)+'</span>';
+      h+='<span class="exp-task-name">'+escH(task.tarefa||'')+'</span>';
+      if(tdateStr)h+='<span class="exp-meta">📅 '+escH(tdateStr)+'</span>';
+      if(task.resp)h+='<span class="exp-meta">👤 '+escH(abrevNome(task.resp))+'</span>';
+      if(task.fornecedor)h+='<span class="exp-meta exp-forn" title="'+escH(task.fornecedor)+'">🏢 '+escH(task.fornecedor)+'</span>';
+      h+='</div>';
+      h+='<div class="exp-field'+(progEmpty?' exp-empty':'')+'"><b>Progresso:</b> <span class="exp-fval" data-ph="'+NPA+'">'+progVal+'</span></div>';
+      h+='<div class="exp-field'+(encEmpty?' exp-empty':'')+'"><b>Encaminhamentos:</b> <span class="exp-fval" data-ph="'+NPA+'">'+encVal+'</span></div>';
+      h+='</div>';
+      return h;
     }
-    // chars/linha para cada tamanho de fonte / largura aproximada
-    var CPL14=51;   // 16pt em ~7.3" (nome do marco)
-    var CPL11=69;   // 13pt em ~7.6" (nome da tarefa)
-    var CPL10=108;  // 12pt em ~12" (progresso/encaminhamento)
-    // altura por linha (polegadas)
-    var LH14=0.32; var LH11=0.27; var LH10=0.25;
 
-    // Constantes de layout
-    var W=13.33,H=7.5,ML=0.3,CW=W-ML-0.3;
-    var SAFE_BOTTOM=H-0.48;
-    var BG='1E2E0D',BG2='2F4A18',ACCENT='8AC43A',ACCENTD='4A7A1E';
-    var TEXT_DARK='1A2E0A',TEXT_LIGHT='E2E8F0',MUTED='94A3B8';
-    var NP='NÃO PREENCHIDO';
+    function marcoHTML(marcoData){
+      var marco=marcoData.task;
+      var tasksToShow=marcoData.subtasks.length>0?marcoData.subtasks:[marco];
+      var mc=sc(marco.status),ml_=sl(marco.status);
+      var ds=marco.start?fmtBRshort(marco.start):'',de=marco.end?fmtBRshort(marco.end):'';
+      var dateStr=[ds,de].filter(Boolean).join(' → ');
+      var h='<div class="exp-marco" style="background:'+MARCO_BG+';border:2px solid '+mc+'">';
+      h+='<div class="exp-marco-head">';
+      h+='<span class="exp-chip" style="background:'+mc+'">'+escH(ml_)+'</span>';
+      h+='<span class="exp-marco-name">'+escH(marco.tarefa||'')+'</span>';
+      if(dateStr)h+='<span class="exp-meta">📅 '+escH(dateStr)+'</span>';
+      if(marco.resp)h+='<span class="exp-meta">👤 '+escH(abrevNome(marco.resp))+'</span>';
+      h+='</div>';
+      if(tasksToShow.length>1){
+        h+='<details class="exp-tasks" open><summary>'+tasksToShow.length+' tarefas</summary><div class="exp-tasks-body">';
+        h+=tasksToShow.map(taskCardHTML).join('');
+        h+='</div></details>';
+      } else {
+        h+='<div class="exp-tasks-flat">'+tasksToShow.map(taskCardHTML).join('')+'</div>';
+      }
+      h+='</div>';
+      return h;
+    }
+
+    function grupoHTML(grupoData){
+      var grupo=grupoData.grupo,marcos=grupoData.marcos;
+      var h='<details class="exp-grupo" open>';
+      h+='<summary class="exp-grupo-header" style="background:'+GRUPO_BG+'"><span class="exp-chevron">▶</span>'+escH(grupo.name)+'<span class="exp-count">'+marcos.length+' marco'+(marcos.length!==1?'s':'')+'</span></summary>';
+      h+='<div class="exp-grupo-body">'+marcos.map(marcoHTML).join('')+'</div>';
+      h+='</details>';
+      return h;
+    }
+
+    function eixoHTML(eixoData){
+      var eixo=eixoData.eixo,grupos=eixoData.grupos;
+      var bg=eixo.color||'#6BA030';
+      var txt=_eixoTextColor(eixo.color);
+      var idBg=sc(eixo.status);
+      var n=grupos.reduce(function(s,g){return s+g.marcos.length;},0);
+      var h='<details class="exp-eixo" open>';
+      h+='<summary class="exp-eixo-header" style="background:'+bg+';color:'+txt+'"><span class="exp-chevron">▶</span><span class="exp-eixo-id" style="background:'+idBg+'">'+escH(eixo.id)+'</span>'+escH(eixo.name)+'<span class="exp-count" style="color:'+txt+'">'+n+' item'+(n!==1?'s':'')+'</span></summary>';
+      h+='<div class="exp-eixo-body">'+grupos.map(grupoHTML).join('')+'</div>';
+      h+='</details>';
+      return h;
+    }
 
     var now=new Date();
     var MBR=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
     var DBR=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
     var dateFull=DBR[now.getDay()]+', '+now.getDate()+' de '+MBR[now.getMonth()]+'. de '+now.getFullYear();
-    var dateShort=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
-
-    var pptx=new PptxGenJS();
-    pptx.layout='LAYOUT_WIDE';pptx.author='IDG PMO';pptx.subject='Pauta N2 — MAZ 2026';
+    var totalItems=byEixo.reduce(function(s,e){return s+e.grupos.reduce(function(ss,g){return ss+g.marcos.length;},0);},0);
     var logoEl=document.querySelector('.header-logo');
     var logoData=logoEl?logoEl.src:null;
+    var subtitle='Pauta — Museu das Amazônias 2026'+(isDir?' (Diretoria)':'');
 
-    function addFooter(sl){
-      sl.addShape('rect',{x:0,y:H-0.32,w:W,h:0.32,fill:{color:ACCENTD},line:{type:'none'}});
-      sl.addText('IDG PMO · MAZ 2026',{x:ML,y:H-0.30,w:CW/2,h:0.28,fontSize:13,bold:true,color:TEXT_DARK,fontFace:'Calibri'});
-      sl.addText(dateShort,{x:ML+CW/2,y:H-0.30,w:CW/2,h:0.28,fontSize:13,color:TEXT_DARK,align:'right',fontFace:'Calibri'});
-    }
+    var css=''
+      +'*{box-sizing:border-box}'
+      +'body{margin:0;font-family:Calibri,Segoe UI,Arial,sans-serif;background:#1E2E0D;color:#E2E8F0}'
+      +'.exp-wrap{max-width:1100px;margin:0 auto;padding:24px 18px 60px}'
+      +'.exp-header{text-align:center;padding:28px 10px 22px;border-bottom:2px solid #4A7A1E;margin-bottom:20px}'
+      +'.exp-header img{height:64px;margin-bottom:14px}'
+      +'.exp-header h1{color:#8AC43A;font-size:34px;margin:0 0 6px}'
+      +'.exp-header h2{color:#E2E8F0;font-weight:400;font-size:18px;margin:0 0 10px}'
+      +'.exp-header .exp-sub{color:#94A3B8;font-size:14px}'
+      +'.exp-toolbar{display:flex;gap:10px;justify-content:center;margin-bottom:22px}'
+      +'.exp-toolbar button{background:#2F4A18;color:#E2E8F0;border:1px solid #4A7A1E;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}'
+      +'.exp-toolbar button:hover{background:#4A7A1E}'
+      +'.exp-eixo{margin-bottom:12px;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.3)}'
+      +'.exp-eixo-header{list-style:none;cursor:pointer;padding:14px 16px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px}'
+      +'.exp-eixo-header::-webkit-details-marker{display:none}'
+      +'.exp-eixo-id{background:rgba(0,0,0,.2);padding:2px 10px;border-radius:4px;font-size:15px}'
+      +'.exp-count{margin-left:auto;font-size:14px;background:rgba(0,0,0,.15);padding:3px 10px;border-radius:12px}'
+      +'.exp-chevron{transition:transform .2s;font-size:12px}'
+      +'details[open]>.exp-eixo-header .exp-chevron,details[open]>.exp-grupo-header .exp-chevron{transform:rotate(90deg)}'
+      +'.exp-eixo-body{background:#25390F;padding:10px}'
+      +'.exp-grupo{margin-bottom:8px;border-radius:6px;overflow:hidden}'
+      +'.exp-grupo-header{list-style:none;cursor:pointer;background:#2F4A18;color:#FFF;padding:9px 14px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}'
+      +'.exp-grupo-header::-webkit-details-marker{display:none}'
+      +'.exp-grupo-body{padding:8px 6px}'
+      +'.exp-marco{border-radius:6px;padding:10px 12px;margin-bottom:8px}'
+      +'.exp-marco-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:6px}'
+      +'.exp-marco-name{font-weight:700;color:'+TEXT_DARK+';font-size:15px;flex:1;min-width:180px}'
+      +'.exp-chip{color:#FFF;font-weight:700;font-size:11px;padding:3px 9px;border-radius:4px;white-space:nowrap}'
+      +'.exp-meta{color:#1E293B;font-size:12px;white-space:nowrap}'
+      +'.exp-forn{max-width:180px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle}'
+      +'.exp-tasks summary{cursor:pointer;font-size:12px;color:#374151;margin:4px 0}'
+      +'.exp-tasks-body,.exp-tasks-flat{display:flex;flex-direction:column;gap:6px}'
+      +'.exp-task{border-radius:5px;padding:8px 10px}'
+      +'.exp-task-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:4px}'
+      +'.exp-task-name{color:'+TEXT_DARK+';font-size:13px;font-weight:600;flex:1;min-width:160px}'
+      +'.exp-field{font-size:12px;color:'+TEXT_DARK+';margin-top:2px}'
+      +'.exp-field.exp-empty{color:#DC2626;font-weight:700}'
+      +'.exp-fval[contenteditable="true"]{outline:2px dashed #3B82F6;outline-offset:2px;background:#EFF6FF;border-radius:3px;padding:1px 4px;cursor:text}'
+      +'.exp-toolbar button.exp-save-btn{background:#1A3A8A;border-color:#1A3A8A}'
+      +'.exp-toolbar button.exp-save-btn:hover{background:#24499E}'
+      +'.exp-footer{text-align:center;color:#94A3B8;font-size:12px;margin-top:30px;padding-top:14px;border-top:1px solid #4A7A1E}'
+      +'@media(max-width:640px){.exp-eixo-header{font-size:16px}.exp-marco-name{min-width:120px}}';
 
-    // === SLIDE DE CAPA ===
-    var cover=pptx.addSlide();cover.background={color:BG};addFooter(cover);
-    if(logoData){try{cover.addImage({data:logoData,x:W/2-1.8,y:0.7,w:3.6,h:1.35});}catch(e){}}
-    cover.addShape('rect',{x:ML+1.5,y:2.3,w:CW-3,h:0.05,fill:{color:ACCENT},line:{type:'none'}});
-    cover.addText('Reunião N2',{x:ML,y:2.5,w:CW,h:1.1,fontSize:58,bold:true,color:ACCENT,align:'center',fontFace:'Calibri'});
-    cover.addText('Pauta — Museu das Amazônias 2026',{x:ML,y:3.72,w:CW,h:0.75,fontSize:30,color:TEXT_LIGHT,align:'center',fontFace:'Calibri'});
-    cover.addText(dateFull,{x:ML,y:4.6,w:CW,h:0.44,fontSize:20,color:MUTED,align:'center',fontFace:'Calibri'});
-    var totalItems=byEixo.reduce(function(s,e){return s+e.grupos.reduce(function(ss,g){return ss+g.marcos.length;},0);},0);
-    cover.addText(totalItems+' item'+(totalItems!==1?'s':'')+' selecionado'+(totalItems!==1?'s':''),{x:ML,y:5.16,w:CW,h:0.38,fontSize:18,color:MUTED,align:'center',fontFace:'Calibri'});
+    var expScript='<script>'
+      +'var _expEditing=false;'
+      +'function _expToggleEdit(){'
+      +'_expEditing=!_expEditing;'
+      +'document.querySelectorAll(".exp-fval").forEach(function(el){el.contentEditable=_expEditing;});'
+      +'var b=document.getElementById("exp-edit-btn");if(b)b.textContent=_expEditing?"\ud83d\udd12 Bloquear edi\u00e7\u00e3o":"\u270f\ufe0f Editar campos";'
+      +'var s=document.getElementById("exp-save-btn");if(s)s.style.display=_expEditing?"inline-block":"none";'
+      +'}'
+      +'document.addEventListener("focusin",function(e){'
+      +'var t=e.target;if(t.classList&&t.classList.contains("exp-fval")&&t.getAttribute("contenteditable")==="true"){'
+      +'if(t.textContent.trim()===t.getAttribute("data-ph"))t.textContent="";'
+      +'}});'
+      +'document.addEventListener("focusout",function(e){'
+      +'var t=e.target;if(t.classList&&t.classList.contains("exp-fval")){'
+      +'var field=t.closest(".exp-field");var txt=t.textContent.replace(/\\s+/g," ").trim();'
+      +'if(txt===""){t.textContent=t.getAttribute("data-ph");}'
+      +'if(field)field.classList.toggle("exp-empty",txt==="");'
+      +'}});'
+      +'function _expSaveHTML(){'
+      +'document.querySelectorAll(".exp-fval").forEach(function(el){el.contentEditable="false";});'
+      +'var b=document.getElementById("exp-edit-btn");if(b)b.textContent="\u270f\ufe0f Editar campos";'
+      +'var s=document.getElementById("exp-save-btn");if(s)s.style.display="none";'
+      +'_expEditing=false;'
+      +'var d=new Date();var stamp=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");'
+      +'var out="<!doctype html>\\n"+document.documentElement.outerHTML;'
+      +'var blob=new Blob([out],{type:"text/html;charset=utf-8"});'
+      +'var url=URL.createObjectURL(blob);'
+      +'var a=document.createElement("a");a.href=url;a.download="Pauta_N2_editada_"+stamp+".html";document.body.appendChild(a);a.click();'
+      +'document.body.removeChild(a);'
+      +'setTimeout(function(){URL.revokeObjectURL(url);},1000);'
+      +'}'
+      +'<\/script>';
 
-    // === SLIDES DE CONTEÚDO ===
-    byEixo.forEach(function(eixoData){
-      var eixo=eixoData.eixo,grupos=eixoData.grupos;
-      var slide=null,y=0;
+    var html='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">'
+      +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+      +'<title>Pauta N2'+(isDir?' Diretoria':'')+' — MAZ 2026</title>'
+      +'<style>'+css+'</style></head><body><div class="exp-wrap">'
+      +'<div class="exp-header">'
+      +(logoData?'<img src="'+logoData+'" alt="MAZ">':'')
+      +'<h1>Reunião N2</h1><h2>'+escH(subtitle)+'</h2>'
+      +'<div class="exp-sub">'+escH(dateFull)+' · '+totalItems+' item'+(totalItems!==1?'s':'')+' selecionado'+(totalItems!==1?'s':'')+'</div>'
+      +'</div>'
+      +'<div class="exp-toolbar"><button onclick="document.querySelectorAll(\'details\').forEach(function(d){d.open=true;})">Expandir tudo</button>'
+      +'<button onclick="document.querySelectorAll(\'details\').forEach(function(d){d.open=false;})">Recolher tudo</button>'
+      +'<button id="exp-edit-btn" onclick="_expToggleEdit()">\u270f\ufe0f Editar campos</button>'
+      +'<button id="exp-save-btn" class="exp-save-btn" onclick="_expSaveHTML()" style="display:none">\ud83d\udcbe Salvar altera\u00e7\u00f5es</button></div>'
+      +byEixo.map(eixoHTML).join('')
+      +'<div class="exp-footer">IDG PMO · MAZ 2026 · Gerado em '+escH(dateFull)+'</div>'
+      +'</div>'+expScript+'</body></html>';
+    return html;
+  }
 
-      function addEixoSlide(cont){
-        slide=pptx.addSlide();slide.background={color:BG};addFooter(slide);y=0.2;
-        // Header do eixo — fontes NÃO aumentadas
-        slide.addShape('rect',{x:ML,y:y,w:CW,h:0.54,fill:{color:BG2},line:{color:ACCENTD,width:1}});
-        slide.addShape('rect',{x:ML+0.1,y:y+0.09,w:0.38,h:0.36,fill:{color:ACCENTD},line:{type:'none'}});
-        slide.addText(eixo.id,{x:ML+0.1,y:y+0.09,w:0.38,h:0.36,fontSize:14,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-        slide.addText(eixo.name.toUpperCase()+(cont?' (cont.)':''),{x:ML+0.58,y:y+0.09,w:CW-0.7,h:0.36,fontSize:17,bold:true,color:'FFFFFF',valign:'middle',fontFace:'Calibri'});
-        y+=0.68;
-      }
-      function ensureSpace(neededH){if(!slide||y+neededH>SAFE_BOTTOM)addEixoSlide(!!slide);}
-
-      addEixoSlide(false);
-
-      grupos.forEach(function(grupoData){
-        var grupo=grupoData.grupo,marcos=grupoData.marcos;
-        var grupoH=0.36;
-        ensureSpace(grupoH);
-        // FIX 1: cor branca + negrito no nome do grupo
-        slide.addShape('rect',{x:ML+0.1,y:y,w:CW-0.2,h:grupoH,fill:{color:'264D0A'},line:{type:'none'}});
-        slide.addText(grupo.name,{x:ML+0.2,y:y,w:CW-0.4,h:grupoH,fontSize:15,bold:true,color:'FFFFFF',valign:'middle',fontFace:'Calibri'});
-        y+=grupoH+0.04;
-
-        marcos.forEach(function(marcoData){
-          var marco=marcoData.task;
-          var tasksToShow=marcoData.subtasks.length>0?marcoData.subtasks:[marco];
-          var mc=stColor(marco.status),ml_=stLabel(marco.status);
-          var ds=marco.start?fmtBRshort(marco.start):'',de=marco.end?fmtBRshort(marco.end):'';
-          var dateStr=[ds,de].filter(Boolean).join('→');
-
-          // FIX 2: altura dinâmica do marco band baseada no tamanho do nome
-          var marcoNameLines=estLines(marco.tarefa,CPL14);
-          var marcoNameH=Math.max(0.32,marcoNameLines*LH14);
-          var marcoBandH=Math.max(0.58,marcoNameH+0.26); // 0.13 topo + conteudo + 0.13 base
-
-          ensureSpace(marcoBandH+0.06);
-          slide.addShape('rect',{x:ML+0.1,y:y,w:CW-0.2,h:marcoBandH,fill:{color:'F5FAF0'},line:{color:mc,width:3}});
-          // Status badge (topo-alinhado)
-          slide.addShape('rect',{x:ML+0.2,y:y+0.13,w:1.7,h:0.32,fill:{color:mc},line:{type:'none'}});
-          slide.addText(ml_,{x:ML+0.2,y:y+0.13,w:1.7,h:0.32,fontSize:13,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-          // N2 badge
-          slide.addShape('rect',{x:ML+2.02,y:y+0.15,w:0.40,h:0.28,fill:{color:BG},line:{color:ACCENT,width:1}});
-          slide.addText('N2',{x:ML+2.02,y:y+0.15,w:0.40,h:0.28,fontSize:12,bold:true,color:ACCENT,align:'center',valign:'middle',fontFace:'Calibri'});
-          // Nome do marco com altura calculada
-          slide.addText(marco.tarefa||'',{x:ML+2.54,y:y+0.13,w:CW-5.1,h:marcoNameH,fontSize:16,bold:true,color:TEXT_DARK,valign:'top',wrap:true,fontFace:'Calibri'});
-          // Datas e responsável (topo-alinhados)
-          if(dateStr)slide.addText('📅 '+dateStr,{x:ML+CW-2.4,y:y+0.13,w:1.4,h:0.32,fontSize:13,color:'1E293B',valign:'middle',fontFace:'Calibri'});
-          if(marco.resp)slide.addText('👤 '+abrevNome(marco.resp),{x:ML+CW-0.9,y:y+0.13,w:0.88,h:0.32,fontSize:12,color:'1E293B',valign:'top',wrap:true,lineSpacingMultiple:0.85,fontFace:'Calibri'});
-          y+=marcoBandH+0.06;
-
-          // Task cards
-          tasksToShow.forEach(function(task){
-            var tc=stColor(task.status),tl=stLabel(task.status);
-            var tds=task.start?fmtBRshort(task.start):'',tde=task.end?fmtBRshort(task.end):'';
-            var tdateStr=[tds,tde].filter(Boolean).join('→');
-
-            // FIX 3: sempre mostra Progresso e Encaminhamentos
-            var progTxt=(task.progresso&&task.progresso.trim())?task.progresso.trim():'';
-            var encTxt=(task.encaminhamento&&task.encaminhamento.trim())?task.encaminhamento.trim():'';
-            var isAtrasado=(task.status||'').toLowerCase().indexOf('atraso')>=0;
-            var progVal=progTxt||NP;
-            var encVal=encTxt||NP;
-            var progEmpty=!progTxt, encEmpty=!encTxt;
-            var progColor=progEmpty?'DC2626':TEXT_DARK;
-            var encColor=encEmpty?'DC2626':TEXT_DARK;
-            var progValOpts={fontSize:12,color:progColor};if(progEmpty){progValOpts.bold=true;}
-            var encValOpts={fontSize:12,color:encColor};if(encEmpty){encValOpts.bold=true;}
-
-            // FIX 2: alturas dinâmicas para nome, progresso e encaminhamento
-            var taskNameLines=estLines(task.tarefa,CPL11);
-            var taskNameH=Math.max(0.30,taskNameLines*LH11);
-            var topH=Math.max(0.44,taskNameH+0.14); // 0.07 topo + nome + 0.07 base
-
-            var progLines=estLines('Progresso: '+progVal,CPL10);
-            var progH=Math.max(0.28,progLines*LH10+0.10);
-
-            var encLines=estLines('Encaminhamentos: '+encVal,CPL10);
-            var encH=Math.max(0.28,encLines*LH10+0.10);
-
-            var taskH=topH+progH+encH;
-            ensureSpace(taskH+0.08);
-
-            // Card de fundo
-            slide.addShape('rect',{x:ML+0.2,y:y,w:CW-0.3,h:taskH,fill:{color:'F7FAFF'},line:{color:'DDE8F5',width:1}});
-            // Borda lateral colorida
-            slide.addShape('rect',{x:ML+0.2,y:y,w:0.06,h:taskH,fill:{color:tc},line:{type:'none'}});
-            // Status badge da tarefa
-            slide.addShape('rect',{x:ML+0.34,y:y+0.07,w:1.5,h:0.30,fill:{color:tc},line:{type:'none'}});
-            slide.addText(tl,{x:ML+0.34,y:y+0.07,w:1.5,h:0.30,fontSize:12,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-            // Nome da tarefa com altura calculada
-            slide.addText(task.tarefa||'',{x:ML+1.94,y:y+0.07,w:CW-4.8,h:taskNameH,fontSize:13,color:TEXT_DARK,valign:'top',wrap:true,fontFace:'Calibri'});
-            // Datas e resp
-            if(tdateStr)slide.addText('📅 '+tdateStr,{x:ML+CW-2.4,y:y+0.07,w:1.4,h:0.30,fontSize:12,color:'1E293B',valign:'middle',fontFace:'Calibri'});
-            if(task.resp)slide.addText('👤 '+abrevNome(task.resp),{x:ML+CW-0.9,y:y+0.07,w:0.88,h:0.30,fontSize:11,color:'1E293B',valign:'top',wrap:true,lineSpacingMultiple:0.85,fontFace:'Calibri'});
-
-            // Linha separadora entre header e campos
-            slide.addShape('rect',{x:ML+0.26,y:y+topH,w:CW-0.38,h:0.01,fill:{color:'DDE8F5'},line:{type:'none'}});
-
-            // Progresso (sempre presente)
-            slide.addText(
-              [{text:'Progresso: ',options:{bold:true,fontSize:12,color:'374151'}},{text:(progEmpty?'⚠️ ':'')+progVal,options:progValOpts}],
-              {x:ML+0.34,y:y+topH+0.02,w:CW-0.52,h:progH-0.02,fontFace:'Calibri',wrap:true}
-            );
-            // Linha separadora
-            slide.addShape('rect',{x:ML+0.26,y:y+topH+progH,w:CW-0.38,h:0.01,fill:{color:'DDE8F5'},line:{type:'none'}});
-
-            // Encaminhamentos (sempre presente)
-            slide.addText(
-              [{text:'Encaminhamentos: ',options:{bold:true,fontSize:12,color:'374151'}},{text:(encEmpty?'⚠️ ':'')+encVal,options:encValOpts}],
-              {x:ML+0.34,y:y+topH+progH+0.02,w:CW-0.52,h:encH-0.02,fontFace:'Calibri',wrap:true}
-            );
-
-            y+=taskH+0.09;
-          });
-          y+=0.1;
-        });
-        y+=0.16;
-      });
-    });
-
-    var fname='Pauta_N2_'+now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'.pptx';
-    pptx.writeFile({fileName:fname});
+  function exportN2PPT(){
+    var arr=loadN2();
+    if(!arr.length){alert('Nenhuma tarefa selecionada para exportar.');return;}
+    var html=_buildN2HTMLDoc(WBS,arr,false);
+    if(!html)return;
+    _downloadHTML(html,'Pauta_N2_'+_dateStamp(new Date())+'.html');
   }
   function unlockN2Edit(){
     var ph=new URLSearchParams(window.location.search).get('ph')||'';
@@ -2110,156 +2121,9 @@ function abrevNome(n){
   function exportN2PPT_Dir(){
     var arr=loadN2_Dir();
     if(!arr.length){alert('Nenhuma tarefa selecionada para exportar.');return;}
-    if(typeof PptxGenJS==='undefined'){alert('Biblioteca de PPT não carregada. Verifique a conexão e recarregue a página.');return;}
-    var currentFilters=getFilters();
-    var sfArr=currentFilters.status||[];
-    var sfLow=sfArr.map(function(s){return s.toLowerCase();});
-    function sfOk(v){return !sfLow.length||sfLow.indexOf((v||'A iniciar').toLowerCase())>=0;}
-    var selected=new Set(arr);
-    var byEixo=[];
-    WBS_DIR.forEach(function(eixo,gi){
-      var vis=eixo.children.filter(function(m){return matchesFilter(eixo,m,currentFilters);});
-      if(currentFilters.resp&&currentFilters.resp.length>0)vis=vis.filter(function(m){return grupoHasResp(m,currentFilters.resp);});
-      var grupoItems=[];
-      vis.forEach(function(grupo,mi){
-        var tasks=grupo.tasks||[];
-        var visTasks=sfLow.length===0?tasks:tasks.filter(function(t){return sfOk(t.status);});
-        var marcoItems=[];
-        visTasks.forEach(function(task,ti){
-          if(task.tipo==='marco'){
-            var allSubs=task.subtasks||[];
-            var selectedSubs=[];
-            allSubs.forEach(function(s,si){
-              var id=gi+':'+mi+':'+ti+':'+si;
-              if(selected.has(id))selectedSubs.push(s);
-            });
-            if(selectedSubs.length>0){marcoItems.push({task:task,subtasks:selectedSubs});}
-          }
-        });
-        if(marcoItems.length)grupoItems.push({grupo:grupo,marcos:marcoItems});
-      });
-      if(grupoItems.length)byEixo.push({eixo:eixo,grupos:grupoItems});
-    });
-    if(!byEixo.length){alert('Nenhuma tarefa selecionada encontrada com os filtros atuais.');return;}
-    function stColor(s){return (STATUS[s]||STATUS['A iniciar']).color.replace('#','');}
-    function stLabel(s){return (STATUS[s]||STATUS['A iniciar']).label;}
-    function estLines(text,charsPerLine){return Math.max(1,Math.ceil(((text||'').length)/charsPerLine));}
-    var CPL14=51;var CPL11=69;var CPL10=108;
-    var LH14=0.32;var LH11=0.27;var LH10=0.25;
-    var W=13.33,H=7.5,ML=0.3,CW=W-ML-0.3;
-    var SAFE_BOTTOM=H-0.48;
-    var BG='1E2E0D',BG2='2F4A18',ACCENT='8AC43A',ACCENTD='4A7A1E';
-    var TEXT_DARK='1A2E0A',TEXT_LIGHT='E2E8F0',MUTED='94A3B8';
-    var NP='NÃO PREENCHIDO';
-    var now=new Date();
-    var MBR=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-    var DBR=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
-    var dateFull=DBR[now.getDay()]+', '+now.getDate()+' de '+MBR[now.getMonth()]+'. de '+now.getFullYear();
-    var dateShort=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
-    var pptx=new PptxGenJS();
-    pptx.layout='LAYOUT_WIDE';pptx.author='IDG PMO';pptx.subject='Pauta N2 — MAZ 2026 (Diretoria)';
-    var logoEl=document.querySelector('.header-logo');
-    var logoData=logoEl?logoEl.src:null;
-    function addFooter(sl){
-      sl.addShape('rect',{x:0,y:H-0.32,w:W,h:0.32,fill:{color:ACCENTD},line:{type:'none'}});
-      sl.addText('IDG PMO · MAZ 2026',{x:ML,y:H-0.30,w:CW/2,h:0.28,fontSize:13,bold:true,color:TEXT_DARK,fontFace:'Calibri'});
-      sl.addText(dateShort,{x:ML+CW/2,y:H-0.30,w:CW/2,h:0.28,fontSize:13,color:TEXT_DARK,align:'right',fontFace:'Calibri'});
-    }
-    var cover=pptx.addSlide();cover.background={color:BG};addFooter(cover);
-    if(logoData){try{cover.addImage({data:logoData,x:W/2-1.8,y:0.7,w:3.6,h:1.35});}catch(e){}}
-    cover.addShape('rect',{x:ML+1.5,y:2.3,w:CW-3,h:0.05,fill:{color:ACCENT},line:{type:'none'}});
-    cover.addText('Reunião N2',{x:ML,y:2.5,w:CW,h:1.1,fontSize:58,bold:true,color:ACCENT,align:'center',fontFace:'Calibri'});
-    cover.addText('Pauta — Museu das Amazônias 2026',{x:ML,y:3.72,w:CW,h:0.75,fontSize:30,color:TEXT_LIGHT,align:'center',fontFace:'Calibri'});
-    cover.addText(dateFull,{x:ML,y:4.6,w:CW,h:0.44,fontSize:20,color:MUTED,align:'center',fontFace:'Calibri'});
-    var totalItems=byEixo.reduce(function(s,e){return s+e.grupos.reduce(function(ss,g){return ss+g.marcos.length;},0);},0);
-    cover.addText(totalItems+' item'+(totalItems!==1?'s':'')+' selecionado'+(totalItems!==1?'s':''),{x:ML,y:5.16,w:CW,h:0.38,fontSize:18,color:MUTED,align:'center',fontFace:'Calibri'});
-    byEixo.forEach(function(eixoData){
-      var eixo=eixoData.eixo,grupos=eixoData.grupos;
-      var slide=null,y=0;
-      function addEixoSlide(cont){
-        slide=pptx.addSlide();slide.background={color:BG};addFooter(slide);y=0.2;
-        slide.addShape('rect',{x:ML,y:y,w:CW,h:0.54,fill:{color:BG2},line:{color:ACCENTD,width:1}});
-        slide.addShape('rect',{x:ML+0.1,y:y+0.09,w:0.38,h:0.36,fill:{color:ACCENTD},line:{type:'none'}});
-        slide.addText(eixo.id,{x:ML+0.1,y:y+0.09,w:0.38,h:0.36,fontSize:14,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-        slide.addText(eixo.name.toUpperCase()+(cont?' (cont.)':''),{x:ML+0.58,y:y+0.09,w:CW-0.7,h:0.36,fontSize:17,bold:true,color:'FFFFFF',valign:'middle',fontFace:'Calibri'});
-        y+=0.68;
-      }
-      function ensureSpace(neededH){if(!slide||y+neededH>SAFE_BOTTOM)addEixoSlide(!!slide);}
-      addEixoSlide(false);
-      grupos.forEach(function(grupoData){
-        var grupo=grupoData.grupo,marcos=grupoData.marcos;
-        var grupoH=0.36;
-        ensureSpace(grupoH);
-        slide.addShape('rect',{x:ML+0.1,y:y,w:CW-0.2,h:grupoH,fill:{color:'264D0A'},line:{type:'none'}});
-        slide.addText(grupo.name,{x:ML+0.2,y:y,w:CW-0.4,h:grupoH,fontSize:15,bold:true,color:'FFFFFF',valign:'middle',fontFace:'Calibri'});
-        y+=grupoH+0.04;
-        marcos.forEach(function(marcoData){
-          var marco=marcoData.task;
-          var tasksToShow=marcoData.subtasks.length>0?marcoData.subtasks:[marco];
-          var mc=stColor(marco.status),ml_=stLabel(marco.status);
-          var ds=marco.start?fmtBRshort(marco.start):'',de=marco.end?fmtBRshort(marco.end):'';
-          var dateStr=[ds,de].filter(Boolean).join('→');
-          var marcoNameLines=estLines(marco.tarefa,CPL14);
-          var marcoNameH=Math.max(0.32,marcoNameLines*LH14);
-          var marcoBandH=Math.max(0.58,marcoNameH+0.26);
-          ensureSpace(marcoBandH+0.06);
-          slide.addShape('rect',{x:ML+0.1,y:y,w:CW-0.2,h:marcoBandH,fill:{color:'F5FAF0'},line:{color:mc,width:3}});
-          slide.addShape('rect',{x:ML+0.2,y:y+0.13,w:1.7,h:0.32,fill:{color:mc},line:{type:'none'}});
-          slide.addText(ml_,{x:ML+0.2,y:y+0.13,w:1.7,h:0.32,fontSize:13,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-          slide.addShape('rect',{x:ML+2.02,y:y+0.15,w:0.40,h:0.28,fill:{color:BG},line:{color:ACCENT,width:1}});
-          slide.addText('N2',{x:ML+2.02,y:y+0.15,w:0.40,h:0.28,fontSize:12,bold:true,color:ACCENT,align:'center',valign:'middle',fontFace:'Calibri'});
-          slide.addText(marco.tarefa||'',{x:ML+2.54,y:y+0.13,w:CW-5.1,h:marcoNameH,fontSize:16,bold:true,color:TEXT_DARK,valign:'top',wrap:true,fontFace:'Calibri'});
-          if(dateStr)slide.addText('📅 '+dateStr,{x:ML+CW-2.4,y:y+0.13,w:1.4,h:0.32,fontSize:13,color:'1E293B',valign:'middle',fontFace:'Calibri'});
-          if(marco.resp)slide.addText('👤 '+abrevNome(marco.resp),{x:ML+CW-0.9,y:y+0.13,w:0.88,h:0.32,fontSize:12,color:'1E293B',valign:'top',wrap:true,lineSpacingMultiple:0.85,fontFace:'Calibri'});
-          y+=marcoBandH+0.06;
-          tasksToShow.forEach(function(task){
-            var tc=stColor(task.status),tl=stLabel(task.status);
-            var tds=task.start?fmtBRshort(task.start):'',tde=task.end?fmtBRshort(task.end):'';
-            var tdateStr=[tds,tde].filter(Boolean).join('→');
-            var progTxt=(task.progresso&&task.progresso.trim())?task.progresso.trim():'';
-            var encTxt=(task.encaminhamento&&task.encaminhamento.trim())?task.encaminhamento.trim():'';
-            var progVal=progTxt||NP;
-            var encVal=encTxt||NP;
-            var progEmpty=!progTxt,encEmpty=!encTxt;
-            var progColor=progEmpty?'DC2626':TEXT_DARK;
-            var encColor=encEmpty?'DC2626':TEXT_DARK;
-            var progValOpts={fontSize:12,color:progColor};if(progEmpty){progValOpts.bold=true;}
-            var encValOpts={fontSize:12,color:encColor};if(encEmpty){encValOpts.bold=true;}
-            var taskNameLines=estLines(task.tarefa,CPL11);
-            var taskNameH=Math.max(0.30,taskNameLines*LH11);
-            var topH=Math.max(0.44,taskNameH+0.14);
-            var progLines=estLines('Progresso: '+progVal,CPL10);
-            var progH=Math.max(0.28,progLines*LH10+0.10);
-            var encLines=estLines('Encaminhamentos: '+encVal,CPL10);
-            var encH=Math.max(0.28,encLines*LH10+0.10);
-            var taskH=topH+progH+encH;
-            ensureSpace(taskH+0.08);
-            slide.addShape('rect',{x:ML+0.2,y:y,w:CW-0.3,h:taskH,fill:{color:'F7FAFF'},line:{color:'DDE8F5',width:1}});
-            slide.addShape('rect',{x:ML+0.2,y:y,w:0.06,h:taskH,fill:{color:tc},line:{type:'none'}});
-            slide.addShape('rect',{x:ML+0.34,y:y+0.07,w:1.5,h:0.30,fill:{color:tc},line:{type:'none'}});
-            slide.addText(tl,{x:ML+0.34,y:y+0.07,w:1.5,h:0.30,fontSize:12,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri'});
-            slide.addText(task.tarefa||'',{x:ML+1.94,y:y+0.07,w:CW-4.8,h:taskNameH,fontSize:13,color:TEXT_DARK,valign:'top',wrap:true,fontFace:'Calibri'});
-            if(tdateStr)slide.addText('📅 '+tdateStr,{x:ML+CW-2.4,y:y+0.07,w:1.4,h:0.30,fontSize:12,color:'1E293B',valign:'middle',fontFace:'Calibri'});
-            if(task.resp)slide.addText('👤 '+abrevNome(task.resp),{x:ML+CW-0.9,y:y+0.07,w:0.88,h:0.30,fontSize:11,color:'1E293B',valign:'top',wrap:true,lineSpacingMultiple:0.85,fontFace:'Calibri'});
-            slide.addShape('rect',{x:ML+0.26,y:y+topH,w:CW-0.38,h:0.01,fill:{color:'DDE8F5'},line:{type:'none'}});
-            slide.addText(
-              [{text:'Progresso: ',options:{bold:true,fontSize:12,color:'374151'}},{text:(progEmpty?'⚠️ ':'')+progVal,options:progValOpts}],
-              {x:ML+0.34,y:y+topH+0.02,w:CW-0.52,h:progH-0.02,fontFace:'Calibri',wrap:true}
-            );
-            slide.addShape('rect',{x:ML+0.26,y:y+topH+progH,w:CW-0.38,h:0.01,fill:{color:'DDE8F5'},line:{type:'none'}});
-            slide.addText(
-              [{text:'Encaminhamentos: ',options:{bold:true,fontSize:12,color:'374151'}},{text:(encEmpty?'⚠️ ':'')+encVal,options:encValOpts}],
-              {x:ML+0.34,y:y+topH+progH+0.02,w:CW-0.52,h:encH-0.02,fontFace:'Calibri',wrap:true}
-            );
-            y+=taskH+0.09;
-          });
-          y+=0.1;
-        });
-        y+=0.16;
-      });
-    });
-    var fname='Pauta_N2_DIR_'+now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'.pptx';
-    pptx.writeFile({fileName:fname});
+    var html=_buildN2HTMLDoc(WBS_DIR,arr,true);
+    if(!html)return;
+    _downloadHTML(html,'Pauta_N2_DIR_'+_dateStamp(new Date())+'.html');
   }
 
 function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
@@ -2294,6 +2158,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
       h += `<div class="tc-meta">`;
       if(dateStr) h += `<span class="tc-date">\uD83D\uDCC5 ${dateStr}</span>`;
       if(t.resp)  h += `<span class="tc-resp">\uD83D\uDC64 ${escH(abrevNome(t.resp))}</span>`;
+      if(t.fornecedor) h += `<span class="tc-forn" title="${escH(t.fornecedor)}">\uD83C\uDFE2 ${escH(t.fornecedor)}</span>`;
       h += `</div>`;
     }
     h += `<div class="tc-fields">`;
@@ -2392,6 +2257,7 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
       h += `<div class="tc-meta">`;
       if(dateStr) h += `<span class="tc-date">📅 ${dateStr}</span>`;
       if(t.resp)  h += `<span class="tc-resp">👤 ${escH(abrevNome(t.resp))}</span>`;
+      if(t.fornecedor) h += `<span class="tc-forn" title="${escH(t.fornecedor)}">🏢 ${escH(t.fornecedor)}</span>`;
       h += `</div>`;
     }
     h += `<div class="tc-fields">`;
@@ -2471,6 +2337,7 @@ function renderTree_Dir(){
     vg++;vm+=vis.length;
     const isOpen=groupOpen_Dir[gi];
     const color=sc(g.status);
+    const eixoStyle=g.color?` style="background:${g.color};--eixo-text:${_eixoTextColor(g.color)}"`:'';
     const gName=hl(g.name,f.search);
     const focoCount=(f.dateStart||f.dateEnd)&&!modoEstrito?vis.filter(m=>dateInRange(m,f.dateStart,f.dateEnd)).length:0;
     const mItems=vis.map((m,mi)=>{
@@ -2497,7 +2364,7 @@ function renderTree_Dir(){
       </div>`;
     }).join('');
     html+=`<div class="group-item" id="dir-gitem-${gi}">
-      <div class="group-header" onclick="toggleGroup_Dir(${gi})">
+      <div class="group-header"${eixoStyle} onclick="toggleGroup_Dir(${gi})">
         <div class="group-color-bar" style="background:${color}"></div>
         <div class="group-inner">
           <span class="group-toggle" id="dir-gtoggle-${gi}" style="transform:rotate(${isOpen?0:-90}deg)">&#9660;</span>
@@ -2768,6 +2635,7 @@ function renderTree(){
     vg++;vm+=vis.length;
     const isOpen=groupOpen[gi];
     const color=sc(g.status);
+    const eixoStyle=g.color?` style="background:${g.color};--eixo-text:${_eixoTextColor(g.color)}"`:'';
     const gName=hl(g.name,f.search);
 
     const focoCount=(f.dateStart||f.dateEnd)&&!modoEstrito?vis.filter(m=>dateInRange(m,f.dateStart,f.dateEnd)).length:0;
@@ -2796,7 +2664,7 @@ function renderTree(){
     }).join('');
 
     html+=`<div class="group-item" id="gitem-${gi}">
-      <div class="group-header" onclick="toggleGroup(${gi})">
+      <div class="group-header"${eixoStyle} onclick="toggleGroup(${gi})">
         <div class="group-color-bar" style="background:${color}"></div>
         <div class="group-inner">
           <span class="group-toggle" id="gtoggle-${gi}" style="transform:rotate(${isOpen?0:-90}deg)">▼</span>
@@ -3435,8 +3303,9 @@ function renderGanttSection(){
     if(fRespG.length>0&&!(eixo.children||[]).some(m=>grupoHasResp(m,fRespG)))return '';
     const n=(eixo.children||[]).length;
     const col=sc(eixo.status||'Em andamento');
+    const eixoStyle=eixo.color?` style="background:${eixo.color};--eixo-text:${_eixoTextColor(eixo.color)}"`:'';
     return `<div class="gantt-card" id="gantt-card-${gi}">
-      <div class="gantt-card-header" onclick="toggleGantt(${gi})">
+      <div class="gantt-card-header"${eixoStyle} onclick="toggleGantt(${gi})">
         <span class="gantt-chevron" id="gchev-${gi}" style="transform:rotate(-90deg)">▶</span>
         <span class="gantt-eixo-id" style="background:${col}">${escH(eixo.id||String(gi+1))}</span>
         <span class="gantt-eixo-name">${escH(eixo.name)}</span>
@@ -3518,8 +3387,8 @@ function renderGanttForEixo(gi){
   function inRange(start,end){
     if(_skipDate||(!fDS&&!fDE))return true;
     if(!start&&!end)return false;
-    const s=start?new Date(start):null,e=end?new Date(end):null;
-    const fs=fDS?new Date(fDS):null,fe=fDE?new Date(fDE):null;
+    const s=start?_pLocal(start):null,e=end?_pLocal(end):null;
+    const fs=_pLocal(fDS),fe=_pLocal(fDE);
     if(fs&&e&&e<fs)return false;
     if(fe&&s&&s>fe)return false;
     return true;
@@ -3567,7 +3436,7 @@ function renderGanttForEixo(gi){
   // ── Dimensões e range ──────────────────────────────────────────────────────
   const isWeekly = ganttMode==='weekly';
   const LW=400, TW=1800;
-  const CS=new Date('2026-01-01'), CE=new Date('2026-12-31');
+  const CS=_pLocal('2026-01-01'), CE=_pLocal('2026-12-31');
   const GRH=68, TRH=50, SRH=38;
   const HY=isWeekly?22:24, HM=isWeekly?36:48, HW=isWeekly?32:0;
   const HH=HY+HM+HW;
@@ -3609,7 +3478,7 @@ function renderGanttForEixo(gi){
 
   // Holofote range de filtro (sR)
   if(fDS||fDE){
-    const rStart=fDS?new Date(fDS):CS, rEnd=fDE?new Date(fDE):CE;
+    const rStart=fDS?_pLocal(fDS):CS, rEnd=fDE?_pLocal(fDE):CE;
     const rx1=pxR(rStart), rx2=pxR(rEnd), rw=Math.max(2,rx2-rx1);
     sR+=`<rect x="${rx1.toFixed(1)}" y="${HH}" width="${rw.toFixed(1)}" height="${H-HH}" fill="rgba(255,207,0,0.28)"/>`;
     sR+=`<line x1="${rx1.toFixed(1)}" y1="${HH}" x2="${rx1.toFixed(1)}" y2="${H}" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4,3" opacity="0.9"/>`;
@@ -3655,10 +3524,10 @@ function renderGanttForEixo(gi){
       // Barra (sR)
       if(g.start&&g.end){
         const clipL=fDS&&g.start<fDS, clipR=fDE&&g.end>fDE;
-        const fullBx=Math.max(0,pxR(new Date(g.start)));
-        const fullEx=Math.max(fullBx+6,pxR(new Date(g.end)));
-        const clampBx=clipL?pxR(new Date(fDS)):fullBx;
-        const clampEx=clipR?pxR(new Date(fDE)):fullEx;
+        const fullBx=Math.max(0,pxR(_pLocal(g.start)));
+        const fullEx=Math.max(fullBx+6,pxR(_pLocal(g.end)));
+        const clampBx=clipL?pxR(_pLocal(fDS)):fullBx;
+        const clampEx=clipR?pxR(_pLocal(fDE)):fullEx;
         const solidW=Math.max(4,clampEx-clampBx), by=cy+11, bh=rh-22;
         if(clipL&&clampBx>fullBx){const gw=clampBx-fullBx;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="${col}" opacity="0.18"/>`;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.55"/>`;}
         sR+=`<rect x="${clampBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="${(clipL&&clampBx>fullBx)||clipR?0:4}" fill="${col}" opacity="0.88"/>`;
@@ -3681,10 +3550,10 @@ function renderGanttForEixo(gi){
       // Barra (sR)
       if(t.start&&t.end){
         const clipL=fDS&&t.start<fDS, clipR=fDE&&t.end>fDE;
-        const fullBx=Math.max(0,pxR(new Date(t.start)));
-        const fullEx=Math.max(fullBx+4,pxR(new Date(t.end)));
-        const clampBx=clipL?pxR(new Date(fDS)):fullBx;
-        const clampEx=clipR?pxR(new Date(fDE)):fullEx;
+        const fullBx=Math.max(0,pxR(_pLocal(t.start)));
+        const fullEx=Math.max(fullBx+4,pxR(_pLocal(t.end)));
+        const clampBx=clipL?pxR(_pLocal(fDS)):fullBx;
+        const clampEx=clipR?pxR(_pLocal(fDE)):fullEx;
         const solidW=Math.max(3,clampEx-clampBx), by=cy+7, bh=rh-14;
         if(clipL&&clampBx>fullBx){const gw=clampBx-fullBx;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="${col}" opacity="0.15"/>`;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;}
         sR+=`<rect x="${clampBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="${(clipL&&clampBx>fullBx)||clipR?0:3}" fill="${col}" opacity="0.75"/>`;
@@ -3693,7 +3562,7 @@ function renderGanttForEixo(gi){
         sR+=`<text x="${(fullEx+5).toFixed(1)}" y="${(by+bh/2+5).toFixed(1)}" font-size="16" font-weight="700" fill="#111827">${fmtBRshort(t.end)}</text>`;
         if(clipR&&fullEx>clampEx){const gw=fullEx-clampEx;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="${col}" opacity="0.15"/>`;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;}
       } else if(t.start){
-        const dx=pxR(new Date(t.start));
+        const dx=pxR(_pLocal(t.start));
         sR+=`<polygon points="${dx},${cy+5} ${dx+7},${cy+rh/2} ${dx},${cy+rh-5} ${dx-7},${cy+rh/2}" fill="${col}"/>`;
       }
 
@@ -3707,8 +3576,8 @@ function renderGanttForEixo(gi){
       sL+=`<text x="59" y="${(cy+rh/2+4).toFixed(1)}" font-size="11" fill="#0F172A" font-weight="550">${escSVG(nm)}</text>`;
       // Barra (sR)
       if(t.start&&t.end){
-        const fullBx=Math.max(0,pxR(new Date(t.start)));
-        const fullEx=Math.max(fullBx+3,pxR(new Date(t.end)));
+        const fullBx=Math.max(0,pxR(_pLocal(t.start)));
+        const fullEx=Math.max(fullBx+3,pxR(_pLocal(t.end)));
         const solidW=Math.max(3,fullEx-fullBx), by=cy+5, bh=rh-10;
         sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="2" fill="${col}" opacity="0.6"/>`;
         if(solidW>44)sR+=`<text x="${(fullBx+solidW/2).toFixed(1)}" y="${(by+bh/2+3.5).toFixed(1)}" text-anchor="middle" font-size="10" fill="#FFF" font-weight="600">${escSVG(sl(t.status||'A iniciar'))}</text>`;
@@ -3816,8 +3685,9 @@ function renderGanttSectionDir(){
     if(fRespG.length>0&&!(eixo.children||[]).some(m=>grupoHasResp(m,fRespG)))return '';
     const n=(eixo.children||[]).length;
     const col=sc(eixo.status||'Em andamento');
+    const eixoStyle=eixo.color?` style="background:${eixo.color};--eixo-text:${_eixoTextColor(eixo.color)}"`:'';
     return `<div class="gantt-card" id="gantt-card-dir-${gi}">
-      <div class="gantt-card-header" onclick="toggleGanttDir(${gi})">
+      <div class="gantt-card-header"${eixoStyle} onclick="toggleGanttDir(${gi})">
         <span class="gantt-chevron" id="gchev-dir-${gi}" style="transform:rotate(-90deg)">▶</span>
         <span class="gantt-eixo-id" style="background:${col}">${escH(eixo.id||String(gi+1))}</span>
         <span class="gantt-eixo-name">${escH(eixo.name)}</span>
@@ -3959,8 +3829,8 @@ function renderGanttForEixoDir(gi){
   function inRange(start,end){
     if(_skipDate||(!fDS&&!fDE))return true;
     if(!start&&!end)return false;
-    const s=start?new Date(start):null,e=end?new Date(end):null;
-    const fs=fDS?new Date(fDS):null,fe=fDE?new Date(fDE):null;
+    const s=start?_pLocal(start):null,e=end?_pLocal(end):null;
+    const fs=_pLocal(fDS),fe=_pLocal(fDE);
     if(fs&&e&&e<fs)return false;
     if(fe&&s&&s>fe)return false;
     return true;
@@ -3996,7 +3866,7 @@ function renderGanttForEixoDir(gi){
   });
   const isWeekly=ganttModeDir==='weekly';
   const LW=400,TW=1800;
-  const CS=new Date('2026-01-01'),CE=new Date('2026-12-31');
+  const CS=_pLocal('2026-01-01'),CE=_pLocal('2026-12-31');
   const GRH=68,TRH=50,SRH=38;
   const HY=isWeekly?22:24,HM=isWeekly?36:48,HW=isWeekly?32:0;
   const HH=HY+HM+HW;
@@ -4028,7 +3898,7 @@ function renderGanttForEixoDir(gi){
     });
   }
   if(fDS||fDE){
-    const rStart=fDS?new Date(fDS):CS,rEnd=fDE?new Date(fDE):CE;
+    const rStart=fDS?_pLocal(fDS):CS,rEnd=fDE?_pLocal(fDE):CE;
     const rx1=pxR(rStart),rx2=pxR(rEnd),rw=Math.max(2,rx2-rx1);
     sR+=`<rect x="${rx1.toFixed(1)}" y="${HH}" width="${rw.toFixed(1)}" height="${H-HH}" fill="rgba(255,207,0,0.28)"/>`;
     sR+=`<line x1="${rx1.toFixed(1)}" y1="${HH}" x2="${rx1.toFixed(1)}" y2="${H}" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4,3" opacity="0.9"/>`;
@@ -4053,8 +3923,8 @@ function renderGanttForEixoDir(gi){
       if(row.hasTasks)sL+=`<rect x="0" y="${cy}" width="${LW}" height="${rh}" fill="transparent" cursor="pointer" onclick="toggleGanttGroupDir(${gi},${row.ri})"/>`;
       if(g.start&&g.end){
         const clipL=fDS&&g.start<fDS,clipR=fDE&&g.end>fDE;
-        const fullBx=Math.max(0,pxR(new Date(g.start))),fullEx=Math.max(fullBx+6,pxR(new Date(g.end)));
-        const clampBx=clipL?pxR(new Date(fDS)):fullBx,clampEx=clipR?pxR(new Date(fDE)):fullEx;
+        const fullBx=Math.max(0,pxR(_pLocal(g.start))),fullEx=Math.max(fullBx+6,pxR(_pLocal(g.end)));
+        const clampBx=clipL?pxR(_pLocal(fDS)):fullBx,clampEx=clipR?pxR(_pLocal(fDE)):fullEx;
         const solidW=Math.max(4,clampEx-clampBx),by=cy+11,bh=rh-22;
         if(clipL&&clampBx>fullBx){const gw=clampBx-fullBx;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="${col}" opacity="0.18"/>`;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="4" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.55"/>`;}
         sR+=`<rect x="${clampBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="${(clipL&&clampBx>fullBx)||clipR?0:4}" fill="${col}" opacity="0.88"/>`;
@@ -4073,8 +3943,8 @@ function renderGanttForEixoDir(gi){
       if(row.hasSubs)sL+=`<rect x="0" y="${cy}" width="${LW}" height="${rh}" fill="transparent" cursor="pointer" onclick="toggleGanttMarcoDir(${gi},${row.parentRi},${row.ti})"/>`;
       if(t.start&&t.end){
         const clipL=fDS&&t.start<fDS,clipR=fDE&&t.end>fDE;
-        const fullBx=Math.max(0,pxR(new Date(t.start))),fullEx=Math.max(fullBx+4,pxR(new Date(t.end)));
-        const clampBx=clipL?pxR(new Date(fDS)):fullBx,clampEx=clipR?pxR(new Date(fDE)):fullEx;
+        const fullBx=Math.max(0,pxR(_pLocal(t.start))),fullEx=Math.max(fullBx+4,pxR(_pLocal(t.end)));
+        const clampBx=clipL?pxR(_pLocal(fDS)):fullBx,clampEx=clipR?pxR(_pLocal(fDE)):fullEx;
         const solidW=Math.max(3,clampEx-clampBx),by=cy+7,bh=rh-14;
         if(clipL&&clampBx>fullBx){const gw=clampBx-fullBx;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="${col}" opacity="0.15"/>`;sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;}
         sR+=`<rect x="${clampBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="${(clipL&&clampBx>fullBx)||clipR?0:3}" fill="${col}" opacity="0.75"/>`;
@@ -4083,7 +3953,7 @@ function renderGanttForEixoDir(gi){
         sR+=`<text x="${(fullEx+5).toFixed(1)}" y="${(by+bh/2+5).toFixed(1)}" font-size="16" font-weight="700" fill="#111827">${fmtBRshort(t.end)}</text>`;
         if(clipR&&fullEx>clampEx){const gw=fullEx-clampEx;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="${col}" opacity="0.15"/>`;sR+=`<rect x="${clampEx.toFixed(1)}" y="${by}" width="${gw.toFixed(1)}" height="${bh}" rx="3" fill="none" stroke="${col}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;}
       } else if(t.start){
-        const dx=pxR(new Date(t.start));
+        const dx=pxR(_pLocal(t.start));
         sR+=`<polygon points="${dx},${cy+5} ${dx+7},${cy+rh/2} ${dx},${cy+rh-5} ${dx-7},${cy+rh/2}" fill="${col}"/>`;
       }
     } else {
@@ -4093,7 +3963,7 @@ function renderGanttForEixoDir(gi){
       const nm=(t.tarefa||'').length>48?(t.tarefa||'').slice(0,46)+'...':(t.tarefa||'');
       sL+=`<text x="59" y="${(cy+rh/2+4).toFixed(1)}" font-size="11" fill="#0F172A" font-weight="550">${escSVG(nm)}</text>`;
       if(t.start&&t.end){
-        const fullBx=Math.max(0,pxR(new Date(t.start))),fullEx=Math.max(fullBx+3,pxR(new Date(t.end)));
+        const fullBx=Math.max(0,pxR(_pLocal(t.start))),fullEx=Math.max(fullBx+3,pxR(_pLocal(t.end)));
         const solidW=Math.max(3,fullEx-fullBx),by=cy+5,bh=rh-10;
         sR+=`<rect x="${fullBx.toFixed(1)}" y="${by}" width="${solidW.toFixed(1)}" height="${bh}" rx="2" fill="${col}" opacity="0.6"/>`;
         if(solidW>44)sR+=`<text x="${(fullBx+solidW/2).toFixed(1)}" y="${(by+bh/2+3.5).toFixed(1)}" text-anchor="middle" font-size="10" fill="#FFF" font-weight="600">${escSVG(sl(t.status||'A iniciar'))}</text>`;
@@ -4357,9 +4227,10 @@ async function fetchSheet(spreadsheetId, sheetName) {
   if (!resp.ok) throw new Error(`Sheets API: HTTP ${resp.status} — ${await resp.text()}`);
   return (await resp.json()).values || [];
 }
-async function fetchSheetColors(spreadsheetId, sheetName) {
+async function fetchSheetColors(spreadsheetId, sheetName, column) {
+  const col=column||'E';
   const enc=encodeURIComponent(sheetName);
-  const url=`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?ranges=${enc}!E1:E2000&fields=sheets.data.rowData.values.effectiveFormat.backgroundColor&key=${SHEETS_API_KEY}`;
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?ranges=${enc}!${col}1:${col}2000&fields=sheets.data.rowData.values.effectiveFormat.backgroundColor&key=${SHEETS_API_KEY}`;
   const resp=await fetch(url,{referrerPolicy:'origin'});
   if(!resp.ok) return [];
   const data=await resp.json();
@@ -4417,8 +4288,16 @@ function _findWeekCols(rows) {
   return (pC>=0&&eC>=0)?{pC,eC,weekLabel:''}:{pC:37,eC:39,weekLabel:''};
 }
 
+// Cor fixa dos eixos (decisão da diretoria — não vem mais da coluna B da planilha)
+const EIXO_FIXED_COLOR='#949494';
+function _eixoTextColor(hex){
+  if(!hex) return '#FFFFFF';
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  const lum=(0.299*r+0.587*g+0.114*b)/255;
+  return lum>0.6?'#1A2E0A':'#FFFFFF';
+}
 function _parseWBS(rows, rowColors) {
-  const CE=1,CG=2,CM=3,CT=4,CR=6,CS=7,CST=8,CEN=9;
+  const CE=1,CG=2,CM=3,CT=4,CFO=5,CR=6,CS=7,CST=8,CEN=9;
   const {pC,eC,weekLabel}=_findWeekCols(rows);
   const eixoOrder=[],eixoMap={};
   const badRows=[];
@@ -4460,11 +4339,11 @@ function _parseWBS(rows, rowColors) {
       }
     }
     if(!eixo||!grupo) continue;
-    if(!eixoMap[eixo]){eixoMap[eixo]={groupOrder:[],groups:{}};eixoOrder.push(eixo);}
+    if(!eixoMap[eixo]){eixoMap[eixo]={groupOrder:[],groups:{},color:EIXO_FIXED_COLOR};eixoOrder.push(eixo);}
     const em=eixoMap[eixo];
     if(!em.groups[grupo]){em.groups[grupo]={summary:null,tasks:[]};em.groupOrder.push(grupo);}
     const gm=em.groups[grupo];
-    const _ra=(typeof AREAS_DEF!=="undefined")?AREAS_DEF.map(function(a,ai){return _isAreaChecked(row[a.idx])?ai:-1;}).filter(function(x){return x>=0;}):[]; const obj={tarefa,resp:_sg(row,CR),status:_sg(row,CS),start:_fmtDate(_sg(row,CST)),end:_fmtDate(_sg(row,CEN)),progresso:_sg(row,pC),encaminhamento:_sg(row,eC),areas:_ra};
+    const _ra=(typeof AREAS_DEF!=="undefined")?AREAS_DEF.map(function(a,ai){return _isAreaChecked(row[a.idx])?ai:-1;}).filter(function(x){return x>=0;}):[]; const obj={tarefa,resp:_sg(row,CR),fornecedor:_sg(row,CFO),status:_sg(row,CS),start:_fmtDate(_sg(row,CST)),end:_fmtDate(_sg(row,CEN)),progresso:_sg(row,pC),encaminhamento:_sg(row,eC),areas:_ra};
     if(tarefa===grupo){gm.summary=obj;}
     else if(marco&&tarefa===marco){gm.tasks.push({...obj,tipo:'marco',subtasks:[]});}
     else if(gm.tasks.length&&gm.tasks[gm.tasks.length-1].tipo==='marco'){gm.tasks[gm.tasks.length-1].subtasks.push(obj);}
@@ -4479,7 +4358,7 @@ function _parseWBS(rows, rowColors) {
       const gEnd=s?_fmtDate(s.end):(tasks.map(t=>t.end).filter(Boolean).sort().reverse()[0]||'');
       return{name:gName,status:gStatus,resp:s?s.resp:(tasks[0]?.resp||''),start:gStart,end:gEnd,tasks};
     });
-    return{id:String(idx+1),name,status:_worstStatus(children.map(c=>c.status)),children};
+    return{id:String(idx+1),name,status:_worstStatus(children.map(c=>c.status)),children,color:em.color};
   }),weekLabel};
 }
 
@@ -4506,7 +4385,7 @@ async function loadSheetsData() {
     let wbsRows, wbsColors=[], reqsRows=null, reqsOk=false;
     [wbsRows, wbsColors] = await Promise.all([
       fetchSheet(CRONOGRAMA_ID, CRONOGRAMA_SHEET),
-      fetchSheetColors(CRONOGRAMA_ID, CRONOGRAMA_SHEET).catch(function(){return [];})
+      fetchSheetColors(CRONOGRAMA_ID, CRONOGRAMA_SHEET, 'E').catch(function(){return [];})
     ]);
     try { reqsRows = await fetchSheet(REQS_SHEET_ID, REQS_SHEET_NAME); reqsOk=true; }
     catch(e){ console.warn('REQS não atualizado:',e.message); }
@@ -4730,8 +4609,8 @@ function _getAreasFS(){
 }
 function _areasInRange(s,e,fDS,fDE){
   if(!fDS&&!fDE)return true;if(!s&&!e)return false;
-  var sd=s?new Date(s):null,ed=e?new Date(e):null;
-  var fsd=fDS?new Date(fDS):null,fed=fDE?new Date(fDE):null;
+  var sd=_pLocal(s),ed=_pLocal(e);
+  var fsd=_pLocal(fDS),fed=_pLocal(fDE);
   if(fsd&&ed&&ed<fsd)return false;if(fed&&sd&&sd>fed)return false;return true;
 }
 function renderAreasTab(){
@@ -4814,7 +4693,7 @@ function renderAreaGantt(ai){
   }
   var isW=(areasGanttMode==='weekly');
   var LW=500,TW=4500;
-  var CS=new Date('2026-01-01'),CE=new Date('2027-06-30');
+  var CS=_pLocal('2026-01-01'),CE=_pLocal('2027-06-30');
   var MRH=62,TRH=46;
   var HY=20,HM=28,HW=44;
   var HH=HY+HM+HW;
@@ -4899,7 +4778,7 @@ function renderAreaGantt(ai){
   }
 
   if(fs.fDS||fs.fDE){
-    var rS=fs.fDS?new Date(fs.fDS):CS,rE=fs.fDE?new Date(fs.fDE):CE;
+    var rS=fs.fDS?_pLocal(fs.fDS):CS,rE=fs.fDE?_pLocal(fs.fDE):CE;
     var rx1=px(rS),rx2=px(rE),rw=Math.max(2,rx2-rx1);
     sR+='<rect x="'+rx1.toFixed(1)+'" y="'+HH+'" width="'+rw.toFixed(1)+'" height="'+(H-HH)+'" fill="rgba(255,207,0,0.28)"/>';
     sR+='<line x1="'+rx1.toFixed(1)+'" y1="'+HH+'" x2="'+rx1.toFixed(1)+'" y2="'+H+'" stroke="#F59E0B" stroke-width="2" stroke-dasharray="4,3" opacity="0.9"/>';
@@ -4935,7 +4814,7 @@ function renderAreaGantt(ai){
       if(fr){var rn=fr.length>14?fr.slice(0,13)+'…':fr;sL+='<text x="'+(LW-10)+'" y="'+(cy3+rh/2+6).toFixed(1)+'" font-size="14" fill="#475569" text-anchor="end">'+escSVG(rn)+'</text>';}
       if(hasC)sL+='<rect x="0" y="'+cy3+'" width="'+LW+'" height="'+rh+'" fill="transparent" cursor="pointer" onclick="toggleAreaMarco('+ai+','+row.mi+')"/>';
       if(m.start&&m.end){
-        var bx=px(new Date(m.start)),bx2=px(new Date(m.end)),bw=Math.max(8,bx2-bx);
+        var bx=px(_pLocal(m.start)),bx2=px(_pLocal(m.end)),bw=Math.max(8,bx2-bx);
         var bh=28,by=cy3+(rh-bh)/2;
         sR+='<rect x="'+bx.toFixed(1)+'" y="'+by.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+bh+'" fill="'+col+'" rx="5" opacity="0.88"/>';
         if(bw>60)sR+='<text x="'+(bx+bw/2).toFixed(1)+'" y="'+(by+bh/2+5.5).toFixed(1)+'" font-size="15" fill="#FFF" font-weight="700" text-anchor="middle">'+escSVG(sl(m.status||'A iniciar'))+'</text>';
@@ -4979,7 +4858,7 @@ function renderAreaGantt(ai){
       }
       sL+='<circle cx="'+(LW-10)+'" cy="'+(cy3+rh/2).toFixed(1)+'" r="6" fill="'+col+'"/>';
       if(t.start&&t.end){
-        var _tS=new Date(t.start),_tE=new Date(t.end);
+        var _tS=_pLocal(t.start),_tE=_pLocal(t.end);
         var _bh=19,_by=cy3+(rh-_bh)/2;
         var _firstBx=null,_firstBw=0,_lastBx=0,_lastBx2=0,_lastBw=0;
         weeks.forEach(function(_w,_wi){
@@ -5008,7 +4887,7 @@ function renderAreaGantt(ai){
   sL+='</svg>';
   wrap.style.display='flex';
   wrap.innerHTML='<div style="position:sticky;left:0;z-index:2;flex-shrink:0">'+sL+'</div><div style="overflow-x:auto;flex:1">'+sR+'</div>';
-  var _scrollTarget=fs.fDS?px(new Date(fs.fDS)):(px(new Date())-200);
+  var _scrollTarget=fs.fDS?px(_pLocal(fs.fDS)):(px(new Date())-200);
   var _rPanel=wrap.querySelector('div:last-child');
   if(_rPanel)_rPanel.scrollLeft=Math.max(0,_scrollTarget-60);
   wrap.addEventListener('mouseover',function(e){
@@ -5093,15 +4972,15 @@ function pdfWizNext(){
     var fde2=document.getElementById('pdf-fde');_pdfW.fDE=fde2?fde2.value:'';
     var vr=document.querySelector('input[name="pdf-view"]:checked');_pdfW.view=vr?vr.value:'monthly';
     if(_pdfW.fDS&&!_pdfW.fDE){
-      var _autoEnd=new Date(_pdfW.fDS);_autoEnd.setDate(_autoEnd.getDate()+30);
-      var _ceMax=new Date('2027-06-30');
+      var _autoEnd=_pLocal(_pdfW.fDS);_autoEnd.setDate(_autoEnd.getDate()+30);
+      var _ceMax=_pLocal('2027-06-30');
       if(+_autoEnd>+_ceMax)_autoEnd=_ceMax;
       _pdfW.fDE=_autoEnd.toISOString().slice(0,10);
       if(fde2)fde2.value=_pdfW.fDE;
     }
     if(!_pdfW.fDS&&_pdfW.fDE){
-      var _autoSt=new Date(_pdfW.fDE);_autoSt.setDate(_autoSt.getDate()-30);
-      var _csMin=new Date('2026-01-01');
+      var _autoSt=_pLocal(_pdfW.fDE);_autoSt.setDate(_autoSt.getDate()-30);
+      var _csMin=_pLocal('2026-01-01');
       if(+_autoSt<+_csMin)_autoSt=_csMin;
       _pdfW.fDS=_autoSt.toISOString().slice(0,10);
       if(fds2)fds2.value=_pdfW.fDS;

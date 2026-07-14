@@ -30,7 +30,6 @@ Dashboard interativo do **Museu das Amazônias 2026 (MAZ ELD)** — acompanhamen
 - **Dependências externas (CDN):**
   - Chart.js 4.5.1 — gráficos de KPI
   - jsPDF 2.5.1 + svg2pdf.js 2.2.3 — export PDF
-  - pptxgenjs 3.12.0 — export PowerPoint da Pauta N2 (adicionado Jun/2026)
 
 ### Como os dados chegam
 ```
@@ -304,21 +303,24 @@ git push --force
 
 **Requisições (`_parseREQS`):**
 
-> ⚠️ Corrigido em commit 7662590 — índices anteriores estavam deslocados causando KPIs zerados.
+> ⚠️ Atualizado Jul/2026 — tabela anterior estava com colunas deslocadas em relação ao código atual. Conferir sempre contra `_parseREQS` em `index.html` (`grep -n "function _parseREQS" index.html`) antes de confiar nesta tabela.
 
 | Coluna | Índice | Campo |
 |---|---|---|
 | A | 0 | Nº Requisição |
 | B | 1 | Comprador |
 | D | 3 | Prioridade ← USAR APENAS ESTA |
-| E | 4 | Descrição |
-| F | 5 | Status |
-| G | 6 | Fornecedor |
-| K | 10 | Chegada do Material (nova em Jul/2026) |
-| M | 12 | Finalização do Serviço (antiga "Data prevista") |
+| E | 4 | Tipo |
+| F | 5 | Descrição |
+| G | 6 | Status |
+| H | 7 | Fornecedor |
+| I | 8 | Observações |
+| K | 10 | Advogado |
+| M | 12 | Data Limite |
+| N | 13 | Chegada do Material |
+| P | 15 | Finalização do Serviço |
 
 > ⚠️ Prioridade: usar APENAS coluna D (índice 3). Coluna B gera falsos positivos.
-> ⚠️ Em Jul/2026 a antiga coluna única "Data prevista" virou duas colunas na tabela de Requisições: "Chegada do Material" (índice 10) e "Finalização do Serviço" (índice 12).
 
 ### Regras de auto-status
 
@@ -413,18 +415,16 @@ A aba Áreas exibe o Gantt por área física do museu. As colunas de área são 
 
 **Multi-select no Export PDF de Áreas (Jun/2026):** o wizard agora permite selecionar múltiplas áreas. O PDF gerado contém todas em sequência. Arquivo nomeado `Gantt_multiplas_areas_N_[período].pdf` quando > 1 área selecionada.
 
-#### Feature: Exportar Pauta N2 como PowerPoint (Jun/2026)
+#### Feature: Exportar Pauta N2 como HTML navegável (nome da função mantido por compatibilidade)
 
-Novo botão **📊 Exportar PPT** aparece junto com o FAB da Pauta N2 quando há marcos selecionados. Gera `.pptx` com slide de capa + slides por eixo/grupo/marco.
-
-**Dependência:** `pptxgenjs@3.12.0` via CDN — carregado via `<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/...">`. Se a biblioteca não carregar (sem internet), o botão alerta o usuário.
+Botão **📊 Exportar PPT** aparece junto com o FAB da Pauta N2 quando há marcos selecionados. Apesar do nome do botão/função, gera um `.html` navegável (não `.pptx`) — a troca de formato não renomeou a função para evitar quebrar referências existentes.
 
 | Elemento | Detalhe |
 |---|---|
 | FAB | `id="n2-ppt-fab"` — `bottom:200px right:28px`, fundo `#065F46` |
 | Visibilidade | Mesmo critério do FAB principal: `n > 0 && onEap && !locked` |
-| Função JS | `exportN2PPT()` — lê `_n2Sel`, aplica filtros ativos, gera slides via PptxGenJS |
-| Arquivo gerado | `Pauta_N2_YYYY-MM-DD.pptx` |
+| Função JS | `exportN2PPT()` — lê seleção via `loadN2()`, aplica filtros ativos, gera HTML via `_buildN2HTMLDoc()` |
+| Arquivo gerado | `Pauta_N2_YYYY-MM-DD.html` |
 
 ---
 
@@ -513,15 +513,16 @@ Permite selecionar tarefas individuais dentro de marcos para levar à reunião d
 6. Botão **✕ Limpar N2** (abaixo do FAB) → limpa todas as seleções
 
 ### Comportamento de persistência
-- Seleções são **in-memory** (variável `_n2Sel`): resetam a cada hard refresh ou nova carga da página
-- Não usam `localStorage` — intencional para que cada reunião comece do zero
+- Seleções ficam em `localStorage`, chave semanal `n2_pauta_YYYY-Wnn` (gerada por `getN2Key()`, usa `getISOWeek()`) — cada semana ISO tem seu próprio balde de seleções
+- Sobrevive a hard refresh e nova carga da página, mas naturalmente "reseta" ao virar a semana ISO (chave muda)
+- Persistido via `loadN2()` / `saveN2()`, que fazem `JSON.parse`/`JSON.stringify` no `localStorage`
 
 ### Estrutura técnica (index.html)
 
 | Elemento | Detalhe |
 |---|---|
-| Funções JS | `toggleN2Task`, `updateN2Fab`, `clearN2Selection`, `applyN2Filter`, `toggleN2Filter`, `initN2Checkboxes`, `initN2FromURL`, `publishN2Pauta`, `unlockN2Edit`, `_n2Hash` |
-| Armazenamento | `var _n2Sel=[]` — in-memory, não localStorage |
+| Funções JS | `toggleN2Task`, `toggleN2Marco`, `toggleN2Group`, `updateN2Fab`, `clearN2Selection`, `applyN2Filter`, `toggleN2Filter`, `initN2Checkboxes`, `initN2FromURL`, `publishN2Pauta`, `unlockN2Edit`, `_n2Hash`, `loadN2`, `saveN2`, `getN2Key` |
+| Armazenamento | `localStorage.getItem(getN2Key())` — chave semanal, não in-memory |
 | Estado view-only | `var _n2ViewMode=false` — true quando aberto via link publicado |
 | Estado desbloqueado | `var _n2Unlocked=false` — true após PIN correto |
 | ID dos checkboxes | `n2c-{gi}-{mi}-{ti}-{si}` — **4 partes** (eixo, grupo, marco, subtask) |
@@ -537,13 +538,13 @@ Permite selecionar tarefas individuais dentro de marcos para levar à reunião d
 | FAB desbloquear | `id="n2-lock-fab"` — `bottom:24px right:28px`, fundo `#5C3A8A`, só visível em view-only |
 | **FAB exportar PPT** | `id="n2-ppt-fab"` — `bottom:200px right:28px`, fundo `#065F46`. Visível quando `n > 0 && onEap && !locked`. Chama `exportN2PPT()`. |
 
-### Exportar Pauta N2 como PowerPoint (commit 2970ecd — Jun/2026)
+### Exportar Pauta N2 como HTML navegável (nome da função mantido por compatibilidade)
 
-Gera `.pptx` com as tarefas selecionadas. Usa `pptxgenjs@3.12.0` via CDN.
+Gera `.html` com as tarefas selecionadas — não mais `.pptx` (trocado em Jul/2026, função manteve o nome antigo).
 
 | Função | Responsabilidade |
 |---|---|
-| `exportN2PPT()` | Lê `_n2Sel` (IDs no formato `gi:mi:ti:si` — 4 partes), agrupa por marco/eixo, gera slides por eixo com `PptxGenJS`. Arquivo: `Pauta_N2_YYYY-MM-DD.pptx`. |
+| `exportN2PPT()` | Lê seleção via `loadN2()` (IDs no formato `gi:mi:ti:si` — 4 partes), agrupa por marco/eixo, gera HTML via `_buildN2HTMLDoc()`. Arquivo: `Pauta_N2_YYYY-MM-DD.html`. |
 
 ### Compartilhamento via URL+PIN (commit 8d3268f)
 
@@ -561,9 +562,9 @@ https://pmo-creator.github.io/maz-dashboard/index.html?n2=ID1,ID2,...&ph=HASH
 | `_n2Hash(s)` | Hash djb2-like simples. Não é criptografia forte — serve para ofuscar o PIN na URL. |
 
 ### Armadilha específica do N2
-- `initN2Checkboxes()` é chamado no final de `renderTree()` — re-checa `_n2Sel` e restaura estado visual; também aplica `disabled` quando `_n2ViewMode && !_n2Unlocked`
+- `initN2Checkboxes()` é chamado no final de `renderTree()` — re-checa `loadN2()` e restaura estado visual; também aplica `disabled` quando `_n2ViewMode && !_n2Unlocked`
 - Ao desligar o filtro N2 ("Ver todos"), `toggleN2Filter` chama `applyFilter()` (não apenas mostra/oculta DOM) para garantir que accordions e dropdown de visualização funcionem normalmente
-- O `n2-badge` (no tile do **marco**) começa com `display:none` — é setado via `toggleN2Task()` quando qualquer tarefa do marco entra em `_n2Sel`
+- O `n2-badge` (no tile do **marco**) começa com `display:none` — é setado via `toggleN2Task()` quando qualquer tarefa do marco entra na seleção salva via `saveN2()`
 - `applyN2Filter()` filtra `taskcard-*` (mostra/oculta tasks) **e** `mband-*` (mostra/oculta marcos que têm ao menos 1 tarefa selecionada)
 - Nunca usar `ev.preventDefault()` no handler do checkbox — impede o checkmark visual no browser
 
