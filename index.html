@@ -1733,11 +1733,7 @@ function abrevNome(n){
       +'</div></div>';
   }
   // ── RESUMO EXECUTIVO N2 — heuristica determinista (sem IA) ───────────────────
-  function _n2ResumoHTML(byEixo,weekLabel){
-    var today=new Date(); today.setHours(0,0,0,0);
-    var d7=new Date(today); d7.setDate(d7.getDate()+7);
-    function pl(s){ if(!s||s.length<10) return null; var p=s.split('-'); var d=new Date(+p[0],+p[1]-1,+p[2]); d.setHours(0,0,0,0); return isNaN(d.getTime())?null:d; }
-    function dd(a,b){ return Math.round((a-b)/86400000); }
+  function _n2ResumoHTML(byEixo,weekLabel,isDir){
     function nd(n){ return n+' dia'+(n===1?'':'s'); }
 
     var items=[], marcosSet={}, eixoNames=[];
@@ -1760,47 +1756,43 @@ function abrevNome(n){
     function hasProg(it){ return !!(it.t.progresso&&it.t.progresso.trim()); }
     function hasEnc(it){ return !!(it.t.encaminhamento&&it.t.encaminhamento.trim()); }
 
-    // motivo do status — espelha as regras de fixLeaf() em preprocessStatuses()
+    // motivo do status — deriva de _n2Situacao(); no export Diretoria mostra só datas
     function motivo(it){
-      var t=it.t, st=stOf(it), e=pl(t.end), s=pl(t.start);
-      if(st==='Atrasado'){
-        if(e&&e<today) return 'fim previsto '+fmtBRshort(t.end)+', vencido há <b>'+nd(dd(today,e))+'</b>';
-        return 'herdado de subtarefa atrasada';
-      }
-      if(st==='Risco de atraso'){
-        if(e&&e>=today&&e<=d7){ var n=dd(e,today); return 'vence '+(n===0?'<b>hoje</b>':'em <b>'+nd(n)+'</b>')+' ('+fmtBRshort(t.end)+')'; }
-        if(s&&s<today) return '<b>deveria ter iniciado em '+fmtBRshort(t.start)+'</b> e não foi iniciado';
-        if(e&&e<today) return 'fim previsto '+fmtBRshort(t.end)+', vencido há <b>'+nd(dd(today,e))+'</b>';
-        return 'sem data conclusiva';
-      }
-      if(st==='Definir datas') return 'sem data de início ou fim definida';
+      var t=it.t, sit=_n2Situacao(t,isDir);
+      if(sit.tipo==='vencido') return 'fim previsto '+fmtBRshort(t.end)+', vencido há <b>'+nd(sit.dias)+'</b>';
+      if(sit.tipo==='herdado') return 'herdado de subtarefa atrasada';
+      if(sit.tipo==='vence') return 'vence '+(sit.dias===0?'<b>hoje</b>':'em <b>'+nd(sit.dias)+'</b>')+' ('+fmtBRshort(t.end)+')';
+      if(sit.tipo==='naoiniciado') return '<b>deveria ter iniciado em '+fmtBRshort(t.start)+'</b> e não foi iniciado';
+      if(sit.tipo==='semdata') return 'sem data conclusiva';
+      if(sit.tipo==='semdatas') return 'sem data de início ou fim definida';
       var ds=t.start?fmtBRshort(t.start):'', de=t.end?fmtBRshort(t.end):'';
       if(ds&&de) return ds+' → '+de;
       if(de) return 'fim '+de;
       return '';
     }
 
-    // ordena: pior status primeiro; dentro do status, o mais urgente primeiro
+    // ordena: pior status primeiro; dentro do status, fim mais antigo primeiro
+    // (datas ISO YYYY-MM-DD ordenam lexicograficamente — sem parse de Date)
     function sortKey(it){
-      var t=it.t, st=stOf(it), e=pl(t.end);
-      var r=(RANK[st]===undefined?3:RANK[st]), u=0;
-      if(st==='Atrasado'&&e) u=-dd(today,e);
-      else if(st==='Risco de atraso'&&e) u=dd(e,today);
-      return [r,u];
+      var st=stOf(it);
+      return [(RANK[st]===undefined?3:RANK[st]), it.t.end||'9999-99-99'];
     }
     items.sort(function(a,b){
       var ka=sortKey(a),kb=sortKey(b);
-      return ka[0]!==kb[0]?ka[0]-kb[0]:ka[1]-kb[1];
+      if(ka[0]!==kb[0]) return ka[0]-kb[0];
+      return ka[1]<kb[1]?-1:(ka[1]>kb[1]?1:0);
     });
 
     var cnt={};
     items.forEach(function(it){ var s=stOf(it); cnt[s]=(cnt[s]||0)+1; });
     function c(s){ return cnt[s]||0; }
 
-    var atencao=items.filter(function(it){ var s=stOf(it); return s==='Atrasado'||s==='Risco de atraso'; });
-    var feitos =items.filter(function(it){ return stOf(it)==='Feito'; });
-    var andando=items.filter(function(it){ return stOf(it)==='Em andamento'; });
-    var demais =items.filter(function(it){ var s=stOf(it); return s!=='Atrasado'&&s!=='Risco de atraso'&&s!=='Feito'&&s!=='Em andamento'; });
+    var atencao    =items.filter(function(it){ var s=stOf(it); return s==='Atrasado'||s==='Risco de atraso'; });
+    var feitos     =items.filter(function(it){ return stOf(it)==='Feito'; });
+    var andando    =items.filter(function(it){ return stOf(it)==='Em andamento'; });
+    var aIniciar   =items.filter(function(it){ return stOf(it)==='A iniciar'; });
+    var definirData=items.filter(function(it){ return stOf(it)==='Definir datas'; });
+    // Cancelado/Congelado e status anômalos (ex: erro de fórmula na planilha) não entram no resumo
 
     var nMarcos=Object.keys(marcosSet).length;
     var NPA='⚠ Não preenchido';
@@ -1832,6 +1824,16 @@ function abrevNome(n){
       h+='<p>Em <i>'+wl+'</i>: <b>'+nProg+'</b> de '+items.length+' tarefas têm Progresso reportado e <b>'+nEnc+'</b> têm Encaminhamento.</p>';
     }
 
+    // ── lacunas de informacao (antes de pontos de atencao: fecha o raciocinio do paragrafo anterior) ──
+    var semNada=atencao.filter(function(it){ return !hasProg(it)&&!hasEnc(it); });
+    var atrasSemEnc=atencao.filter(function(it){ return stOf(it)==='Atrasado'&&!hasEnc(it); });
+    if(atencao.length&&(semNada.length||atrasSemEnc.length)){
+      h+='<h4 class="exp-res-h exp-res-h-red">🔴 Lacunas de informação</h4><p>';
+      if(semNada.length) h+='<b>'+semNada.length+' de '+atencao.length+'</b> '+(atencao.length===1?'item':'itens')+' em atenção '+(semNada.length===1?'está':'estão')+' sem Progresso e sem Encaminhamento reportados. ';
+      if(atrasSemEnc.length) h+='<b>'+atrasSemEnc.length+'</b> '+(atrasSemEnc.length===1?'item atrasado não tem':'itens atrasados não têm')+' plano de ação registrado.';
+      h+='</p>';
+    }
+
     // ── pontos de atencao ──
     if(atencao.length){
       h+='<h4 class="exp-res-h">⚠️ Pontos de atenção — '+atencao.length+(atencao.length===1?' item':' itens')+'</h4><ul class="exp-res-list">';
@@ -1848,30 +1850,12 @@ function abrevNome(n){
       h+='</ul>';
     }
 
-    // ── blocos compactos ──
-    function compacto(titulo,lst,extra){
-      if(!lst.length) return '';
-      var s='<h4 class="exp-res-h">'+titulo+' — '+lst.length+(lst.length===1?' item':' itens')+'</h4><p class="exp-res-compact">';
-      s+=lst.map(function(it){
-        var d=extra?extra(it):'';
-        return escH(it.eixo)+' · '+escH(it.t.tarefa||'')+(d?' <span class="exp-res-dim">('+escH(d)+')</span>':'');
-      }).join(' · ');
-      return s+'</p>';
-    }
-    h+=compacto('✅ Concluídas',feitos,null);
-    h+=compacto('📋 Em andamento',andando,function(it){ return it.t.end?'fim '+fmtBRshort(it.t.end):''; });
-    h+=compacto('• Demais',demais,function(it){ return sl(stOf(it)); });
-
-    // ── lacunas de informacao ──
-    if(atencao.length){
-      var semNada=atencao.filter(function(it){ return !hasProg(it)&&!hasEnc(it); });
-      var atrasSemEnc=atencao.filter(function(it){ return stOf(it)==='Atrasado'&&!hasEnc(it); });
-      if(semNada.length||atrasSemEnc.length){
-        h+='<h4 class="exp-res-h exp-res-h-red">🔴 Lacunas de informação</h4><p>';
-        if(semNada.length) h+='<b>'+semNada.length+' de '+atencao.length+'</b> '+(atencao.length===1?'item':'itens')+' em atenção '+(semNada.length===1?'está':'estão')+' sem Progresso e sem Encaminhamento reportados. ';
-        if(atrasSemEnc.length) h+='<b>'+atrasSemEnc.length+'</b> '+(atrasSemEnc.length===1?'item atrasado não tem':'itens atrasados não têm')+' plano de ação registrado.';
-        h+='</p>';
-      }
+    // ── demais itens da pauta — contagem, sem texto corrido ──
+    var chips=[['Feito','Concluídas',feitos.length],['Em andamento','Em andamento',andando.length],['A iniciar','A iniciar',aIniciar.length],['Definir datas','Definir datas',definirData.length]].filter(function(c){ return c[2]>0; });
+    if(chips.length){
+      h+='<h4 class="exp-res-h">📊 Outros itens da pauta</h4><div class="exp-res-kpis">';
+      h+=chips.map(function(c){ return '<div class="exp-res-kpi" style="border-color:'+sc(c[0])+'"><span class="exp-res-kpi-n" style="color:'+sc(c[0])+'">'+c[2]+'</span><span class="exp-res-kpi-l">'+escH(c[1])+'</span></div>'; }).join('');
+      h+='</div>';
     }
 
     // ── rodape ──
@@ -1881,6 +1865,124 @@ function abrevNome(n){
       +(weekLabel?' a partir da coluna “'+escH(weekLabel)+'”':'')+'. Revise antes de apresentar.</p>';
 
     return h;
+  }
+
+  // ── Situação temporal de um item — FONTE ÚNICA das regras de prazo ──────────
+  // Espelha fixLeaf() em preprocessStatuses(): fim vencido → Atrasado,
+  // fim em até 7 dias → Risco, início já passado → Risco.
+  // isDir=true: o status vem cru da planilha (preprocessStatusesDiretoria não faz
+  // override por data), então NÃO inferimos causa — só reportamos o prazo.
+  function _n2Situacao(t,isDir){
+    var out={tipo:'',dias:0};
+    if(isDir) return out;
+    var today=new Date(); today.setHours(0,0,0,0);
+    var d7=new Date(today); d7.setDate(d7.getDate()+7);
+    function pl(s){ if(!s||s.length<10) return null; var p=s.split('-'); var d=new Date(+p[0],+p[1]-1,+p[2]); d.setHours(0,0,0,0); return isNaN(d.getTime())?null:d; }
+    function dd(a,b){ return Math.round((a-b)/86400000); }
+    var st=t.status||'A iniciar', e=pl(t.end), s=pl(t.start);
+    if(st==='Atrasado'){
+      if(e&&e<today){ out.tipo='vencido'; out.dias=dd(today,e); }
+      else out.tipo='herdado';
+      return out;
+    }
+    if(st==='Risco de atraso'){
+      if(e&&e>=today&&e<=d7){ out.tipo='vence'; out.dias=dd(e,today); }
+      else if(s&&s<today){ out.tipo='naoiniciado'; out.dias=dd(today,s); }
+      else if(e&&e<today){ out.tipo='vencido'; out.dias=dd(today,e); }
+      else out.tipo='semdata';
+      return out;
+    }
+    if(st==='Definir datas') out.tipo='semdatas';
+    return out;
+  }
+
+  // ── PROMPT PARA IA EXTERNA — pauta inteira, fonte fechada ────────────────────
+  function _n2PromptText(byEixo,weekLabel,dateFull,isDir){
+    function fmt(s){ if(!s||s.length<10) return ''; var p=s.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+    function nd(n){ return n+' dia'+(n===1?'':'s'); }
+    var NP='⚠ Não preenchido';
+
+    // prazos ja calculados — a IA nao precisa (nem deve) calcular datas
+    function situacao(t){
+      var sit=_n2Situacao(t,isDir), out=[];
+      if(t.start) out.push('início '+fmt(t.start));
+      if(t.end) out.push('fim '+fmt(t.end));
+      if(sit.tipo==='vencido') out.push('VENCIDO há '+nd(sit.dias));
+      else if(sit.tipo==='vence') out.push(sit.dias===0?'VENCE HOJE':'vence em '+nd(sit.dias));
+      else if(sit.tipo==='naoiniciado') out.push('DEVERIA TER INICIADO há '+nd(sit.dias)+' e não foi iniciado');
+      return out.join(', ');
+    }
+
+    var total=0, comProg=0, comEnc=0;
+    byEixo.forEach(function(e){ e.grupos.forEach(function(g){ g.marcos.forEach(function(md){
+      var lst=(md.subtasks&&md.subtasks.length>0)?md.subtasks:[md.task];
+      lst.forEach(function(t){
+        total++;
+        if(t.progresso&&t.progresso.trim()) comProg++;
+        if(t.encaminhamento&&t.encaminhamento.trim()) comEnc++;
+      });
+    }); }); });
+
+    var p='';
+    p+='Você é um analista de PMO preparando o resumo executivo de uma reunião N2'+(isDir?' de Diretoria':'')+' do projeto Museu das Amazônias 2026. O texto será lido pela diretoria, projetado em tela, em uma reunião de ~30 minutos.\n\n';
+
+    p+='=== FONTE ÚNICA — REGRA INEGOCIÁVEL ===\n';
+    p+='Os dados da pauta abaixo são sua ÚNICA fonte de fatos. Especificamente:\n';
+    p+='- NÃO use conhecimento prévio sobre o Museu das Amazônias, sobre museus, obras públicas ou gestão de projetos para completar qualquer informação ausente.\n';
+    p+='- NÃO pesquise na internet. Não acione busca, browsing ou qualquer ferramenta externa. Se você tem acesso à web, não use nesta tarefa.\n';
+    p+='- NÃO infira, NÃO deduza, NÃO complete lacunas com o que seria plausível.\n';
+    p+='- Se algo não está literalmente escrito abaixo, isso NÃO EXISTE para efeito deste resumo.\n';
+    p+='Sua base de conhecimento serve apenas para escrever bem em português. Nenhum fato sobre este projeto pode vir dela.\n\n';
+
+    p+='=== COMO LER OS DADOS ===\n';
+    if(isDir){
+      p+='- O campo Status é preenchido MANUALMENTE pela equipe na planilha; ele não é recalculado pelas datas. É a informação oficial reportada, mas pode não refletir os prazos.\n';
+      p+='- O campo Situação traz apenas as datas registradas. NÃO conclua atraso a partir delas nem contradiga o Status: reporte o Status como ele está.\n';
+    } else {
+      p+='- O campo Status é a fonte da verdade sobre o ANDAMENTO. Ele é calculado automaticamente pelas datas do cronograma (não é digitado por ninguém), então é confiável — use-o à vontade.\n';
+      p+='- O campo Situação já traz os prazos e os dias de atraso calculados. Use os números como estão; não recalcule datas.\n';
+    }
+    p+='- O campo Progresso conta O QUE andou, não SE andou. "'+NP+'" nele significa apenas que a equipe não reportou nada nesta semana. NUNCA conclua que o item parou ou não avançou por causa disso — para saber se andou, olhe o Status.\n';
+    p+='- Nunca infira o andamento de uma tarefa a partir do nome dela.\n';
+    p+='- Se itens críticos estiverem sem informação reportada, aponte isso explicitamente como ponto de atenção de gestão. É um achado, não um buraco para tapar.\n';
+    p+='- Não use adjetivos de avaliação ("excelente", "preocupante", "crítico") sem um dado que sustente.\n\n';
+
+    p+='=== FORMATO DE SAÍDA ===\n';
+    p+='- Abertura: 2-3 frases com a situação geral em números.\n';
+    p+='- "Pontos de atenção": bullets, do mais grave ao menos grave.\n';
+    p+='- "Lacunas de informação": só inclua se houver itens críticos sem reporte.\n';
+    p+='- Máximo 250 palavras. Português BR. Tom direto, sem jargão corporativo.\n';
+    p+='- Devolva SOMENTE o texto final. Sem introdução, sem "aqui está", sem comentários sobre o que você fez.\n\n';
+
+    p+='=== PAUTA — '+(dateFull||'')+' ===\n';
+    p+='Semana de reporte: '+(weekLabel||'não identificada')+'\n';
+    p+='Total: '+total+' tarefa'+(total===1?'':'s')+' · com Progresso reportado: '+comProg+' · com Encaminhamento reportado: '+comEnc+'\n\n';
+
+    byEixo.forEach(function(e){
+      p+='## Eixo: '+e.eixo.name+'\n';
+      e.grupos.forEach(function(g){
+        p+='### Grupo: '+g.grupo.name+'\n';
+        g.marcos.forEach(function(md){
+          var m=md.task;
+          p+='#### Marco: '+(m.tarefa||'')+' — Status: '+(m.status||'A iniciar');
+          var sm=situacao(m); if(sm) p+=' ('+sm+')';
+          p+='\n';
+          var lst=(md.subtasks&&md.subtasks.length>0)?md.subtasks:[m];
+          lst.forEach(function(t){
+            p+='- Tarefa: '+(t.tarefa||'')+'\n';
+            p+='  - Responsável: '+(t.resp||'não informado')+'\n';
+            if(t.fornecedor) p+='  - Fornecedor: '+t.fornecedor+'\n';
+            p+='  - Status: '+(t.status||'A iniciar')+'\n';
+            var s=situacao(t); if(s) p+='  - Situação: '+s+'\n';
+            p+='  - Progresso: '+((t.progresso&&t.progresso.trim())?t.progresso.trim():NP)+'\n';
+            p+='  - Encaminhamento: '+((t.encaminhamento&&t.encaminhamento.trim())?t.encaminhamento.trim():NP)+'\n';
+          });
+        });
+      });
+      p+='\n';
+    });
+
+    return p;
   }
 
   function _buildN2HTMLDoc(wbsArr,arr,isDir){
@@ -1941,7 +2043,7 @@ function abrevNome(n){
       :('<label class="ms-option ms-all-opt"><input type="checkbox" id="exp-resp-all" class="exp-opt-all" checked onchange="_expOnMsAll(\'resp\',this)"><span style="font-weight:700;font-style:italic;color:#8AC43A">Todos</span></label><hr class="ms-divider">'
       +respList.map(function(r){return '<label class="ms-option"><input type="checkbox" class="exp-opt" value="'+escH(r)+'" checked onchange="_expOnMsChange(\'resp\')"><span>'+escH(r.length>35?r.substring(0,33)+'\u2026':r)+'</span></label>';}).join(''));
 
-    var GRUPO_BG='#2F4A18',MARCO_BG='#F5FAF0',TASK_BG='#F7FAFF',TASK_BORDER='#DDE8F5',TEXT_DARK='#1A2E0A';
+    var GRUPO_BG='#B4DA82',MARCO_BG='#F5FAF0',TASK_BG='#F7FAFF',TASK_BORDER='#DDE8F5',TEXT_DARK='#1A2E0A';
     var NP='Não preenchido',NPA='⚠ Não preenchido';
 
     function taskCardHTML(task,grupoName,marcoName){
@@ -2026,12 +2128,14 @@ function abrevNome(n){
     var subtitle='Pauta — Museu das Amazônias 2026'+(isDir?' (Diretoria)':'');
 
     var baseName=(isDir?'Pauta_N2_DIR_':'Pauta_N2_')+_dateStamp(now);
-    var resumoInner=_n2ResumoHTML(byEixo,WEEK_LABEL);
+    var resumoInner=_n2ResumoHTML(byEixo,WEEK_LABEL,isDir);
+    var promptTxt=_n2PromptText(byEixo,WEEK_LABEL,dateFull,isDir);
     var resumoBlock=!resumoInner?'':('<div class="exp-resumo" id="exp-resumo">'
       +'<div class="exp-resumo-head">'
       +'<span class="exp-resumo-title">📝 Resumo Executivo</span>'
       +'<div class="exp-resumo-actions">'
       +'<button type="button" class="exp-rbtn exp-rbtn-read" onclick="_expEditarResumo()">✏️ Editar Resumo</button>'
+      +'<button type="button" class="exp-rbtn exp-rbtn-read" id="exp-btn-prompt" onclick="_expCopiarPrompt()">📋 Copiar prompt p/ IA</button>'
       +'<button type="button" class="exp-rbtn exp-rbtn-edit" onclick="_expRegerarResumo()">⟳ Regerar</button>'
       +'<button type="button" class="exp-rbtn exp-rbtn-edit exp-rbtn-ghost" onclick="_expCancelarResumo()">✕ Cancelar</button>'
       +'<button type="button" class="exp-rbtn exp-rbtn-edit exp-rbtn-primary" id="exp-btn-salvar" onclick="_expSalvarResumo()">💾 Salvar</button>'
@@ -2039,6 +2143,7 @@ function abrevNome(n){
       +'<div class="exp-resumo-body" id="exp-resumo-body">'+resumoInner+'</div>'
       +'<div class="exp-resumo-hint">✏️ Modo edição ativo. Suas alterações só são preservadas ao clicar em <b>Salvar</b>, que gera um novo arquivo versionado.</div>'
       +'<div id="exp-resumo-orig" style="display:none">'+resumoInner+'</div>'
+      +'<textarea id="exp-prompt-src" style="display:none" readonly>'+escH(promptTxt)+'</textarea>'
       +'</div>');
 
     var css=''
@@ -2052,7 +2157,7 @@ function abrevNome(n){
       +'.exp-header .exp-sub{color:#E2E8F0;font-size:13px;margin-top:2px}'
       +'.kpi-row{display:grid;grid-template-columns:150px 1fr;gap:12px;margin-bottom:20px;align-items:stretch}'
       +'.exp-resumo{background:#FFF;border:1px solid #DDE8F5;border-left:5px solid #8AC43A;border-radius:6px;margin-bottom:20px;overflow:hidden}'
-      +'.exp-resumo-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F5FAF0;border-bottom:1px solid #E3EDD8;flex-wrap:wrap}'
+      +'.exp-resumo-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#B4DA82;border-bottom:1px solid #E3EDD8;flex-wrap:wrap}'
       +'.exp-resumo-title{font-weight:700;color:#1A2E0A;font-size:15px;margin-right:auto}'
       +'.exp-resumo-actions{display:flex;gap:8px;flex-wrap:wrap}'
       +'.exp-rbtn{border:1px solid #C7D9B0;background:#FFF;color:#1A2E0A;border-radius:5px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}'
@@ -2073,8 +2178,10 @@ function abrevNome(n){
       +'.exp-res-resp{color:#5A6E85;font-weight:600}'
       +'.exp-res-st{display:inline-block;padding:1px 7px;border-radius:9px;color:#FFF;font-size:10.5px;font-weight:700;vertical-align:middle}'
       +'.exp-res-np{color:#B32020;font-weight:600}'
-      +'.exp-res-compact{font-size:12.5px;color:#3A4A5A}'
-      +'.exp-res-dim{color:#8898A8}'
+      +'.exp-res-kpis{display:flex;flex-wrap:wrap;gap:10px}'
+      +'.exp-res-kpi{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:84px;padding:8px 14px;background:#F7FAFF;border:1px solid #DDE8F5;border-left:4px solid #94A3B8;border-radius:6px}'
+      +'.exp-res-kpi-n{font-size:20px;font-weight:800;line-height:1.1}'
+      +'.exp-res-kpi-l{font-size:11px;color:#5A6E85;margin-top:2px;white-space:nowrap}'
       +'.exp-res-foot{margin-top:14px;padding-top:8px;border-top:1px dashed #DDE8F5;font-size:11px;color:#8898A8;font-style:italic}'
       +'.exp-resumo-hint{display:none;padding:0 16px 12px;font-size:11.5px;color:#8A6D00}'
       +'.exp-resumo.is-editing .exp-resumo-hint{display:block}'
@@ -2106,7 +2213,7 @@ function abrevNome(n){
       +'details[open]>.exp-eixo-header .exp-chevron,details[open]>.exp-grupo-header .exp-chevron{transform:rotate(90deg)}'
       +'.exp-eixo-body{background:#25390F;padding:10px}'
       +'.exp-grupo{margin-bottom:8px;border-radius:6px;overflow:hidden}'
-      +'.exp-grupo-header{list-style:none;cursor:pointer;background:#2F4A18;color:#FFF;padding:9px 14px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}'
+      +'.exp-grupo-header{list-style:none;cursor:pointer;background:#B4DA82;color:#1A2E0A;padding:9px 14px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}'
       +'.exp-grupo-header::-webkit-details-marker{display:none}'
       +'.exp-grupo-body{padding:8px 6px}'
       +'.exp-marco{border-radius:6px;padding:10px 12px;margin-bottom:8px}'
@@ -2253,6 +2360,15 @@ function abrevNome(n){
       +'wrap.classList.add("is-editing");'
       +'box.setAttribute("contenteditable","true");box.focus();'
       +'}'
+      +'document.addEventListener("paste",function(e){'
+      +'var box=document.getElementById("exp-resumo-body");'
+      +'if(!box||!box.isContentEditable)return;'
+      +'if(!e.target||!e.target.closest||!e.target.closest("#exp-resumo-body"))return;'
+      +'e.preventDefault();'
+      +'var cd=e.clipboardData||window.clipboardData;'
+      +'var txt=cd?cd.getData("text/plain"):"";'
+      +'if(txt)document.execCommand("insertText",false,txt);'
+      +'});'
       +'function _expSairEdicao(){'
       +'var box=document.getElementById("exp-resumo-body"),wrap=document.getElementById("exp-resumo");'
       +'if(!box||!wrap)return;'
@@ -2275,6 +2391,7 @@ function abrevNome(n){
       +'document.querySelectorAll("#exp-status-menu input,#exp-resp-menu input").forEach(function(o){o.checked=true;o.setAttribute("checked","");});'
       +'var si=document.getElementById("exp-search-input");if(si){si.value="";si.setAttribute("value","");}'
       +'var st=document.getElementById("exp-sticky");if(st){st.classList.remove("is-stuck");st.style.height="";}'
+      +'var pt=document.getElementById("exp-prompt-src");if(pt)pt.setAttribute("style","display:none");'
       +'_expSetLevel("tarefas");_expApplyFilters();'
       +'}'
       +'function _expSalvarResumo(){'
@@ -2289,6 +2406,34 @@ function abrevNome(n){
       +'var a=document.createElement("a");a.href=url;a.download=nome;'
       +'document.body.appendChild(a);a.click();document.body.removeChild(a);'
       +'setTimeout(function(){URL.revokeObjectURL(url);},1000);'
+      +'}'
+      +'function _expCopiarPrompt(){'
+      +'var ta=document.getElementById("exp-prompt-src");'
+      +'var btn=document.getElementById("exp-btn-prompt");'
+      +'if(!ta)return;'
+      +'var txt=ta.value;'
+      +'function feedback(ok,extra){'
+      +'if(!btn)return;'
+      +'var orig="📋 Copiar prompt p/ IA";'
+      +'btn.textContent=ok?("✓ Copiado! ("+extra+")"):"✕ Falhou — copie manualmente";'
+      +'setTimeout(function(){btn.textContent=orig;},2600);'
+      +'}'
+      +'var kb=Math.round(txt.length/1024*10)/10;'
+      +'function fallback(){'
+      +'try{'
+      +'var tmp=document.createElement("textarea");'
+      +'tmp.value=txt;tmp.style.position="fixed";tmp.style.left="-9999px";'
+      +'document.body.appendChild(tmp);tmp.focus();tmp.select();'
+      +'var ok=document.execCommand("copy");'
+      +'document.body.removeChild(tmp);'
+      +'if(ok){feedback(true,kb+" KB");return;}'
+      +'}catch(e){}'
+      +'ta.style.display="block";ta.style.width="100%";ta.style.height="220px";ta.focus();ta.select();'
+      +'feedback(false);'
+      +'}'
+      +'if(navigator.clipboard&&window.isSecureContext){'
+      +'navigator.clipboard.writeText(txt).then(function(){feedback(true,kb+" KB");},fallback);'
+      +'}else{fallback();}'
       +'}'
       +'_expLabelSalvar();'
       +'_expInitSticky();'
