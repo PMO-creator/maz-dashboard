@@ -1696,10 +1696,36 @@ function abrevNome(n){
     });
     if(!byEixo.length){alert('Nenhuma tarefa selecionada encontrada com os filtros atuais.');return null;}
 
+    var respSet={};
+    byEixo.forEach(function(e){
+      e.grupos.forEach(function(g){
+        g.marcos.forEach(function(md){
+          var marco=md.task;
+          var tasksToShow=md.subtasks.length>0?md.subtasks:[marco];
+          tasksToShow.forEach(function(t){if(t.resp)respSet[t.resp]=true;});
+        });
+      });
+    });
+    var respList=Object.keys(respSet).sort();
+    var STATUS_FILTER_LIST=[
+      {v:'Atrasado',c:'#FF2525'},
+      {v:'Risco de atraso',c:'#FFD966'},
+      {v:'Em andamento',c:'#1A56FF'},
+      {v:'Feito',c:'#05C46B'},
+      {v:'A iniciar',c:'#5A6E85'},
+      {v:'Definir datas',c:'#92400E'},
+      {v:'Cancelado/Congelado',c:'#000000'}
+    ];
+    var statusMenuHTML='<label class="ms-option ms-all-opt"><input type="checkbox" id="exp-status-all" class="exp-opt-all" checked onchange="_expOnMsAll(\'status\',this)"><span style="font-weight:700;font-style:italic;color:#8AC43A">Todos</span></label><hr class="ms-divider">'
+      +STATUS_FILTER_LIST.map(function(s){return '<label class="ms-option"><input type="checkbox" class="exp-opt" value="'+escH(s.v)+'" checked onchange="_expOnMsChange(\'status\')"><span class="ms-dot" style="background:'+s.c+'"></span>'+escH(s.v)+'</label>';}).join('');
+    var respMenuHTML=!respList.length?'<label class="ms-option ms-all-opt"><span style="font-style:italic;color:#94A3B8">Nenhum respons\u00e1vel</span></label>'
+      :('<label class="ms-option ms-all-opt"><input type="checkbox" id="exp-resp-all" class="exp-opt-all" checked onchange="_expOnMsAll(\'resp\',this)"><span style="font-weight:700;font-style:italic;color:#8AC43A">Todos</span></label><hr class="ms-divider">'
+      +respList.map(function(r){return '<label class="ms-option"><input type="checkbox" class="exp-opt" value="'+escH(r)+'" checked onchange="_expOnMsChange(\'resp\')"><span>'+escH(r.length>35?r.substring(0,33)+'\u2026':r)+'</span></label>';}).join(''));
+
     var GRUPO_BG='#2F4A18',MARCO_BG='#F5FAF0',TASK_BG='#F7FAFF',TASK_BORDER='#DDE8F5',TEXT_DARK='#1A2E0A';
     var NP='Não preenchido',NPA='⚠ Não preenchido';
 
-    function taskCardHTML(task){
+    function taskCardHTML(task,grupoName,marcoName){
       var tc=sc(task.status),tl=sl(task.status);
       var tds=task.start?fmtBRshort(task.start):'',tde=task.end?fmtBRshort(task.end):'';
       var tdateStr=[tds,tde].filter(Boolean).join(' → ');
@@ -1708,7 +1734,10 @@ function abrevNome(n){
       var progEmpty=!progTxt,encEmpty=!encTxt;
       var progVal=progTxt?escH(progTxt):NPA;
       var encVal=encTxt?escH(encTxt):NPA;
-      var h='<div class="exp-task" style="background:'+TASK_BG+';border:1px solid '+TASK_BORDER+';border-left:4px solid '+tc+'">';
+      var dataStatus=escH(task.status||'A iniciar');
+      var dataResp=escH(task.resp||'');
+      var dataQ=escH([grupoName,marcoName,task.tarefa,task.resp].filter(Boolean).join(' ').toLowerCase());
+      var h='<div class="exp-task" data-status="'+dataStatus+'" data-resp="'+dataResp+'" data-q="'+dataQ+'" style="background:'+TASK_BG+';border:1px solid '+TASK_BORDER+';border-left:4px solid '+tc+'">';
       h+='<div class="exp-task-head">';
       h+='<span class="exp-chip" style="background:'+tc+'">'+escH(tl)+'</span>';
       h+='<span class="exp-task-name">'+escH(task.tarefa||'')+'</span>';
@@ -1716,13 +1745,13 @@ function abrevNome(n){
       if(task.resp)h+='<span class="exp-meta">👤 '+escH(abrevNome(task.resp))+'</span>';
       if(task.fornecedor)h+='<span class="exp-meta exp-forn" title="'+escH(task.fornecedor)+'">🏢 '+escH(task.fornecedor)+'</span>';
       h+='</div>';
-      h+='<div class="exp-field'+(progEmpty?' exp-empty':'')+'"><b>Progresso:</b> <span class="exp-fval" data-ph="'+NPA+'">'+progVal+'</span></div>';
-      h+='<div class="exp-field'+(encEmpty?' exp-empty':'')+'"><b>Encaminhamentos:</b> <span class="exp-fval" data-ph="'+NPA+'">'+encVal+'</span></div>';
+      h+='<div class="exp-field'+(progEmpty?' exp-empty':'')+'"><b>Progresso:</b> <span class="exp-fval">'+progVal+'</span></div>';
+      h+='<div class="exp-field'+(encEmpty?' exp-empty':'')+'"><b>Encaminhamentos:</b> <span class="exp-fval">'+encVal+'</span></div>';
       h+='</div>';
       return h;
     }
 
-    function marcoHTML(marcoData){
+    function marcoHTML(marcoData,grupoName){
       var marco=marcoData.task;
       var tasksToShow=marcoData.subtasks.length>0?marcoData.subtasks:[marco];
       var mc=sc(marco.status),ml_=sl(marco.status);
@@ -1737,10 +1766,10 @@ function abrevNome(n){
       h+='</div>';
       if(tasksToShow.length>1){
         h+='<details class="exp-tasks" open><summary>'+tasksToShow.length+' tarefas</summary><div class="exp-tasks-body">';
-        h+=tasksToShow.map(taskCardHTML).join('');
+        h+=tasksToShow.map(function(t){return taskCardHTML(t,grupoName,marco.tarefa);}).join('');
         h+='</div></details>';
       } else {
-        h+='<div class="exp-tasks-flat">'+tasksToShow.map(taskCardHTML).join('')+'</div>';
+        h+='<div class="exp-tasks-flat">'+tasksToShow.map(function(t){return taskCardHTML(t,grupoName,marco.tarefa);}).join('')+'</div>';
       }
       h+='</div>';
       return h;
@@ -1750,7 +1779,7 @@ function abrevNome(n){
       var grupo=grupoData.grupo,marcos=grupoData.marcos;
       var h='<details class="exp-grupo" open>';
       h+='<summary class="exp-grupo-header" style="background:'+GRUPO_BG+'"><span class="exp-chevron">▶</span>'+escH(grupo.name)+'<span class="exp-count">'+marcos.length+' marco'+(marcos.length!==1?'s':'')+'</span></summary>';
-      h+='<div class="exp-grupo-body">'+marcos.map(marcoHTML).join('')+'</div>';
+      h+='<div class="exp-grupo-body">'+marcos.map(function(m){return marcoHTML(m,grupo.name);}).join('')+'</div>';
       h+='</details>';
       return h;
     }
@@ -1781,14 +1810,16 @@ function abrevNome(n){
       +'*{box-sizing:border-box}'
       +'body{margin:0;font-family:Calibri,Segoe UI,Arial,sans-serif;background:#1E2E0D;color:#E2E8F0}'
       +'.exp-wrap{max-width:1100px;margin:0 auto;padding:24px 18px 60px}'
-      +'.exp-header{text-align:center;padding:28px 10px 22px;border-bottom:2px solid #4A7A1E;margin-bottom:20px}'
-      +'.exp-header img{height:64px;margin-bottom:14px}'
-      +'.exp-header h1{color:#8AC43A;font-size:34px;margin:0 0 6px}'
-      +'.exp-header h2{color:#E2E8F0;font-weight:400;font-size:18px;margin:0 0 10px}'
-      +'.exp-header .exp-sub{color:#94A3B8;font-size:14px}'
+      +'.exp-header{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:3px solid #8AC43A;margin-bottom:20px;background:#16220A}'
+      +'.exp-header img{height:52px;width:auto;border-radius:4px;flex-shrink:0;display:block}'
+      +'.exp-header h1{color:#FFF;font-size:24px;font-weight:700;margin:0}'
+      +'.exp-header h1 span{color:#8AC43A}'
+      +'.exp-header .exp-sub{color:#E2E8F0;font-size:13px;margin-top:2px}'
       +'.exp-toolbar{display:flex;gap:10px;justify-content:center;margin-bottom:22px}'
       +'.exp-toolbar button{background:#2F4A18;color:#E2E8F0;border:1px solid #4A7A1E;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}'
       +'.exp-toolbar button:hover{background:#4A7A1E}'
+      +'.exp-toolbar .ms-btn,.exp-toolbar .expand-dd-btn{background:#78B733;border-color:#78B733;color:#1A2E0A}'
+      +'.exp-toolbar .ms-btn:hover,.exp-toolbar .expand-dd-btn:hover{background:#689E2C;border-color:#689E2C}'
       +'.exp-eixo{margin-bottom:12px;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.3)}'
       +'.exp-eixo-header{list-style:none;cursor:pointer;padding:14px 16px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px}'
       +'.exp-eixo-header::-webkit-details-marker{display:none}'
@@ -1814,42 +1845,98 @@ function abrevNome(n){
       +'.exp-task-name{color:'+TEXT_DARK+';font-size:13px;font-weight:600;flex:1;min-width:160px}'
       +'.exp-field{font-size:12px;color:'+TEXT_DARK+';margin-top:2px}'
       +'.exp-field.exp-empty{color:#DC2626;font-weight:700}'
-      +'.exp-fval[contenteditable="true"]{outline:2px dashed #3B82F6;outline-offset:2px;background:#EFF6FF;border-radius:3px;padding:1px 4px;cursor:text}'
-      +'.exp-toolbar button.exp-save-btn{background:#1A3A8A;border-color:#1A3A8A}'
-      +'.exp-toolbar button.exp-save-btn:hover{background:#24499E}'
+      +'.exp-hidden{display:none!important}'
+      +'.exp-toolbar{flex-wrap:wrap}'
+      +'.exp-toolbar .ms-wrap,.exp-toolbar .expand-dd-wrap{position:relative;display:inline-block}'
+      +'.exp-toolbar .ms-btn,.exp-toolbar .expand-dd-btn{display:flex;align-items:center;gap:6px}'
+      +'.ms-menu,.expand-dd-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;background:#2F4A18;border:1px solid rgba(138,196,58,.35);border-radius:8px;z-index:20;min-width:200px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);padding:6px 0;text-align:left}'
+      +'.ms-menu.open,.expand-dd-menu.open{display:block}'
+      +'.ms-option{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;font-size:13px;color:#E2E8F0;white-space:nowrap}'
+      +'.ms-option:hover{background:rgba(138,196,58,.15)}'
+      +'.ms-option input{accent-color:#8AC43A;width:14px;height:14px;flex-shrink:0;cursor:pointer}'
+      +'.ms-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}'
+      +'.ms-divider{border:none;border-top:1px solid rgba(255,255,255,.15);margin:4px 0}'
+      +'.ms-arrow{font-size:10px;opacity:.7}'
+      +'.expand-dd-item{padding:8px 16px;font-size:13px;color:#E2E8F0;cursor:pointer;white-space:nowrap}'
+      +'.expand-dd-item:hover{background:rgba(138,196,58,.15);color:#8AC43A}'
+      +'.exp-search-zone{position:relative;margin:0 0 22px}'
+      +'.exp-search-zone .lupa{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.7;pointer-events:none}'
+      +'.exp-search-bar{width:100%;padding:11px 14px 11px 40px;border:1.5px solid rgba(138,196,58,.35);border-radius:10px;font-size:14px;color:#1E293B;background:#F8FAFC;outline:none;box-sizing:border-box}'
+      +'.exp-search-bar:focus{border-color:#8AC43A;box-shadow:0 0 0 3px rgba(138,196,58,.18)}'
       +'.exp-footer{text-align:center;color:#94A3B8;font-size:12px;margin-top:30px;padding-top:14px;border-top:1px solid #4A7A1E}'
-      +'@media(max-width:640px){.exp-eixo-header{font-size:16px}.exp-marco-name{min-width:120px}}';
+      +'@media(max-width:640px){.exp-eixo-header{font-size:16px}.exp-marco-name{min-width:120px}.exp-header{padding:10px 12px}.exp-header img{height:34px}.exp-header h1{font-size:16px}.exp-header .exp-sub{font-size:11px}}';
 
     var expScript='<script>'
-      +'var _expEditing=false;'
-      +'function _expToggleEdit(){'
-      +'_expEditing=!_expEditing;'
-      +'document.querySelectorAll(".exp-fval").forEach(function(el){el.contentEditable=_expEditing;});'
-      +'var b=document.getElementById("exp-edit-btn");if(b)b.textContent=_expEditing?"\ud83d\udd12 Bloquear edi\u00e7\u00e3o":"\u270f\ufe0f Editar campos";'
-      +'var s=document.getElementById("exp-save-btn");if(s)s.style.display=_expEditing?"inline-block":"none";'
+      +'function _expToggleMs(prefix){'
+      +'var menu=document.getElementById("exp-"+prefix+"-menu");if(!menu)return;'
+      +'var isOpen=menu.classList.contains("open");'
+      +'document.querySelectorAll(".ms-menu.open,.expand-dd-menu.open").forEach(function(m){m.classList.remove("open");});'
+      +'if(!isOpen)menu.classList.add("open");'
       +'}'
-      +'document.addEventListener("focusin",function(e){'
-      +'var t=e.target;if(t.classList&&t.classList.contains("exp-fval")&&t.getAttribute("contenteditable")==="true"){'
-      +'if(t.textContent.trim()===t.getAttribute("data-ph"))t.textContent="";'
+      +'function _expToggleVizDd(){'
+      +'var menu=document.getElementById("exp-viz-menu");if(!menu)return;'
+      +'var isOpen=menu.classList.contains("open");'
+      +'document.querySelectorAll(".ms-menu.open,.expand-dd-menu.open").forEach(function(m){m.classList.remove("open");});'
+      +'if(!isOpen)menu.classList.add("open");'
+      +'}'
+      +'document.addEventListener("click",function(e){'
+      +'if(!e.target.closest(".ms-wrap")&&!e.target.closest(".expand-dd-wrap")){'
+      +'document.querySelectorAll(".ms-menu.open,.expand-dd-menu.open").forEach(function(m){m.classList.remove("open");});'
       +'}});'
-      +'document.addEventListener("focusout",function(e){'
-      +'var t=e.target;if(t.classList&&t.classList.contains("exp-fval")){'
-      +'var field=t.closest(".exp-field");var txt=t.textContent.replace(/\\s+/g," ").trim();'
-      +'if(txt===""){t.textContent=t.getAttribute("data-ph");}'
-      +'if(field)field.classList.toggle("exp-empty",txt==="");'
-      +'}});'
-      +'function _expSaveHTML(){'
-      +'document.querySelectorAll(".exp-fval").forEach(function(el){el.contentEditable="false";});'
-      +'var b=document.getElementById("exp-edit-btn");if(b)b.textContent="\u270f\ufe0f Editar campos";'
-      +'var s=document.getElementById("exp-save-btn");if(s)s.style.display="none";'
-      +'_expEditing=false;'
-      +'var d=new Date();var stamp=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");'
-      +'var out="<!doctype html>\\n"+document.documentElement.outerHTML;'
-      +'var blob=new Blob([out],{type:"text/html;charset=utf-8"});'
-      +'var url=URL.createObjectURL(blob);'
-      +'var a=document.createElement("a");a.href=url;a.download="Pauta_N2_editada_"+stamp+".html";document.body.appendChild(a);a.click();'
-      +'document.body.removeChild(a);'
-      +'setTimeout(function(){URL.revokeObjectURL(url);},1000);'
+      +'function _expOnMsAll(prefix,cb){'
+      +'document.querySelectorAll("#exp-"+prefix+"-menu input.exp-opt").forEach(function(o){o.checked=cb.checked;});'
+      +'_expApplyFilters();'
+      +'}'
+      +'function _expOnMsChange(prefix){'
+      +'var all=document.getElementById("exp-"+prefix+"-all");'
+      +'var opts=[].slice.call(document.querySelectorAll("#exp-"+prefix+"-menu input.exp-opt"));'
+      +'if(all)all.checked=opts.every(function(o){return o.checked;});'
+      +'_expApplyFilters();'
+      +'}'
+      +'function _expGetChecked(prefix){'
+      +'var opts=[].slice.call(document.querySelectorAll("#exp-"+prefix+"-menu input.exp-opt"));'
+      +'var checked=opts.filter(function(o){return o.checked;}).map(function(o){return o.value;});'
+      +'return (checked.length===opts.length||checked.length===0)?null:checked;'
+      +'}'
+      +'function _expApplyFilters(){'
+      +'var st=_expGetChecked("status");'
+      +'var rp=_expGetChecked("resp");'
+      +'var stLbl=document.getElementById("exp-status-label");if(stLbl)stLbl.textContent=st?st.length+" status selecionado"+(st.length>1?"s":""):"Todos os status";'
+      +'var rpLbl=document.getElementById("exp-resp-label");if(rpLbl)rpLbl.textContent=rp?rp.length+" selecionado"+(rp.length>1?"s":""):"Todos os respons\u00e1veis";'
+      +'var q=(document.getElementById("exp-search-input").value||"").trim().toLowerCase();'
+      +'document.querySelectorAll(".exp-task").forEach(function(el){'
+      +'var okSt=!st||st.indexOf(el.getAttribute("data-status"))>=0;'
+      +'var okRp=!rp||rp.indexOf(el.getAttribute("data-resp"))>=0;'
+      +'var okQ=!q||(el.getAttribute("data-q")||"").indexOf(q)>=0;'
+      +'el.classList.toggle("exp-hidden",!(okSt&&okRp&&okQ));'
+      +'});'
+      +'document.querySelectorAll(".exp-marco").forEach(function(mEl){'
+      +'var any=[].slice.call(mEl.querySelectorAll(".exp-task")).some(function(t){return !t.classList.contains("exp-hidden");});'
+      +'mEl.classList.toggle("exp-hidden",!any);'
+      +'});'
+      +'document.querySelectorAll(".exp-grupo").forEach(function(gEl){'
+      +'var any=[].slice.call(gEl.querySelectorAll(".exp-marco")).some(function(m){return !m.classList.contains("exp-hidden");});'
+      +'gEl.classList.toggle("exp-hidden",!any);'
+      +'});'
+      +'document.querySelectorAll(".exp-eixo").forEach(function(eEl){'
+      +'var any=[].slice.call(eEl.querySelectorAll(".exp-grupo")).some(function(g){return !g.classList.contains("exp-hidden");});'
+      +'eEl.classList.toggle("exp-hidden",!any);'
+      +'});'
+      +'}'
+      +'function _expSetLevel(level){'
+      +'document.querySelectorAll(".ms-menu.open,.expand-dd-menu.open").forEach(function(m){m.classList.remove("open");});'
+      +'var lbl=document.getElementById("exp-viz-label");if(lbl)lbl.textContent=level.charAt(0).toUpperCase()+level.slice(1);'
+      +'document.querySelectorAll(".exp-eixo").forEach(function(d){d.open=(level!=="eixos");});'
+      +'document.querySelectorAll(".exp-grupo").forEach(function(d){d.open=(level==="marco"||level==="tarefas");});'
+      +'document.querySelectorAll(".exp-tasks").forEach(function(d){d.open=(level==="tarefas");});'
+      +'}'
+      +'function _expExpandAll(){'
+      +'document.querySelectorAll(".exp-eixo,.exp-grupo,.exp-tasks").forEach(function(d){d.open=true;});'
+      +'var lbl=document.getElementById("exp-viz-label");if(lbl)lbl.textContent="Tarefas";'
+      +'}'
+      +'function _expCollapseAll(){'
+      +'document.querySelectorAll(".exp-eixo,.exp-grupo,.exp-tasks").forEach(function(d){d.open=false;});'
+      +'var lbl=document.getElementById("exp-viz-label");if(lbl)lbl.textContent="Eixos";'
       +'}'
       +'<\/script>';
 
@@ -1859,13 +1946,22 @@ function abrevNome(n){
       +'<style>'+css+'</style></head><body><div class="exp-wrap">'
       +'<div class="exp-header">'
       +(logoData?'<img src="'+logoData+'" alt="MAZ">':'')
-      +'<h1>Reunião N2</h1><h2>'+escH(subtitle)+'</h2>'
-      +'<div class="exp-sub">'+escH(dateFull)+' · '+totalItems+' item'+(totalItems!==1?'s':'')+' selecionado'+(totalItems!==1?'s':'')+'</div>'
+      +'<div><h1><span>Reunião N2</span></h1>'
+      +'<div class="exp-sub">'+escH(subtitle)+' · '+escH(dateFull)+' · '+totalItems+' item'+(totalItems!==1?'s':'')+' selecionado'+(totalItems!==1?'s':'')+'</div></div>'
       +'</div>'
-      +'<div class="exp-toolbar"><button onclick="document.querySelectorAll(\'details\').forEach(function(d){d.open=true;})">Expandir tudo</button>'
-      +'<button onclick="document.querySelectorAll(\'details\').forEach(function(d){d.open=false;})">Recolher tudo</button>'
-      +'<button id="exp-edit-btn" onclick="_expToggleEdit()">\u270f\ufe0f Editar campos</button>'
-      +'<button id="exp-save-btn" class="exp-save-btn" onclick="_expSaveHTML()" style="display:none">\ud83d\udcbe Salvar altera\u00e7\u00f5es</button></div>'
+      +'<div class="exp-toolbar">'
+      +'<div class="ms-wrap"><button class="ms-btn" type="button" onclick="_expToggleMs(\'status\');event.stopPropagation()"><span class="ms-label-text" id="exp-status-label">Todos os status</span><span class="ms-arrow">\u25be</span></button><div class="ms-menu" id="exp-status-menu">'+statusMenuHTML+'</div></div>'
+      +'<div class="ms-wrap"><button class="ms-btn" type="button" onclick="_expToggleMs(\'resp\');event.stopPropagation()"><span class="ms-label-text" id="exp-resp-label">Todos os respons\u00e1veis</span><span class="ms-arrow">\u25be</span></button><div class="ms-menu" id="exp-resp-menu">'+respMenuHTML+'</div></div>'
+      +'<div class="expand-dd-wrap"><button class="expand-dd-btn" type="button" onclick="_expToggleVizDd();event.stopPropagation()">VISUALIZA\u00c7\u00c3O: <span id="exp-viz-label">Tarefas</span> \u25be</button><div class="expand-dd-menu" id="exp-viz-menu">'
+      +'<div class="expand-dd-item" onclick="_expSetLevel(\'eixos\')">Eixos</div>'
+      +'<div class="expand-dd-item" onclick="_expSetLevel(\'grupo\')">Grupo</div>'
+      +'<div class="expand-dd-item" onclick="_expSetLevel(\'marco\')">Marco</div>'
+      +'<div class="expand-dd-item" onclick="_expSetLevel(\'tarefas\')">Tarefas</div>'
+      +'</div></div>'
+      +'<button type="button" onclick="_expExpandAll()">Expandir tudo</button>'
+      +'<button type="button" onclick="_expCollapseAll()">Recolher tudo</button>'
+      +'</div>'
+      +'<div class="exp-search-zone"><span class="lupa">\ud83d\udd0d</span><input class="exp-search-bar" id="exp-search-input" type="text" placeholder="Buscar grupo, marco, respons\u00e1vel..." oninput="_expApplyFilters()"></div>'
       +byEixo.map(eixoHTML).join('')
       +'<div class="exp-footer">IDG PMO · MAZ 2026 · Gerado em '+escH(dateFull)+'</div>'
       +'</div>'+expScript+'</body></html>';
