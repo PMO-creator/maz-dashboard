@@ -1664,6 +1664,73 @@ function abrevNome(n){
     document.body.removeChild(a);
     setTimeout(function(){URL.revokeObjectURL(url);},1000);
   }
+  function _n2KpiRowHTML(wbsArr){
+    var totalMarcos=0, marcosCompletos=0;
+    wbsArr.forEach(function(eixo){
+      eixo.children.forEach(function(grupo){
+        grupo.tasks.forEach(function(task){
+          if(task.status==='Cancelado/Congelado'||task.status==='Cancelado')return;
+          totalMarcos++;
+          if(task.status==='Feito'){
+            var allDone=!task.subtasks||task.subtasks.length===0||
+              task.subtasks.every(function(st){return st.status==='Feito'||st.status==='Cancelado/Congelado'||st.status==='Cancelado';});
+            if(allDone)marcosCompletos++;
+          }
+        });
+      });
+    });
+    var pctMarcos=totalMarcos?Math.round(marcosCompletos/totalMarcos*100):0;
+    function validProjDate(d){return d&&/^\d{4}-\d{2}-\d{2}/.test(d)&&d>='2025-01-01'&&d<='2026-12-31';}
+    var projDates=[];
+    wbsArr.forEach(function(eixo){eixo.children.forEach(function(grupo){grupo.tasks.forEach(function(task){
+      if(task.status==='Definir datas')return;
+      if(validProjDate(task.start))projDates.push(task.start);
+      if(validProjDate(task.end))projDates.push(task.end);
+      (task.subtasks||[]).forEach(function(st){
+        if(st.status==='Definir datas')return;
+        if(validProjDate(st.start))projDates.push(st.start);
+        if(validProjDate(st.end))projDates.push(st.end);
+      });
+    });});});
+    var projStart=projDates.length?projDates.reduce(function(a,b){return a<b?a:b;}):null;
+    var projEnd=projDates.length?projDates.reduce(function(a,b){return a>b?a:b;}):null;
+    var heroColor='#05C46B';
+    if(projStart&&projEnd&&projStart<projEnd){
+      var nowD=new Date();var s=_pLocal(projStart);var e=_pLocal(projEnd);
+      var totalMs=e-s;var elapsedMs=Math.max(0,nowD-s);
+      var expectedPct=Math.min(100,Math.round(elapsedMs/totalMs*100));
+      var diff=pctMarcos-expectedPct;
+      if(diff>=0)heroColor='#05C46B';
+      else if(diff>=-10)heroColor='#FBBF24';
+      else heroColor='#FF2525';
+    }
+    var allTasks=[];
+    wbsArr.forEach(function(eixo){eixo.children.forEach(function(grupo){grupo.tasks.forEach(function(task){
+      if(task.subtasks&&task.subtasks.length>0)task.subtasks.forEach(function(st){allTasks.push(st);});
+      else allTasks.push(task);
+    });});});
+    var active=allTasks.filter(function(t){return t.status&&t.status!=='Cancelado/Congelado'&&t.status!=='Cancelado';});
+    var total=active.length;
+    function cnt(s){return active.filter(function(t){return t.status===s;}).length;}
+    var feito=cnt('Feito'),emAnd=cnt('Em andamento'),atras=cnt('Atrasado'),risco=cnt('Risco de atraso'),ainic=cnt('A iniciar'),defin=cnt('Definir datas');
+    function pct(v){return total?Math.round(v/total*100):0;}
+    var ST=STATUS;
+    function mini(label,color,val,count){
+      return '<div class="kpi-mini" style="border-color:'+color+'"><div class="kpi-mini-label">'+label+'</div><div class="kpi-mini-value" style="color:'+color+'">'+val+'%</div><div class="kpi-mini-count">'+count+' tarefas</div></div>';
+    }
+    return '<div class="kpi-row">'
+      +'<div class="kpi-hero"><div class="kpi-hero-label">Marcos Conclu\u00eddos</div>'
+      +'<div class="kpi-hero-value" style="color:'+heroColor+'">'+pctMarcos+'%</div>'
+      +'<div class="kpi-hero-sub">'+marcosCompletos+' de '+totalMarcos+' marcos entregues</div></div>'
+      +'<div class="kpi-mini-grid">'
+      +mini('% Conclu\u00eddas',ST['Feito'].color,pct(feito),feito)
+      +mini('% Em Andamento',ST['Em andamento'].color,pct(emAnd),emAnd)
+      +mini('% A Iniciar',ST['A iniciar'].color,pct(ainic),ainic)
+      +mini('% Atrasadas',ST['Atrasado'].color,pct(atras),atras)
+      +mini('% Risco de Atraso',ST['Risco de atraso'].color,pct(risco),risco)
+      +mini('% Definir Datas',ST['Definir datas'].color,pct(defin),defin)
+      +'</div></div>';
+  }
   function _buildN2HTMLDoc(wbsArr,arr,isDir){
     var currentFilters=getFilters();
     var sfArr=currentFilters.status||[];
@@ -1815,10 +1882,22 @@ function abrevNome(n){
       +'.exp-header h1{color:#FFF;font-size:24px;font-weight:700;margin:0}'
       +'.exp-header h1 span{color:#8AC43A}'
       +'.exp-header .exp-sub{color:#E2E8F0;font-size:13px;margin-top:2px}'
-      +'.exp-toolbar{display:flex;gap:10px;justify-content:center;margin-bottom:22px}'
-      +'.exp-toolbar button{background:#2F4A18;color:#E2E8F0;border:1px solid #4A7A1E;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer}'
+      +'.kpi-row{display:grid;grid-template-columns:150px 1fr;gap:12px;margin-bottom:20px;align-items:stretch}'
+      +'.kpi-hero{background:#B4DA82;border-radius:8px;padding:14px 10px;box-shadow:0 2px 12px rgba(0,0,0,.18);border-left:4px solid #6BA030;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}'
+      +'.kpi-hero-label{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:rgba(0,0,0,.55);margin-bottom:6px;font-weight:700}'
+      +'.kpi-hero-value{font-size:36px;font-weight:800;line-height:1;color:#8AC43A}'
+      +'.kpi-hero-sub{font-size:11px;color:rgba(0,0,0,.5);margin-top:6px;font-weight:500;letter-spacing:.4px}'
+      +'.kpi-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:8px}'
+      +'.kpi-mini{background:#FFFFFF;border-radius:8px;padding:8px 9px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:3px solid #8AC43A}'
+      +'.kpi-mini-label{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#64748B;margin-bottom:2px;font-weight:700}'
+      +'.kpi-mini-value{font-size:20px;font-weight:800;line-height:1}'
+      +'.kpi-mini-count{font-size:10px;color:#64748B;margin-top:2px;font-weight:500}'
+      +'.exp-toolbar{display:flex;gap:8px;flex-wrap:wrap}'
+      +'.exp-toolbar .ms-label-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+      +'.exp-toolbar>.ms-wrap,.exp-toolbar>.expand-dd-wrap,.exp-toolbar>button{flex:1 1 0;min-width:130px;position:relative}'
+      +'.exp-toolbar button{background:#2F4A18;color:#E2E8F0;border:1px solid #4A7A1E;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;width:100%;box-sizing:border-box}'
       +'.exp-toolbar button:hover{background:#4A7A1E}'
-      +'.exp-toolbar .ms-btn,.exp-toolbar .expand-dd-btn{background:#78B733;border-color:#78B733;color:#1A2E0A}'
+      +'.exp-toolbar .ms-btn,.exp-toolbar .expand-dd-btn{background:#78B733;border-color:#78B733;color:#1A2E0A;display:flex;align-items:center;justify-content:space-between;gap:6px}'
       +'.exp-toolbar .ms-btn:hover,.exp-toolbar .expand-dd-btn:hover{background:#689E2C;border-color:#689E2C}'
       +'.exp-eixo{margin-bottom:12px;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.3)}'
       +'.exp-eixo-header{list-style:none;cursor:pointer;padding:14px 16px;font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px}'
@@ -1846,9 +1925,6 @@ function abrevNome(n){
       +'.exp-field{font-size:12px;color:'+TEXT_DARK+';margin-top:2px}'
       +'.exp-field.exp-empty{color:#DC2626;font-weight:700}'
       +'.exp-hidden{display:none!important}'
-      +'.exp-toolbar{flex-wrap:wrap}'
-      +'.exp-toolbar .ms-wrap,.exp-toolbar .expand-dd-wrap{position:relative;display:inline-block}'
-      +'.exp-toolbar .ms-btn,.exp-toolbar .expand-dd-btn{display:flex;align-items:center;gap:6px}'
       +'.ms-menu,.expand-dd-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;background:#2F4A18;border:1px solid rgba(138,196,58,.35);border-radius:8px;z-index:20;min-width:200px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);padding:6px 0;text-align:left}'
       +'.ms-menu.open,.expand-dd-menu.open{display:block}'
       +'.ms-option{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;font-size:13px;color:#E2E8F0;white-space:nowrap}'
@@ -1859,12 +1935,26 @@ function abrevNome(n){
       +'.ms-arrow{font-size:10px;opacity:.7}'
       +'.expand-dd-item{padding:8px 16px;font-size:13px;color:#E2E8F0;cursor:pointer;white-space:nowrap}'
       +'.expand-dd-item:hover{background:rgba(138,196,58,.15);color:#8AC43A}'
-      +'.exp-search-zone{position:relative;margin:0 0 22px}'
+      +'.exp-sticky-sentinel{height:1px}'
+      +'.exp-sticky{position:relative;z-index:30}'
+      +'.exp-sticky-inner{display:flex;flex-direction:column;gap:22px;background:#1E2E0D;margin:0 -18px;padding:0 18px 22px}'
+      +'@media(min-width:641px){'
+      +'.exp-sticky{position:sticky;top:0}'
+      +'.exp-sticky.is-stuck{pointer-events:none}'
+      +'.exp-sticky.is-stuck .exp-sticky-inner{pointer-events:auto;flex-direction:row;align-items:center;gap:8px;padding:7px 18px;box-shadow:0 6px 16px rgba(0,0,0,.45);border-bottom:1px solid rgba(138,196,58,.28)}'
+      +'.exp-sticky.is-stuck .exp-toolbar{flex:1 1 auto;min-width:0;flex-wrap:nowrap}'
+      +'.exp-sticky.is-stuck .exp-toolbar>.ms-wrap,.exp-sticky.is-stuck .exp-toolbar>.expand-dd-wrap,.exp-sticky.is-stuck .exp-toolbar>button{min-width:0}'
+      +'.exp-sticky.is-stuck .exp-toolbar button{overflow:hidden;white-space:nowrap}'
+      +'.exp-sticky.is-stuck .exp-search-zone{flex:0 0 230px}'
+      +'.exp-sticky.is-stuck .exp-search-bar{padding:6px 10px 6px 30px;font-size:12px;border-radius:7px}'
+      +'.exp-sticky.is-stuck .exp-search-zone .lupa{left:9px;font-size:12px}'
+      +'}'
+      +'.exp-search-zone{position:relative}'
       +'.exp-search-zone .lupa{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.7;pointer-events:none}'
       +'.exp-search-bar{width:100%;padding:11px 14px 11px 40px;border:1.5px solid rgba(138,196,58,.35);border-radius:10px;font-size:14px;color:#1E293B;background:#F8FAFC;outline:none;box-sizing:border-box}'
       +'.exp-search-bar:focus{border-color:#8AC43A;box-shadow:0 0 0 3px rgba(138,196,58,.18)}'
       +'.exp-footer{text-align:center;color:#94A3B8;font-size:12px;margin-top:30px;padding-top:14px;border-top:1px solid #4A7A1E}'
-      +'@media(max-width:640px){.exp-eixo-header{font-size:16px}.exp-marco-name{min-width:120px}.exp-header{padding:10px 12px}.exp-header img{height:34px}.exp-header h1{font-size:16px}.exp-header .exp-sub{font-size:11px}}';
+      +'@media(max-width:640px){.exp-eixo-header{font-size:16px}.exp-marco-name{min-width:120px}.exp-header{padding:10px 12px}.exp-header img{height:34px}.exp-header h1{font-size:16px}.exp-header .exp-sub{font-size:11px}.kpi-row{grid-template-columns:1fr;gap:10px}.kpi-mini-grid{grid-template-columns:repeat(2,1fr)}.exp-toolbar>.ms-wrap,.exp-toolbar>.expand-dd-wrap,.exp-toolbar>button{min-width:100%}}';
 
     var expScript='<script>'
       +'function _expToggleMs(prefix){'
@@ -1938,6 +2028,24 @@ function abrevNome(n){
       +'document.querySelectorAll(".exp-eixo,.exp-grupo,.exp-tasks").forEach(function(d){d.open=false;});'
       +'var lbl=document.getElementById("exp-viz-label");if(lbl)lbl.textContent="Eixos";'
       +'}'
+      +'function _expInitSticky(){'
+      +'var outer=document.getElementById("exp-sticky");'
+      +'var sentinel=document.getElementById("exp-sticky-sentinel");'
+      +'if(!outer||!sentinel||!("IntersectionObserver" in window))return;'
+      +'function isMobile(){return window.matchMedia("(max-width:640px)").matches;}'
+      +'function setStuck(stuck){'
+      +'if(isMobile())stuck=false;'
+      +'if(stuck===outer.classList.contains("is-stuck"))return;'
+      +'if(stuck){outer.style.height=outer.getBoundingClientRect().height+"px";outer.classList.add("is-stuck");}'
+      +'else{outer.classList.remove("is-stuck");outer.style.height="";}'
+      +'}'
+      +'new IntersectionObserver(function(en){setStuck(!en[0].isIntersecting);},{threshold:0}).observe(sentinel);'
+      +'window.addEventListener("resize",function(){'
+      +'outer.classList.remove("is-stuck");outer.style.height="";'
+      +'if(!isMobile()&&sentinel.getBoundingClientRect().top<0){outer.style.height=outer.getBoundingClientRect().height+"px";outer.classList.add("is-stuck");}'
+      +'});'
+      +'}'
+      +'_expInitSticky();'
       +'<\/script>';
 
     var html='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">'
@@ -1949,6 +2057,9 @@ function abrevNome(n){
       +'<div><h1><span>Reunião N2</span></h1>'
       +'<div class="exp-sub">'+escH(subtitle)+' · '+escH(dateFull)+' · '+totalItems+' item'+(totalItems!==1?'s':'')+' selecionado'+(totalItems!==1?'s':'')+'</div></div>'
       +'</div>'
+      +_n2KpiRowHTML(wbsArr)
+      +'<div class="exp-sticky-sentinel" id="exp-sticky-sentinel"></div>'
+      +'<div class="exp-sticky" id="exp-sticky"><div class="exp-sticky-inner">'
       +'<div class="exp-toolbar">'
       +'<div class="ms-wrap"><button class="ms-btn" type="button" onclick="_expToggleMs(\'status\');event.stopPropagation()"><span class="ms-label-text" id="exp-status-label">Todos os status</span><span class="ms-arrow">\u25be</span></button><div class="ms-menu" id="exp-status-menu">'+statusMenuHTML+'</div></div>'
       +'<div class="ms-wrap"><button class="ms-btn" type="button" onclick="_expToggleMs(\'resp\');event.stopPropagation()"><span class="ms-label-text" id="exp-resp-label">Todos os respons\u00e1veis</span><span class="ms-arrow">\u25be</span></button><div class="ms-menu" id="exp-resp-menu">'+respMenuHTML+'</div></div>'
@@ -1962,6 +2073,7 @@ function abrevNome(n){
       +'<button type="button" onclick="_expCollapseAll()">Recolher tudo</button>'
       +'</div>'
       +'<div class="exp-search-zone"><span class="lupa">\ud83d\udd0d</span><input class="exp-search-bar" id="exp-search-input" type="text" placeholder="Buscar grupo, marco, respons\u00e1vel..." oninput="_expApplyFilters()"></div>'
+      +'</div></div>'
       +byEixo.map(eixoHTML).join('')
       +'<div class="exp-footer">IDG PMO · MAZ 2026 · Gerado em '+escH(dateFull)+'</div>'
       +'</div>'+expScript+'</body></html>';
