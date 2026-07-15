@@ -929,6 +929,7 @@ const PRIO_COLORS={'1':'#DC2626','2':'#EA580C','3':'#2563EB','4':'#64748B'};
 
 const WBS = [];
 const WBS_DIR = [];
+let WEEK_LABEL = '';
 
 const REQS = [];
 
@@ -1731,6 +1732,157 @@ function abrevNome(n){
       +mini('% Definir Datas',ST['Definir datas'].color,pct(defin),defin)
       +'</div></div>';
   }
+  // ── RESUMO EXECUTIVO N2 — heuristica determinista (sem IA) ───────────────────
+  function _n2ResumoHTML(byEixo,weekLabel){
+    var today=new Date(); today.setHours(0,0,0,0);
+    var d7=new Date(today); d7.setDate(d7.getDate()+7);
+    function pl(s){ if(!s||s.length<10) return null; var p=s.split('-'); var d=new Date(+p[0],+p[1]-1,+p[2]); d.setHours(0,0,0,0); return isNaN(d.getTime())?null:d; }
+    function dd(a,b){ return Math.round((a-b)/86400000); }
+    function nd(n){ return n+' dia'+(n===1?'':'s'); }
+
+    var items=[], marcosSet={}, eixoNames=[];
+    byEixo.forEach(function(e){
+      eixoNames.push(e.eixo.name);
+      e.grupos.forEach(function(g){
+        g.marcos.forEach(function(md){
+          marcosSet[e.eixo.name+'|'+g.grupo.name+'|'+md.task.tarefa]=1;
+          var lst=(md.subtasks&&md.subtasks.length>0)?md.subtasks:[md.task];
+          lst.forEach(function(t){
+            items.push({eixo:e.eixo.name,grupo:g.grupo.name,marco:md.task.tarefa,t:t});
+          });
+        });
+      });
+    });
+    if(!items.length) return '';
+
+    var RANK={'Atrasado':0,'Risco de atraso':1,'Em andamento':2,'Definir datas':3,'A iniciar':4,'Feito':5,'Cancelado/Congelado':6,'Cancelado':6};
+    function stOf(it){ return it.t.status||'A iniciar'; }
+    function hasProg(it){ return !!(it.t.progresso&&it.t.progresso.trim()); }
+    function hasEnc(it){ return !!(it.t.encaminhamento&&it.t.encaminhamento.trim()); }
+
+    // motivo do status — espelha as regras de fixLeaf() em preprocessStatuses()
+    function motivo(it){
+      var t=it.t, st=stOf(it), e=pl(t.end), s=pl(t.start);
+      if(st==='Atrasado'){
+        if(e&&e<today) return 'fim previsto '+fmtBRshort(t.end)+', vencido há <b>'+nd(dd(today,e))+'</b>';
+        return 'herdado de subtarefa atrasada';
+      }
+      if(st==='Risco de atraso'){
+        if(e&&e>=today&&e<=d7){ var n=dd(e,today); return 'vence '+(n===0?'<b>hoje</b>':'em <b>'+nd(n)+'</b>')+' ('+fmtBRshort(t.end)+')'; }
+        if(s&&s<today) return '<b>deveria ter iniciado em '+fmtBRshort(t.start)+'</b> e não foi iniciado';
+        if(e&&e<today) return 'fim previsto '+fmtBRshort(t.end)+', vencido há <b>'+nd(dd(today,e))+'</b>';
+        return 'sem data conclusiva';
+      }
+      if(st==='Definir datas') return 'sem data de início ou fim definida';
+      var ds=t.start?fmtBRshort(t.start):'', de=t.end?fmtBRshort(t.end):'';
+      if(ds&&de) return ds+' → '+de;
+      if(de) return 'fim '+de;
+      return '';
+    }
+
+    // ordena: pior status primeiro; dentro do status, o mais urgente primeiro
+    function sortKey(it){
+      var t=it.t, st=stOf(it), e=pl(t.end);
+      var r=(RANK[st]===undefined?3:RANK[st]), u=0;
+      if(st==='Atrasado'&&e) u=-dd(today,e);
+      else if(st==='Risco de atraso'&&e) u=dd(e,today);
+      return [r,u];
+    }
+    items.sort(function(a,b){
+      var ka=sortKey(a),kb=sortKey(b);
+      return ka[0]!==kb[0]?ka[0]-kb[0]:ka[1]-kb[1];
+    });
+
+    var cnt={};
+    items.forEach(function(it){ var s=stOf(it); cnt[s]=(cnt[s]||0)+1; });
+    function c(s){ return cnt[s]||0; }
+
+    var atencao=items.filter(function(it){ var s=stOf(it); return s==='Atrasado'||s==='Risco de atraso'; });
+    var feitos =items.filter(function(it){ return stOf(it)==='Feito'; });
+    var andando=items.filter(function(it){ return stOf(it)==='Em andamento'; });
+    var demais =items.filter(function(it){ var s=stOf(it); return s!=='Atrasado'&&s!=='Risco de atraso'&&s!=='Feito'&&s!=='Em andamento'; });
+
+    var nMarcos=Object.keys(marcosSet).length;
+    var NPA='⚠ Não preenchido';
+    var h='';
+
+    // ── abertura ──
+    var partes=[];
+    [['Atrasado','atrasada','atrasadas'],
+     ['Risco de atraso','em risco de atraso','em risco de atraso'],
+     ['Em andamento','em andamento','em andamento'],
+     ['Feito','concluída','concluídas'],
+     ['A iniciar','a iniciar','a iniciar'],
+     ['Definir datas','sem datas definidas','sem datas definidas'],
+     ['Cancelado/Congelado','cancelada/congelada','canceladas/congeladas']].forEach(function(p){
+      var n=c(p[0]);
+      if(n>0) partes.push('<b>'+n+'</b> '+(n===1?p[1]:p[2]));
+    });
+    h+='<p>Esta pauta reúne <b>'+items.length+'</b> tarefa'+(items.length===1?'':'s')
+      +' em <b>'+nMarcos+'</b> marco'+(nMarcos===1?'':'s')
+      +', de <b>'+eixoNames.length+'</b> eixo'+(eixoNames.length===1?'':'s')
+      +' ('+escH(eixoNames.join(', '))+'). Pelo cronograma: '+partes.join(', ')+'.</p>';
+
+    // ── reporte da semana ──
+    var nProg=items.filter(hasProg).length, nEnc=items.filter(hasEnc).length;
+    var wl=weekLabel?escH(weekLabel):'semana atual';
+    if(nProg===0&&nEnc===0){
+      h+='<p>Nenhuma das '+items.length+' tarefas teve Progresso ou Encaminhamento reportado em <i>'+wl+'</i>.</p>';
+    } else {
+      h+='<p>Em <i>'+wl+'</i>: <b>'+nProg+'</b> de '+items.length+' tarefas têm Progresso reportado e <b>'+nEnc+'</b> têm Encaminhamento.</p>';
+    }
+
+    // ── pontos de atencao ──
+    if(atencao.length){
+      h+='<h4 class="exp-res-h">⚠️ Pontos de atenção — '+atencao.length+(atencao.length===1?' item':' itens')+'</h4><ul class="exp-res-list">';
+      atencao.forEach(function(it){
+        var t=it.t, st=stOf(it);
+        h+='<li>';
+        h+='<div class="exp-res-item-top"><b>'+escH(it.eixo)+' · '+escH(it.grupo)+' — '+escH(t.tarefa||'')+'</b>'
+          +(t.resp?' · <span class="exp-res-resp">'+escH(abrevNome(t.resp))+'</span>':'')+'</div>';
+        h+='<div class="exp-res-item-mid"><span class="exp-res-st" style="background:'+sc(st)+'">'+escH(sl(st))+'</span> '+motivo(it)+'</div>';
+        h+='<div class="exp-res-item-low">Progresso: '+(hasProg(it)?escH(t.progresso.trim()):'<span class="exp-res-np">'+NPA+'</span>')
+          +' · Encaminhamento: '+(hasEnc(it)?escH(t.encaminhamento.trim()):'<span class="exp-res-np">'+NPA+'</span>')+'</div>';
+        h+='</li>';
+      });
+      h+='</ul>';
+    }
+
+    // ── blocos compactos ──
+    function compacto(titulo,lst,extra){
+      if(!lst.length) return '';
+      var s='<h4 class="exp-res-h">'+titulo+' — '+lst.length+(lst.length===1?' item':' itens')+'</h4><p class="exp-res-compact">';
+      s+=lst.map(function(it){
+        var d=extra?extra(it):'';
+        return escH(it.eixo)+' · '+escH(it.t.tarefa||'')+(d?' <span class="exp-res-dim">('+escH(d)+')</span>':'');
+      }).join(' · ');
+      return s+'</p>';
+    }
+    h+=compacto('✅ Concluídas',feitos,null);
+    h+=compacto('📋 Em andamento',andando,function(it){ return it.t.end?'fim '+fmtBRshort(it.t.end):''; });
+    h+=compacto('• Demais',demais,function(it){ return sl(stOf(it)); });
+
+    // ── lacunas de informacao ──
+    if(atencao.length){
+      var semNada=atencao.filter(function(it){ return !hasProg(it)&&!hasEnc(it); });
+      var atrasSemEnc=atencao.filter(function(it){ return stOf(it)==='Atrasado'&&!hasEnc(it); });
+      if(semNada.length||atrasSemEnc.length){
+        h+='<h4 class="exp-res-h exp-res-h-red">🔴 Lacunas de informação</h4><p>';
+        if(semNada.length) h+='<b>'+semNada.length+' de '+atencao.length+'</b> '+(atencao.length===1?'item':'itens')+' em atenção '+(semNada.length===1?'está':'estão')+' sem Progresso e sem Encaminhamento reportados. ';
+        if(atrasSemEnc.length) h+='<b>'+atrasSemEnc.length+'</b> '+(atrasSemEnc.length===1?'item atrasado não tem':'itens atrasados não têm')+' plano de ação registrado.';
+        h+='</p>';
+      }
+    }
+
+    // ── rodape ──
+    var n2=new Date();
+    var hh=String(n2.getHours()).padStart(2,'0')+':'+String(n2.getMinutes()).padStart(2,'0');
+    h+='<p class="exp-res-foot">Gerado automaticamente em '+_dateStamp(n2).split('-').reverse().join('/')+' '+hh
+      +(weekLabel?' a partir da coluna “'+escH(weekLabel)+'”':'')+'. Revise antes de apresentar.</p>';
+
+    return h;
+  }
+
   function _buildN2HTMLDoc(wbsArr,arr,isDir){
     var currentFilters=getFilters();
     var sfArr=currentFilters.status||[];
@@ -1873,6 +2025,22 @@ function abrevNome(n){
     var logoData=logoEl?logoEl.src:null;
     var subtitle='Pauta — Museu das Amazônias 2026'+(isDir?' (Diretoria)':'');
 
+    var baseName=(isDir?'Pauta_N2_DIR_':'Pauta_N2_')+_dateStamp(now);
+    var resumoInner=_n2ResumoHTML(byEixo,WEEK_LABEL);
+    var resumoBlock=!resumoInner?'':('<div class="exp-resumo" id="exp-resumo">'
+      +'<div class="exp-resumo-head">'
+      +'<span class="exp-resumo-title">📝 Resumo Executivo</span>'
+      +'<div class="exp-resumo-actions">'
+      +'<button type="button" class="exp-rbtn exp-rbtn-read" onclick="_expEditarResumo()">✏️ Editar Resumo</button>'
+      +'<button type="button" class="exp-rbtn exp-rbtn-edit" onclick="_expRegerarResumo()">⟳ Regerar</button>'
+      +'<button type="button" class="exp-rbtn exp-rbtn-edit exp-rbtn-ghost" onclick="_expCancelarResumo()">✕ Cancelar</button>'
+      +'<button type="button" class="exp-rbtn exp-rbtn-edit exp-rbtn-primary" id="exp-btn-salvar" onclick="_expSalvarResumo()">💾 Salvar</button>'
+      +'</div></div>'
+      +'<div class="exp-resumo-body" id="exp-resumo-body">'+resumoInner+'</div>'
+      +'<div class="exp-resumo-hint">✏️ Modo edição ativo. Suas alterações só são preservadas ao clicar em <b>Salvar</b>, que gera um novo arquivo versionado.</div>'
+      +'<div id="exp-resumo-orig" style="display:none">'+resumoInner+'</div>'
+      +'</div>');
+
     var css=''
       +'*{box-sizing:border-box}'
       +'body{margin:0;font-family:Calibri,Segoe UI,Arial,sans-serif;background:#1E2E0D;color:#E2E8F0}'
@@ -1883,6 +2051,36 @@ function abrevNome(n){
       +'.exp-header h1 span{color:#8AC43A}'
       +'.exp-header .exp-sub{color:#E2E8F0;font-size:13px;margin-top:2px}'
       +'.kpi-row{display:grid;grid-template-columns:150px 1fr;gap:12px;margin-bottom:20px;align-items:stretch}'
+      +'.exp-resumo{background:#FFF;border:1px solid #DDE8F5;border-left:5px solid #8AC43A;border-radius:6px;margin-bottom:20px;overflow:hidden}'
+      +'.exp-resumo-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F5FAF0;border-bottom:1px solid #E3EDD8;flex-wrap:wrap}'
+      +'.exp-resumo-title{font-weight:700;color:#1A2E0A;font-size:15px;margin-right:auto}'
+      +'.exp-resumo-actions{display:flex;gap:8px;flex-wrap:wrap}'
+      +'.exp-rbtn{border:1px solid #C7D9B0;background:#FFF;color:#1A2E0A;border-radius:5px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}'
+      +'.exp-rbtn:hover{background:#EDF6E2;border-color:#8AC43A}'
+      +'.exp-rbtn-primary{background:#8AC43A;border-color:#7AB32A;color:#16220A}'
+      +'.exp-rbtn-primary:hover{background:#7AB32A}'
+      +'.exp-rbtn-ghost{background:transparent;border-color:#D8D8D8;color:#5A6E85}'
+      +'.exp-resumo-body{padding:14px 16px;color:#1A2E0A;font-size:13.5px;line-height:1.6;outline:none}'
+      +'.exp-resumo-body[contenteditable="true"]{background:#FFFDF2;box-shadow:inset 0 0 0 2px #FFD966}'
+      +'.exp-resumo-body p{margin:0 0 10px}'
+      +'.exp-res-h{margin:16px 0 8px;font-size:14px;color:#2F4A18;border-bottom:1px solid #E3EDD8;padding-bottom:4px}'
+      +'.exp-res-h-red{color:#B32020;border-bottom-color:#F5D0D0}'
+      +'.exp-res-list{list-style:none;margin:0;padding:0}'
+      +'.exp-res-list li{padding:8px 10px;margin-bottom:6px;background:#F7FAFF;border:1px solid #DDE8F5;border-radius:4px}'
+      +'.exp-res-item-top{margin-bottom:3px}'
+      +'.exp-res-item-mid{margin-bottom:3px;font-size:12.5px}'
+      +'.exp-res-item-low{font-size:12px;color:#5A6E85}'
+      +'.exp-res-resp{color:#5A6E85;font-weight:600}'
+      +'.exp-res-st{display:inline-block;padding:1px 7px;border-radius:9px;color:#FFF;font-size:10.5px;font-weight:700;vertical-align:middle}'
+      +'.exp-res-np{color:#B32020;font-weight:600}'
+      +'.exp-res-compact{font-size:12.5px;color:#3A4A5A}'
+      +'.exp-res-dim{color:#8898A8}'
+      +'.exp-res-foot{margin-top:14px;padding-top:8px;border-top:1px dashed #DDE8F5;font-size:11px;color:#8898A8;font-style:italic}'
+      +'.exp-resumo-hint{display:none;padding:0 16px 12px;font-size:11.5px;color:#8A6D00}'
+      +'.exp-resumo.is-editing .exp-resumo-hint{display:block}'
+      +'.exp-resumo.is-editing .exp-rbtn-read{display:none}'
+      +'.exp-resumo:not(.is-editing) .exp-rbtn-edit{display:none}'
+      +'@media print{.exp-resumo-actions,.exp-resumo-hint{display:none}}'
       +'.kpi-hero{background:#B4DA82;border-radius:8px;padding:14px 10px;box-shadow:0 2px 12px rgba(0,0,0,.18);border-left:4px solid #6BA030;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}'
       +'.kpi-hero-label{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:rgba(0,0,0,.55);margin-bottom:6px;font-weight:700}'
       +'.kpi-hero-value{font-size:36px;font-weight:800;line-height:1;color:#8AC43A}'
@@ -2045,12 +2243,62 @@ function abrevNome(n){
       +'if(!isMobile()&&sentinel.getBoundingClientRect().top<0){outer.style.height=outer.getBoundingClientRect().height+"px";outer.classList.add("is-stuck");}'
       +'});'
       +'}'
+      +'function _expGetMeta(n,d){var m=document.querySelector("meta[name=\\""+n+"\\"]");return m?m.getAttribute("content"):d;}'
+      +'function _expVersaoAtual(){return parseInt(_expGetMeta("pauta-versao","1"),10)||1;}'
+      +'function _expLabelSalvar(){var b=document.getElementById("exp-btn-salvar");if(b)b.textContent="💾 Salvar como v"+(_expVersaoAtual()+1);}'
+      +'function _expEditarResumo(){'
+      +'var box=document.getElementById("exp-resumo-body"),wrap=document.getElementById("exp-resumo");'
+      +'if(!box||!wrap)return;'
+      +'wrap._bak=box.innerHTML;'
+      +'wrap.classList.add("is-editing");'
+      +'box.setAttribute("contenteditable","true");box.focus();'
+      +'}'
+      +'function _expSairEdicao(){'
+      +'var box=document.getElementById("exp-resumo-body"),wrap=document.getElementById("exp-resumo");'
+      +'if(!box||!wrap)return;'
+      +'box.removeAttribute("contenteditable");wrap.classList.remove("is-editing");'
+      +'}'
+      +'function _expCancelarResumo(){'
+      +'var box=document.getElementById("exp-resumo-body"),wrap=document.getElementById("exp-resumo");'
+      +'if(!box||!wrap)return;'
+      +'if(wrap._bak!=null)box.innerHTML=wrap._bak;'
+      +'_expSairEdicao();'
+      +'}'
+      +'function _expRegerarResumo(){'
+      +'var orig=document.getElementById("exp-resumo-orig"),box=document.getElementById("exp-resumo-body");'
+      +'if(!orig||!box)return;'
+      +'if(!confirm("Regerar vai descartar todo o texto que você editou e voltar ao resumo original. Continuar?"))return;'
+      +'box.innerHTML=orig.innerHTML;'
+      +'}'
+      +'function _expResetView(){'
+      +'document.querySelectorAll(".ms-menu.open,.expand-dd-menu.open").forEach(function(m){m.classList.remove("open");});'
+      +'document.querySelectorAll("#exp-status-menu input,#exp-resp-menu input").forEach(function(o){o.checked=true;o.setAttribute("checked","");});'
+      +'var si=document.getElementById("exp-search-input");if(si){si.value="";si.setAttribute("value","");}'
+      +'var st=document.getElementById("exp-sticky");if(st){st.classList.remove("is-stuck");st.style.height="";}'
+      +'_expSetLevel("tarefas");_expApplyFilters();'
+      +'}'
+      +'function _expSalvarResumo(){'
+      +'_expSairEdicao();_expResetView();'
+      +'var nova=_expVersaoAtual()+1;'
+      +'var m=document.querySelector("meta[name=\\"pauta-versao\\"]");if(m)m.setAttribute("content",String(nova));'
+      +'var b=document.getElementById("exp-btn-salvar");if(b)b.textContent="💾 Salvar como v"+(nova+1);'
+      +'var nome=_expGetMeta("pauta-base","Pauta_N2")+"_v"+nova+".html";'
+      +'var doc="<!doctype html>\\n"+document.documentElement.outerHTML;'
+      +'var blob=new Blob([doc],{type:"text/html;charset=utf-8"});'
+      +'var url=URL.createObjectURL(blob);'
+      +'var a=document.createElement("a");a.href=url;a.download=nome;'
+      +'document.body.appendChild(a);a.click();document.body.removeChild(a);'
+      +'setTimeout(function(){URL.revokeObjectURL(url);},1000);'
+      +'}'
+      +'_expLabelSalvar();'
       +'_expInitSticky();'
       +'<\/script>';
 
     var html='<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">'
       +'<meta name="viewport" content="width=device-width,initial-scale=1">'
       +'<title>Pauta N2'+(isDir?' Diretoria':'')+' — MAZ 2026</title>'
+      +'<meta name="pauta-base" content="'+escH(baseName)+'">'
+      +'<meta name="pauta-versao" content="1">'
       +'<style>'+css+'</style></head><body><div class="exp-wrap">'
       +'<div class="exp-header">'
       +(logoData?'<img src="'+logoData+'" alt="MAZ">':'')
@@ -2058,6 +2306,7 @@ function abrevNome(n){
       +'<div class="exp-sub">'+escH(subtitle)+' · '+escH(dateFull)+' · '+totalItems+' item'+(totalItems!==1?'s':'')+' selecionado'+(totalItems!==1?'s':'')+'</div></div>'
       +'</div>'
       +_n2KpiRowHTML(wbsArr)
+      +resumoBlock
       +'<div class="exp-sticky-sentinel" id="exp-sticky-sentinel"></div>'
       +'<div class="exp-sticky" id="exp-sticky"><div class="exp-sticky-inner">'
       +'<div class="exp-toolbar">'
@@ -4614,7 +4863,7 @@ async function loadSheetsData() {
     document.querySelectorAll('h2').forEach(h=>{if(h.textContent.startsWith('Status Report'))h.textContent=`Status Report — ${dateLabel}`;});
     const hDate=document.querySelector('.header-date');
     if(hDate) hDate.textContent=`Referência: ${dateLabel} · Exposição de Longa Duração`;
-    if(weekLabel){const ws=document.querySelector('[data-semana]');if(ws)ws.setAttribute('data-semana',weekLabel);}
+    if(weekLabel){WEEK_LABEL=weekLabel;const ws=document.querySelector('[data-semana]');if(ws)ws.setAttribute('data-semana',weekLabel);}
     preprocessStatuses();
     preprocessStatusesDiretoria();
     buildRespFilter();buildLegend();renderKPIs();renderTree();renderKPIs_Dir();renderTree_Dir();
