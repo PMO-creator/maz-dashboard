@@ -150,7 +150,7 @@ _runExportPDF, _buildGanttSVGForExport
 ## ⚡ Riscos de Token — maz-dashboard
 
 Arquivos pesados conhecidos — nunca ler inteiro sem autorização:
-- `index.html` (~330KB / ~3.462 linhas) → usar `grep`, `sed` ou busca por âncora
+- `index.html` (~377KB / ~5.884 linhas) → usar `grep`, `sed` ou busca por âncora
 - `ONBOARDING.md` → ler só a seção relevante, não o arquivo completo
 - `Manual/*.docx` → nunca abrir direto — usar PDF ou extração pontual
 
