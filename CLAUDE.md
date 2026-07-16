@@ -28,7 +28,8 @@ maz-dashboard/                  ← PASTA ÚNICA (git repo + tudo)
     Manual de Uso e Manutenção Dashboard_v7.docx + .pdf
     Guia de Onboarding_Manutençao Dashboard_MAZ_2026_v12.docx + .pdf
     Ficha_Tecnica_Dashboard_MAZ_2026_v3.docx + .pdf
-    old_versions/               → Versões anteriores arquivadas
+    Catalogo_Erros_Vibe_Coding_MAZ_v4.docx → Catálogo de anti-padrões (doc-sync atualiza com novos erros; versionado como os demais)
+    old_versions/               → Versões anteriores arquivadas (inclui catalogo_erros_vibe_coding_v3.1_original.docx)
   00. Apoio/                    → Logos e banners
 ```
 
@@ -150,7 +151,7 @@ _runExportPDF, _buildGanttSVGForExport
 ## ⚡ Riscos de Token — maz-dashboard
 
 Arquivos pesados conhecidos — nunca ler inteiro sem autorização:
-- `index.html` (~330KB / ~3.462 linhas) → usar `grep`, `sed` ou busca por âncora
+- `index.html` (~397KB / ~6.283 linhas) → usar `grep`, `sed` ou busca por âncora
 - `ONBOARDING.md` → ler só a seção relevante, não o arquivo completo
 - `Manual/*.docx` → nunca abrir direto — usar PDF ou extração pontual
 
