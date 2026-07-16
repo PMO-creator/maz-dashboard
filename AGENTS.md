@@ -1,6 +1,6 @@
-# CLAUDE.md — maz-dashboard
+# AGENTS.md — maz-dashboard
 
-Instruções para o Claude ao trabalhar nesta pasta.
+Instruções para o Codex ao trabalhar nesta pasta.
 
 ## O que é este projeto
 
@@ -13,10 +13,11 @@ Usado pelo time de PMO para acompanhar cronograma e requisições do projeto.
 
 ```
 maz-dashboard/                  ← PASTA ÚNICA (git repo + tudo)
-  index.html                    → Dashboard único, desktop e mobile (~330KB) — mobile.html removido em 01/07/2026
+  index.html                    → Dashboard desktop (~330KB)
+  mobile.html                   → Dashboard mobile (~43KB)
   Consulte ONBOARDING.md seção 7 ou 10 apenas se a tarefa envolver filtros específicos ou feature N2
   SERVE_DASHBOARD.bat           → Servidor local para preview (duplo-clique)
-  CLAUDE.md                     → Este arquivo
+  AGENTS.md                     → Este arquivo
   doc-sync/                     → Skill de sincronização de documentação
     SKILL.md                    → Lógica da skill doc-sync (fonte de verdade)
     context.md                  → Contexto técnico do dashboard
@@ -48,16 +49,15 @@ maz-dashboard/                  ← PASTA ÚNICA (git repo + tudo)
    do usuário.** Esta é a regra mais importante — violar causa publicação acidental
    em produção.
 
-3. **Editar index.html via Python str.replace() no bash**, nunca com
+3. **Editar index.html/mobile.html via Python str.replace() no bash**, nunca com
    o Edit tool — arquivos grandes truncam.
 
 4. **Novos relatórios doc-sync** → salvar sempre em `doc-sync/reports/`.
 
 5. **Versões antigas de documentos** → mover para `Manual/old_versions/` ao criar nova versão.
 
-6. **Não gerar PDF automaticamente** (decisão Jul/2026) → doc-sync e demais
-   fluxos produzem só o `.docx`. Quem precisar do PDF exporta manualmente
-   quando for consumir o documento.
+6. **PDF obrigatório** → toda geração de `.docx` deve produzir um `.pdf`
+   correspondente na mesma pasta, no mesmo ato.
 
 7. **Servidor local** → rodar `SERVE_DASHBOARD.bat` (duplo-clique) para preview antes
    de commitar. Ele abre http://localhost:8000 e não interfere com git.
@@ -74,69 +74,50 @@ Invocar a skill `doc-sync` diretamente no chat Cowork com maz-dashboard montado.
 
 ## Índice de Funções — index.html
 
-Sem números de linha (o arquivo muda de tamanho a cada edição — números ficam
-errados rápido). Para localizar, usar sempre `grep -n "nomeDaFuncao" index.html`.
-
-### 🔧 Utilitários
+### 🔧 Utilitários (734–861)
 fmtBR, fmtBRshort, escH, escSVG, getISOWeek, hl, abrevNome
 
-### ⏳ Loading / Estado UI
+### ⏳ Loading / Estado UI (822–826)
 showLoading, hideLoading, showConnErr, hideConnErr, retrySheets
 
-### 🗂️ Navegação
+### 🗂️ Navegação (835)
 switchTab
 
-### 🔍 Filtros
+### 🔍 Filtros (870–1629)
 buildRespFilter, getFilters, dateInRange, matchesFilter,
 resetAllFilters, clearDates, applyFilter, updateFilterChip,
 setFilterLevel, toggleModoEstrito, updatePeriodoBtn
 
-### 📊 KPIs e Charts
+### 📊 KPIs e Charts (914–1052)
 renderKPIs, renderCharts, preprocessStatuses
 
-### 🌳 Árvore WBS / EAP
+### 🌳 Árvore WBS / EAP (1367–1539)
 renderTree, toggleRoot, toggleGroup, toggleComment,
 toggleMarco, expandAll, collapseAll, buildCommentPanel,
 expandAllEixosEAP, expandAllMarcosEAP, expandAllTarefasEAP
 
-### 📋 N2 Pauta
+### 📋 N2 Pauta (1114–1247)
 loadN2, saveN2, toggleN2Marco, updateN2Fab,
-clearN2Selection, applyN2Filter, publishN2Pauta, unlockN2Edit,
-exportN2PPT (gera o export em HTML navegável, nome mantido por compatibilidade)
+clearN2Selection, applyN2Filter, publishN2Pauta, unlockN2Edit
 
-### 🛒 Requisições
+### 🛒 Requisições (1702–1953)
 buildReqStatusDropdown, buildReqFornDropdown,
 renderReqKPIs, renderReqs, toggleReqs, clearReqFilters
 
-### 📅 Gantt
+### 📅 Gantt (1960–2480)
 renderGanttSection, toggleGantt, toggleGanttGroup,
 expandAllGantt, renderGanttForEixo, setGanttMode,
 expandAllTarefasGantt, expandLevel
 
-### 🗺️ Áreas
+### 🗺️ Áreas (2736–2963)
 buildAreasFilter, renderAreasTab, renderAreaGantt,
 toggleAreaSection, toggleAreaMarco, setAreasGanttMode
 
-### 🏛️ Diretoria — Gantt/EAP/N2/Comparativo
-preprocessStatusesDiretoria, renderKPIs_Dir, renderTree_Dir, buildCommentPanel_Dir,
-toggleGroup_Dir, toggleComment_Dir, toggleMarco_Dir, collapseAll_Dir,
-expandAllEixosEAP_Dir, expandAllMarcosEAP_Dir, expandAllTarefasEAP_Dir,
-renderGanttSectionDir, renderGanttForEixoDir, toggleGanttDir, setGanttModeDir,
-expandAllGanttDir, collapseAllGanttDir,
-loadN2_Dir, saveN2_Dir, toggleN2Task_Dir, updateN2Fab_Dir, publishN2Pauta_Dir,
-unlockN2Edit_Dir, exportN2PPT_Dir (gera o export em HTML navegável, nome mantido por compatibilidade),
-buildComparativoModal, openComparativoModal, closeComparativoModal
+### ☁️ Google Sheets / Dados (2509–2654)
+fetchSheet, fetchSheetColors, loadSheetsData,
+_parseWBS, _parseREQS, _sg, _fmtDate, _worstStatus
 
-### ☁️ Google Sheets / Dados
-fetchSheet, fetchSheetColors (aceita coluna como parâmetro: usada com 'E' para detectar linha de tarefa), loadSheetsData,
-_parseWBS, _parseREQS, _sg, _fmtDate, _worstStatus, _eixoTextColor
-
-### 🎨 Cor dos eixos
-Fixa em `EIXO_FIXED_COLOR = '#949494'` (decisão da diretoria, Jul/2026) — não vem mais da coluna B
-da planilha. `_eixoTextColor(hex)` só escolhe a cor do texto (claro/escuro) por contraste contra
-essa cor de fundo fixa.
-
-### 📄 Export PDF
+### 📄 Export PDF (3145–3311)
 openExportPDFWizard, pdfWizNext, pdfWizBack,
 _runExportPDF, _buildGanttSVGForExport
 
@@ -144,20 +125,21 @@ _runExportPDF, _buildGanttSVGForExport
 ## Fontes de dados do dashboard
 
 - Cronograma: Google Sheets `17nttJ_ShqWztvDWH3l59iNqboLqkviZs3_PM5J3ihdA` — aba `master data`
-- Requisições: Google Sheets `1azrdS4OGO-CWD1ods69i8iZJcwq4oyISdT2n_tu1uJM` — aba `Planilha de Status de Compras Prod`
+- Requisições: Google Sheets `1azrdS4OGO-CWD1ods69i8iZJcwq4oyISdT2n_tm1uJM` — aba `Planilha de Status de Compras Prod`
 
 
 ## ⚡ Riscos de Token — maz-dashboard
 
 Arquivos pesados conhecidos — nunca ler inteiro sem autorização:
 - `index.html` (~330KB / ~3.462 linhas) → usar `grep`, `sed` ou busca por âncora
+- `mobile.html` (~43KB) → idem
 - `ONBOARDING.md` → ler só a seção relevante, não o arquivo completo
 - `Manual/*.docx` → nunca abrir direto — usar PDF ou extração pontual
 
 Antes de qualquer operação nesses arquivos, aplicar regra do Token Management global:
 perguntar + listar alternativas leves.
 
-## Roteamento de Edições — index.html
+## Roteamento de Edições — index.html / mobile.html
 
 Antes de editar, classificar a mudança:
 
@@ -181,5 +163,5 @@ Regra universal: grep primeiro, editar depois. Nunca abrir o arquivo completo.
 | JS truncado | Verificar `</script>` no final antes de editar |
 | Prioridade REQS | Usar coluna D (índice 3) — nunca coluna B |
 | `node --check` | Extrair bloco `<script>` para `.js` temporário |
-| Edit tool falha | Usar Python `str.replace()` via bash em vez do Edit tool (ver regra 3) |
-| String não encontrada | Normalizar CRLF: `content.replace("\r\n","\n")` antes de substituir, converter de volta antes de gravar |
+| Edit tool falha | Usar PowerShell `ReadAllBytes` em vez do Edit tool |
+| String não encontrada | Normalizar CRLF: `.Replace("\`r\`n", "\`n")` antes de substituir |
