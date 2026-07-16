@@ -466,7 +466,8 @@
   .areas-mcount{font-size:13px;color:rgba(255,255,255,.5);flex-shrink:0;}
   .areas-chev{color:var(--accent);font-size:12px;flex-shrink:0;}
   .areas-gantt-wrap{background:#FAFBFC;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;}
-  .areas-ctrl-bar{background:var(--bg);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--accent);border-radius:var(--radius) var(--radius) 0 0;box-shadow:0 2px 12px rgba(0,0,0,.12);border-top:4px solid var(--accent);margin-bottom:12px;position:sticky;top:var(--stack-top,195px);z-index:150}
+  .areas-ctrl-bar{background:var(--bg);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--accent);border-radius:var(--radius) var(--radius) 0 0;box-shadow:0 2px 12px rgba(0,0,0,.12);border-top:4px solid var(--accent)}
+  .areas-sticky-head{position:sticky;top:var(--stack-top,195px);z-index:150;margin-bottom:12px}
   .areas-ctrl-bar h2{font-size:22px;font-weight:700;color:#FFF;}
   .areas-ctrl-right{display:flex;gap:8px;align-items:center;}
 /* ── Modo Foco ── */
@@ -616,6 +617,13 @@
         <button id="gantt-pdf-export-btn" onclick="openGanttExportPDFWizard()" style="padding:8px 16px;background:#1A3A8A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-left:8px">📄 Exportar PDF</button>
       </div>
     </div>
+    <div class="search-zone">
+      <div class="search-zone-inner">
+        <span class="lupa">🔍</span>
+        <input class="search-bar" id="searchInput-gantt" type="text" placeholder="Buscar eixo, marco, tarefa, responsável..." oninput="applyFilter()">
+      </div>
+      <div class="search-badge" id="search-badge-gantt">Todos os itens</div>
+    </div>
     <div class="legend" id="gantt-legend" style="background:#F8FAFC;border-top:1px solid var(--border)"></div>
     </div>
     <div class="gantt-cards" id="gantt-container"></div>
@@ -653,6 +661,13 @@
         <button class="btn-collapse" onclick="collapseAllGanttDir()">▲ Recolher Tudo</button>
         <button id="gantt-dir-pdf-export-btn" onclick="openGanttExportPDFWizard(true)" style="padding:8px 16px;background:#1A3A8A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-left:8px">📄 Exportar PDF</button>
       </div>
+    </div>
+    <div class="search-zone">
+      <div class="search-zone-inner">
+        <span class="lupa">🔍</span>
+        <input class="search-bar" id="searchInput-gantt-dir" type="text" placeholder="Buscar eixo, marco, tarefa, responsável..." oninput="applyFilter()">
+      </div>
+      <div class="search-badge" id="search-badge-gantt-dir">Todos os itens</div>
     </div>
     <div class="legend" id="gantt-dir-legend" style="background:#F8FAFC;border-top:1px solid var(--border)"></div>
     </div>
@@ -802,6 +817,7 @@
   </div><!-- /tab-reqs -->
 
   <div id="tab-areas" class="tab-panel">
+  <div class="areas-sticky-head">
   <div class="areas-ctrl-bar">
     <h2>🗺️&nbsp; Gantt por Área</h2>
     <div class="areas-ctrl-right">
@@ -815,6 +831,14 @@
       <button class="btn-collapse" onclick="collapseAllAreas()">▲ Recolher Tudo</button>
     <button id="pdf-export-btn" onclick="openExportPDFWizard()" style="padding:8px 16px;background:#1A3A8A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-left:8px">&#128196; Exportar PDF</button>
     </div>
+  </div>
+  <div class="search-zone">
+    <div class="search-zone-inner">
+      <span class="lupa">🔍</span>
+      <input class="search-bar" id="searchInput-areas" type="text" placeholder="Buscar marco, tarefa, responsável..." oninput="renderAreasTab()">
+    </div>
+    <div class="search-badge" id="search-badge-areas">Todos os itens</div>
+  </div>
   </div>
   <div style="padding:0 18px 18px"><div id="areas-sections"></div></div>
   </div><!-- /tab-areas -->
@@ -1458,6 +1482,22 @@ function matchesFilter(g, m, f){
   const dt = !m ? true : (modoEstrito ? dateInRange(m, f.dateStart, f.dateEnd) : true);
   // Status e responsável são checados à parte (nível de tarefa), via grupoHasMatchingLeaf
   return tx && dt;
+}
+
+// ── Busca de texto para Gantt / Áreas (eixo > marco > tarefa > subtarefa) ──────
+function _searchMatchTask(t, term){
+  if((t.tarefa||'').toLowerCase().includes(term)) return true;
+  if(t.resp && t.resp.toLowerCase().includes(term)) return true;
+  return (t.subtasks||[]).some(s=>(s.tarefa||'').toLowerCase().includes(term)||(s.resp&&s.resp.toLowerCase().includes(term)));
+}
+function _searchMatchGrupo(g, term){
+  if((g.name||'').toLowerCase().includes(term)) return true;
+  return (g.tasks||[]).some(t=>_searchMatchTask(t, term));
+}
+function _searchMatchEixo(eixo, term){
+  if(!term) return true;
+  if((eixo.name||'').toLowerCase().includes(term)) return true;
+  return (eixo.children||[]).some(g=>_searchMatchGrupo(g, term));
 }
 
 function abrevNome(n){
@@ -3536,16 +3576,36 @@ function applyFilter(){
   const gCon=document.getElementById('gantt-container');
   if(gMsg)gMsg.style.display=noResp?'flex':'none';
   if(gCon)gCon.style.display=noResp?'none':'';
+  const gSearch=(document.getElementById('searchInput-gantt')?.value||'').trim().toLowerCase();
+  let _gVis=0;
   if(!noResp){
     WBS.forEach((e,gi)=>{
       const card=document.getElementById('gantt-card-'+gi);
       if(!card)return;
       const hasVisible=f.status.length===0||(e.children||[]).some(g=>(g.tasks||[]).some(t=>f.status.includes(t.status||'A iniciar')));
       const respOut=f.resp.length>0&&!(e.children||[]).some(m=>grupoHasResp(m,f.resp));
-      card.style.display=(!hasVisible||respOut)?'none':'';
-      if(ganttOpen[gi]&&hasVisible&&!respOut)renderGanttForEixo(gi);
+      const searchOut=gSearch&&!_searchMatchEixo(e,gSearch);
+      card.style.display=(!hasVisible||respOut||searchOut)?'none':'';
+      if(!hasVisible||respOut||searchOut){}else{_gVis++;}
+      if(ganttOpen[gi]&&hasVisible&&!respOut&&!searchOut)renderGanttForEixo(gi);
     });
   }
+  const gBadge=document.getElementById('search-badge-gantt');
+  if(gBadge)gBadge.textContent=gSearch?(_gVis+' eixo'+(_gVis!==1?'s':'')+' encontrado'+(_gVis!==1?'s':'')):'Todos os itens';
+
+  const gDirSearch=(document.getElementById('searchInput-gantt-dir')?.value||'').trim().toLowerCase();
+  let _gDirVis=0;
+  WBS_DIR.forEach((e,gi)=>{
+    const card=document.getElementById('gantt-card-dir-'+gi);
+    if(!card)return;
+    const searchOut=gDirSearch&&!_searchMatchEixo(e,gDirSearch);
+    card.style.display=searchOut?'none':'';
+    if(!searchOut)_gDirVis++;
+    if(ganttOpenDir[gi]&&!searchOut)renderGanttForEixoDir(gi);
+  });
+  const gDirBadge=document.getElementById('search-badge-gantt-dir');
+  if(gDirBadge)gDirBadge.textContent=gDirSearch?(_gDirVis+' eixo'+(_gDirVis!==1?'s':'')+' encontrado'+(_gDirVis!==1?'s':'')):'Todos os itens';
+
   updateFilterChip();
   var _atp=document.getElementById('tab-areas');
   if(_atp&&_atp.classList.contains('active'))renderAreasTab();
@@ -4053,11 +4113,15 @@ function renderGanttForEixo(gi){
   const _rpChkG=_rpAllG.filter(el=>el.checked).map(el=>el.value);
   const fResp=(_rpChkG.length===_rpAllG.length||_rpChkG.length===0)?[]:_rpChkG;
 
+  // Filtro de busca (texto)
+  const gSearch=(document.getElementById('searchInput-gantt')?.value||'').trim().toLowerCase();
+
   // Build flat rows list
   const rows=[];
   allGrupos.forEach((g,ri)=>{
     if(!inRange(g.start,g.end))return;
     if(fStatus.length>0 && !(g.tasks||[]).some(t=>fStatus.includes(t.status||'A iniciar')))return;
+    if(gSearch && !_searchMatchGrupo(g,gSearch))return;
     const allMarcos = (g.tasks||[]).filter(t=>t.tipo==='marco'||(t.start||t.end));
     const datedTasks = allMarcos.filter(t=>t.start||t.end);
     if(fResp.length>0){const hasAny=datedTasks.some(t=>(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp)));if(!hasAny)return;}
@@ -4065,7 +4129,8 @@ function renderGanttForEixo(gi){
     const expanded=!!ganttGroupExpanded[gi+'_'+ri];
     rows.push({type:'grupo',data:g,ri,hasTasks,expanded});
     if(expanded){
-      datedTasks.filter(t=>inRange(t.start,t.end)&&(!fStatus.length||fStatus.includes(t.status))).forEach((t,ti)=>{
+      const _gNameMatches=gSearch&&(g.name||'').toLowerCase().includes(gSearch);
+      datedTasks.filter(t=>inRange(t.start,t.end)&&(!fStatus.length||fStatus.includes(t.status))&&(!gSearch||_gNameMatches||_searchMatchTask(t,gSearch))).forEach((t,ti)=>{
         if(fResp.length>0){const mm=(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp));if(!mm)return;}
         const datedSubs=(t.subtasks||[]).filter(s=>s.start||s.end);
         const filteredSubs=datedSubs.filter(s=>inRange(s.start,s.end)&&(!fStatus.length||fStatus.includes(s.status)));
@@ -4490,10 +4555,12 @@ function renderGanttForEixoDir(gi){
   const _rpAllG=[...document.querySelectorAll('#ms-resp-menu input:not([id$="-chk-all"])')];
   const _rpChkG=_rpAllG.filter(el=>el.checked).map(el=>el.value);
   const fResp=(_rpChkG.length===_rpAllG.length||_rpChkG.length===0)?[]:_rpChkG;
+  const gSearch=(document.getElementById('searchInput-gantt-dir')?.value||'').trim().toLowerCase();
   const rows=[];
   allGrupos.forEach((g,ri)=>{
     if(!inRange(g.start,g.end))return;
     if(fStatus.length>0 && !(g.tasks||[]).some(t=>fStatus.includes(t.status||'A iniciar')))return;
+    if(gSearch && !_searchMatchGrupo(g,gSearch))return;
     const allMarcos=(g.tasks||[]).filter(t=>t.tipo==='marco'||(t.start||t.end));
     const datedTasks=allMarcos.filter(t=>t.start||t.end);
     if(fResp.length>0){const hasAny=datedTasks.some(t=>(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp)));if(!hasAny)return;}
@@ -4501,7 +4568,8 @@ function renderGanttForEixoDir(gi){
     const expanded=!!ganttGroupExpandedDir[gi+'_'+ri];
     rows.push({type:'grupo',data:g,ri,hasTasks,expanded});
     if(expanded){
-      datedTasks.filter(t=>inRange(t.start,t.end)&&(!fStatus.length||fStatus.includes(t.status))).forEach((t,ti)=>{
+      const _gNameMatches=gSearch&&(g.name||'').toLowerCase().includes(gSearch);
+      datedTasks.filter(t=>inRange(t.start,t.end)&&(!fStatus.length||fStatus.includes(t.status))&&(!gSearch||_gNameMatches||_searchMatchTask(t,gSearch))).forEach((t,ti)=>{
         if(fResp.length>0){const mm=(t.resp&&fResp.includes(t.resp))||(t.subtasks||[]).some(s=>s.resp&&fResp.includes(s.resp));if(!mm)return;}
         const datedSubs=(t.subtasks||[]).filter(s=>s.start||s.end);
         const filteredSubs=datedSubs.filter(s=>inRange(s.start,s.end)&&(!fStatus.length||fStatus.includes(s.status)));
@@ -5260,7 +5328,18 @@ function _getAreasFS(){
   var fResp=(rpC.length===rpA.length||rpC.length===0)?[]:rpC;
   var fDS=document.getElementById('filter-date-start').value;
   var fDE=document.getElementById('filter-date-end').value;
-  return{fStatus:fStatus,fResp:fResp,fDS:fDS,fDE:fDE};
+  var searchEl=document.getElementById('searchInput-areas');
+  var fSearch=(searchEl&&searchEl.value||'').trim().toLowerCase();
+  return{fStatus:fStatus,fResp:fResp,fDS:fDS,fDE:fDE,fSearch:fSearch};
+}
+function _searchMatchAreaMarco(m, term){
+  if((m.name||'').toLowerCase().includes(term)) return true;
+  return (m.subtasks||[]).some(function(s){return (s.tarefa||'').toLowerCase().includes(term)||(s.resp&&s.resp.toLowerCase().includes(term));});
+}
+function _searchMatchArea(area, term){
+  if(!term) return true;
+  if((area.areaName||'').toLowerCase().includes(term)) return true;
+  return (area.marcos||[]).some(function(m){return _searchMatchAreaMarco(m, term);});
 }
 function _areasInRange(s,e,fDS,fDE){
   if(!fDS&&!fDE)return true;if(!s&&!e)return false;
@@ -5271,8 +5350,13 @@ function _areasInRange(s,e,fDS,fDE){
 function renderAreasTab(){
   var con=document.getElementById('areas-sections');if(!con||!AREAS_DATA.length)return;
   var sel=_getSelectedAreas();
+  var searchEl=document.getElementById('searchInput-areas');
+  var fSearch=(searchEl&&searchEl.value||'').trim().toLowerCase();
+  var _visCount=0;
   con.innerHTML=AREAS_DATA.map(function(area,ai){
     if(sel!==null&&sel.indexOf(ai)<0)return'';
+    if(fSearch&&!_searchMatchArea(area,fSearch))return'';
+    _visCount++;
     var pct=area.totalTasks>0?Math.round(area.doneTasks/area.totalTasks*100):0;
     var pc=pct>=80?'#05C46B':pct>=50?'#8AC43A':pct>=25?'#FF6B00':'#FF2525';
     var isOpen=_areaSectionsOpen[ai]===true;
@@ -5291,8 +5375,11 @@ function renderAreasTab(){
   }).join('');
   AREAS_DATA.forEach(function(area,ai){
     if(sel!==null&&sel.indexOf(ai)<0)return;
+    if(fSearch&&!_searchMatchArea(area,fSearch))return;
     if(_areaSectionsOpen[ai]===true)renderAreaGantt(ai);
   });
+  var badge=document.getElementById('search-badge-areas');
+  if(badge)badge.textContent=fSearch?(_visCount+' área'+(_visCount!==1?'s':'')+' encontrada'+(_visCount!==1?'s':'')):'Todos os itens';
 }
 var _areaTip=null;
 var _areasMap={};
@@ -5331,10 +5418,16 @@ function renderAreaGantt(ai){
   var fs=_getAreasFS();
   var rows=[];
   area.marcos.forEach(function(m,mi){
+    var _mNameMatches=fs.fSearch&&(m.name||'').toLowerCase().includes(fs.fSearch);
     var vs=m.subtasks.filter(function(t){
       if(!_areasInRange(t.start,t.end,fs.fDS,fs.fDE))return false;
       if(fs.fStatus.length>0&&fs.fStatus.indexOf(t.status)<0)return false;
       if(fs.fResp.length>0&&fs.fResp.indexOf(t.resp)<0)return false;
+      if(fs.fSearch&&!_mNameMatches){
+        var tt=(t.tarefa||'').toLowerCase().includes(fs.fSearch);
+        var tr=t.resp&&t.resp.toLowerCase().includes(fs.fSearch);
+        if(!tt&&!tr)return false;
+      }
       return true;
     });
     if(!vs.length)return;
