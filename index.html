@@ -206,8 +206,10 @@
   .chart-wrap.tall{height:460px}
 
   /* WBS */
-  .wbs-card{background:var(--card);border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,.12);overflow:hidden;margin-bottom:var(--gap);border-top:4px solid var(--accent)}
-  .wbs-header{background:var(--bg);padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+  .wbs-card{background:var(--card);border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,.12);margin-bottom:var(--gap);border-top:4px solid var(--accent)}
+  .wbs-header{background:var(--bg);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-radius:var(--radius) var(--radius) 0 0}
+  .wbs-sticky-head{position:sticky;top:var(--stack-top,195px);z-index:150}
+  .wbs-body{overflow:hidden;border-radius:0 0 var(--radius) var(--radius)}
   .wbs-header h2{font-size:30px;font-weight:700;color:#FFF;letter-spacing:.5px}
   .wbs-header span{font-size:15px;font-weight:700;color:#8AB870}
   .tree-root{display:flex;align-items:center;gap:10px;padding:12px 20px;background:linear-gradient(90deg,#1E2E0D 0%,#2F4A18 100%);cursor:pointer;user-select:none;border-bottom:2px solid var(--accent)}
@@ -261,7 +263,7 @@
   .legend-dot{width:9px;height:9px;border-radius:50%}
 
   /* SEARCH */
-  .search-zone{position:sticky;top:0;z-index:100;background:#1E2E0D;border-bottom:2px solid var(--accent);padding:14px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 18px rgba(0,0,0,0.35);}
+  .search-zone{background:#1E2E0D;border-bottom:2px solid var(--accent);padding:14px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 18px rgba(0,0,0,0.35);}
   .search-zone-inner{position:relative;flex:1;}
   .search-zone-inner .lupa{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none;opacity:0.7;}
   .search-bar{width:100%;padding:12px 14px 12px 42px;border:1.5px solid rgba(138,196,58,0.35);border-radius:10px;font-size:16px;font-weight:500;color:#1E293B;background:#F8FAFC;outline:none;box-shadow:inset 0 1px 3px rgba(0,0,0,.08);transition:border-color .2s,box-shadow .2s;box-sizing:border-box;}
@@ -312,7 +314,8 @@
 
 
   /* GANTT SECTION */
-  .gantt-section{margin-bottom:var(--gap);border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,.12);border-top:4px solid var(--accent);overflow:hidden}
+  .gantt-section{margin-bottom:var(--gap);border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,.12);border-top:4px solid var(--accent)}
+  .gantt-sticky-head{position:sticky;top:var(--stack-top,195px);z-index:150}
   .gantt-section-title{background:var(--bg);padding:12px 20px;border-radius:var(--radius) var(--radius) 0 0;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--accent)}
   .gantt-section-title h2{font-size:28px;font-weight:700;color:#FFF;letter-spacing:.5px}
   .gantt-section-title span{font-size:15px;font-weight:700;color:#8AB870}
@@ -463,7 +466,7 @@
   .areas-mcount{font-size:13px;color:rgba(255,255,255,.5);flex-shrink:0;}
   .areas-chev{color:var(--accent);font-size:12px;flex-shrink:0;}
   .areas-gantt-wrap{background:#FAFBFC;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;}
-  .areas-ctrl-bar{background:var(--bg);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--accent);border-radius:var(--radius) var(--radius) 0 0;box-shadow:0 2px 12px rgba(0,0,0,.12);border-top:4px solid var(--accent);margin-bottom:12px;}
+  .areas-ctrl-bar{background:var(--bg);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--accent);border-radius:var(--radius) var(--radius) 0 0;box-shadow:0 2px 12px rgba(0,0,0,.12);border-top:4px solid var(--accent);margin-bottom:12px;position:sticky;top:var(--stack-top,195px);z-index:150}
   .areas-ctrl-bar h2{font-size:22px;font-weight:700;color:#FFF;}
   .areas-ctrl-right{display:flex;gap:8px;align-items:center;}
 /* ── Modo Foco ── */
@@ -591,6 +594,7 @@
   </div>
   <!-- GANTT SECTION -->
   <div class="gantt-section">
+    <div class="gantt-sticky-head">
     <div class="gantt-section-title">
       <h2>📊  Cronograma Gantt por Eixo</h2>
       <div style="display:flex;gap:8px;align-items:center">
@@ -613,6 +617,7 @@
       </div>
     </div>
     <div class="legend" id="gantt-legend" style="background:#F8FAFC;border-top:1px solid var(--border)"></div>
+    </div>
     <div class="gantt-cards" id="gantt-container"></div>
     <div class="resp-required-msg" id="gantt-resp-msg">SELECIONE AO MENOS UM RESPONSÁVEL</div>
 
@@ -627,6 +632,7 @@
   </div>
   <!-- GANTT DIRETORIA SECTION -->
   <div class="gantt-section">
+    <div class="gantt-sticky-head">
     <div class="gantt-section-title">
       <h2>📊  Cronograma Gantt Diretoria por Eixo</h2>
       <div style="display:flex;gap:8px;align-items:center">
@@ -649,6 +655,7 @@
       </div>
     </div>
     <div class="legend" id="gantt-dir-legend" style="background:#F8FAFC;border-top:1px solid var(--border)"></div>
+    </div>
     <div class="gantt-cards" id="gantt-dir-container"></div>
     <div class="resp-required-msg" id="gantt-dir-resp-msg">SELECIONE AO MENOS UM RESPONSÁVEL</div>
   </div>
@@ -662,6 +669,7 @@
   </div>
   <div class="kpi-row" id="kpi-row"></div>
     <div class="wbs-card" id="wbs-main">
+    <div class="wbs-sticky-head">
     <div class="wbs-header">
       <h2>Status Report — 14 Mai 2026</h2>
       <div style="display:flex;gap:8px;align-items:center">
@@ -686,6 +694,8 @@
       <div class="search-badge" id="search-badge">Todos os itens</div>
     </div>
     <div class="legend" id="legend"></div>
+    </div>
+    <div class="wbs-body">
     <div class="date-banner" id="date-banner">
       📅 Filtro de período ativo: <b id="date-banner-text"></b>
     </div>
@@ -693,6 +703,7 @@
     <div class="resp-required-msg" id="sr-resp-msg">SELECIONE AO MENOS UM RESPONSÁVEL</div>
 
     <div class="no-results" id="no-results" style="display:none">Nenhum resultado encontrado.</div>
+    </div>
   </div>
 
   </div><!-- /tab-eap -->
@@ -705,6 +716,7 @@
   </div>
   <div class="kpi-row" id="kpi-row-dir"></div>
     <div class="wbs-card" id="wbs-main-dir">
+    <div class="wbs-sticky-head">
     <div class="wbs-header">
       <h2>Status Report Diretoria</h2>
       <div style="display:flex;gap:8px;align-items:center">
@@ -729,26 +741,39 @@
       </div>
     </div>
     <div class="legend" id="legend-dir"></div>
+    </div>
+    <div class="wbs-body">
     <div class="date-banner" id="date-banner-dir">
       &#128197; Filtro de per&#237;odo ativo: <b id="date-banner-text-dir"></b>
     </div>
     <div id="group-list-dir" class="group-list"></div>
     <div class="resp-required-msg" id="sr-resp-msg-dir">SELECIONE AO MENOS UM RESPONS&#193;VEL</div>
     <div class="no-results" id="no-results-dir" style="display:none">Nenhum resultado encontrado.</div>
+    </div>
   </div>
 
 
   </div><!-- /tab-eap-dir -->
 <button id="n2-fab" onclick="toggleN2Filter()" style="display:none;position:fixed;bottom:82px;right:28px;z-index:1000;padding:11px 20px;border:none;border-radius:21px;font-size:16px;font-weight:700;cursor:pointer;background:#3D6218;color:#B8E85C;box-shadow:0 4px 16px rgba(0,0,0,.3);align-items:center;gap:8px">📋 Pauta N2 · 0</button>
-<button id="n2-clear-fab" onclick="clearN2Selection()" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
+<button id="n2-clear-fab" onclick="n2ConfirmClear(false)" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
 <button id="n2-publish-fab" onclick="publishN2Pauta()" style="display:none;position:fixed;bottom:140px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#1A3A8A;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📤 Publicar pauta</button>
 <button id="n2-ppt-fab" onclick="exportN2PPT()" style="display:none;position:fixed;bottom:200px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#065F46;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📄 Exportar HTML</button>
 <button id="n2-lock-fab" onclick="unlockN2Edit()" title="Desbloquear edição" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1001;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#5C3A8A;color:white;box-shadow:0 4px 12px rgba(0,0,0,.3)">🔓 Desbloquear</button>
 <button id="n2-fab-dir" onclick="toggleN2Filter_Dir()" style="display:none;position:fixed;bottom:82px;right:28px;z-index:1000;padding:11px 20px;border:none;border-radius:21px;font-size:16px;font-weight:700;cursor:pointer;background:#3D6218;color:#B8E85C;box-shadow:0 4px 16px rgba(0,0,0,.3);align-items:center;gap:8px">📋 Pauta N2 · 0</button>
-<button id="n2-clear-fab-dir" onclick="clearN2Selection_Dir()" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
+<button id="n2-clear-fab-dir" onclick="n2ConfirmClear(true)" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
 <button id="n2-publish-fab-dir" onclick="publishN2Pauta_Dir()" style="display:none;position:fixed;bottom:140px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#1A3A8A;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📤 Publicar pauta</button>
 <button id="n2-ppt-fab-dir" onclick="exportN2PPT_Dir()" style="display:none;position:fixed;bottom:200px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#065F46;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📄 Exportar HTML</button>
 <button id="n2-lock-fab-dir" onclick="unlockN2Edit_Dir()" title="Desbloquear edição" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1001;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#5C3A8A;color:white;box-shadow:0 4px 12px rgba(0,0,0,.3)">🔓 Desbloquear</button>
+<div id="n2-confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(15,28,5,0.88);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#2F4A18;border:1px solid rgba(138,196,58,0.35);border-radius:14px;padding:26px 30px;min-width:340px;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,0.55)">
+    <h2 style="margin:0 0 12px;font-size:17px;color:#8AB870;font-weight:700;letter-spacing:.3px">Limpar seleção N2</h2>
+    <p style="margin:0 0 22px;font-size:14px;color:#C8E09A;line-height:1.5">Tem certeza que quer limpar as atuais seleções da N2?</p>
+    <div style="display:flex;justify-content:flex-end;gap:10px">
+      <button onclick="n2ConfirmCancel()" style="padding:9px 20px;border:1px solid rgba(138,196,58,0.5);border-radius:8px;cursor:pointer;background:transparent;color:#8AB870;font-size:14px;font-weight:600">Não</button>
+      <button onclick="n2ConfirmDo()" style="padding:9px 20px;background:#8AC43A;color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px">Sim, limpar</button>
+    </div>
+  </div>
+</div>
 
   <div id="tab-reqs" class="tab-panel">
   <div class="req-card">
@@ -1039,15 +1064,23 @@ function preprocessStatusesDiretoria(){
 
 let _isInitialLoad=true;
 function showLoading(){const o=document.getElementById('loading-overlay');if(o)o.style.display='flex';}
-function hideLoading(){const o=document.getElementById('loading-overlay');if(o)o.style.display='none';}
+function hideLoading(){const o=document.getElementById('loading-overlay');if(o)o.style.display='none';_updateStackTop();}
 function showConnErr(){hideLoading();const b=document.getElementById('conn-err-banner');if(b)b.style.display='flex';}
 function hideConnErr(){const b=document.getElementById('conn-err-banner');if(b)b.style.display='none';}
 function retrySheets(){hideConnErr();showLoading();_isInitialLoad=true;loadSheetsData();}
 
+function _updateStackTop(){
+  const hdr=document.querySelector('.header');
+  const fb=document.getElementById('filter-bar');
+  if(!hdr)return;
+  const fbH=(fb&&fb.style.display!=='none')?fb.offsetHeight:0;
+  document.documentElement.style.setProperty('--stack-top',(hdr.offsetHeight+fbH)+'px');
+}
 window.onload=function(){
   initN2FromURL();
   const hdr=document.querySelector('.header');
   if(hdr) document.documentElement.style.setProperty('--header-h',hdr.offsetHeight+'px');
+  _updateStackTop();
   showLoading();
   loadSheetsData();
 };
@@ -1058,6 +1091,7 @@ function switchTab(name){
   document.getElementById('tab-btn-'+name).classList.add('active');
   const fb=document.getElementById('filter-bar');
   if(fb) fb.style.display=(name==='reqs')?'none':'flex';
+  _updateStackTop();
   var msaw=document.getElementById('ms-areas-wrap');
   if(msaw) msaw.style.display=(name==='areas')?'flex':'none';
   var n2fab=document.getElementById('n2-fab');
@@ -1556,6 +1590,21 @@ function abrevNome(n){
     if(pfab)pfab.style.display=(n>0&&onEap&&!locked)?'flex':'none';if(pptfab)pptfab.style.display=(n>0&&onEap&&!locked)?'flex':'none';
     if(lfab)lfab.style.display=(_n2ViewMode&&!_n2Unlocked&&onEap)?'flex':'none';
   }
+  var _n2ConfirmIsDir=false;
+  function n2ConfirmClear(isDir){
+    _n2ConfirmIsDir=!!isDir;
+    var m=document.getElementById('n2-confirm-modal');
+    if(m){m.style.display='flex';}
+  }
+  function n2ConfirmCancel(){
+    var m=document.getElementById('n2-confirm-modal');
+    if(m){m.style.display='none';}
+  }
+  function n2ConfirmDo(){
+    var m=document.getElementById('n2-confirm-modal');
+    if(m){m.style.display='none';}
+    if(_n2ConfirmIsDir){clearN2Selection_Dir();}else{clearN2Selection();}
+  }
   function clearN2Selection(){
     saveN2([]);n2FilterActive=false;
     document.querySelectorAll('[id^="mband-"]').forEach(function(b){b.style.display='';b.classList.remove('n2-selected');});
@@ -1825,12 +1874,10 @@ function abrevNome(n){
     }
 
     // ── lacunas de informacao (antes de pontos de atencao: fecha o raciocinio do paragrafo anterior) ──
-    var semNada=atencao.filter(function(it){ return !hasProg(it)&&!hasEnc(it); });
-    var atrasSemEnc=atencao.filter(function(it){ return stOf(it)==='Atrasado'&&!hasEnc(it); });
-    if(atencao.length&&(semNada.length||atrasSemEnc.length)){
+    var semProg=atencao.filter(function(it){ return !hasProg(it); });
+    if(atencao.length&&semProg.length){
       h+='<h4 class="exp-res-h exp-res-h-red">🔴 Lacunas de informação</h4><p>';
-      if(semNada.length) h+='<b>'+semNada.length+' de '+atencao.length+'</b> '+(atencao.length===1?'item':'itens')+' em atenção '+(semNada.length===1?'está':'estão')+' sem Progresso e sem Encaminhamento reportados. ';
-      if(atrasSemEnc.length) h+='<b>'+atrasSemEnc.length+'</b> '+(atrasSemEnc.length===1?'item atrasado não tem':'itens atrasados não têm')+' plano de ação registrado.';
+      h+='<b>'+semProg.length+' de '+atencao.length+'</b> '+(atencao.length===1?'item':'itens')+' em atenção '+(semProg.length===1?'está':'estão')+' sem Progresso reportado.';
       h+='</p>';
     }
 
@@ -1844,7 +1891,7 @@ function abrevNome(n){
           +(t.resp?' · <span class="exp-res-resp">'+escH(abrevNome(t.resp))+'</span>':'')+'</div>';
         h+='<div class="exp-res-item-mid"><span class="exp-res-st" style="background:'+sc(st)+'">'+escH(sl(st))+'</span> '+motivo(it)+'</div>';
         h+='<div class="exp-res-item-low">Progresso: '+(hasProg(it)?escH(t.progresso.trim()):'<span class="exp-res-np">'+NPA+'</span>')
-          +' · Encaminhamento: '+(hasEnc(it)?escH(t.encaminhamento.trim()):'<span class="exp-res-np">'+NPA+'</span>')+'</div>';
+          +(hasEnc(it)?' · Encaminhamento: '+escH(t.encaminhamento.trim()):'')+'</div>';
         h+='</li>';
       });
       h+='</ul>';
@@ -1949,7 +1996,7 @@ function abrevNome(n){
 
     p+='=== FORMATO DE SAÍDA ===\n';
     p+='- Abertura: 2-3 frases com a situação geral em números.\n';
-    p+='- "Pontos de atenção": bullets, do mais grave ao menos grave.\n';
+    p+='- "Pontos de atenção": bullets, do mais grave ao menos grave. Em cada bullet, cite o nome do responsável pela tarefa (campo Responsável) — quem lê precisa saber a quem cobrar.\n';
     p+='- "Lacunas de informação": só inclua se houver itens críticos sem reporte.\n';
     p+='- Máximo 250 palavras. Português BR. Tom direto, sem jargão corporativo.\n';
     p+='- Devolva SOMENTE o texto final. Sem introdução, sem "aqui está", sem comentários sobre o que você fez.\n\n';
@@ -1975,7 +2022,7 @@ function abrevNome(n){
             p+='  - Status: '+(t.status||'A iniciar')+'\n';
             var s=situacao(t); if(s) p+='  - Situação: '+s+'\n';
             p+='  - Progresso: '+((t.progresso&&t.progresso.trim())?t.progresso.trim():NP)+'\n';
-            p+='  - Encaminhamento: '+((t.encaminhamento&&t.encaminhamento.trim())?t.encaminhamento.trim():NP)+'\n';
+            if(t.encaminhamento&&t.encaminhamento.trim()) p+='  - Encaminhamento: '+t.encaminhamento.trim()+'\n';
           });
         });
       });
@@ -2067,7 +2114,7 @@ function abrevNome(n){
       if(task.fornecedor)h+='<span class="exp-meta exp-forn" title="'+escH(task.fornecedor)+'">🏢 '+escH(task.fornecedor)+'</span>';
       h+='</div>';
       h+='<div class="exp-field'+(progEmpty?' exp-empty':'')+'"><b>Progresso:</b> <span class="exp-fval">'+progVal+'</span></div>';
-      h+='<div class="exp-field'+(encEmpty?' exp-empty':'')+'"><b>Encaminhamentos:</b> <span class="exp-fval">'+encVal+'</span></div>';
+      if(!encEmpty) h+='<div class="exp-field"><b>Encaminhamentos:</b> <span class="exp-fval">'+encVal+'</span></div>';
       h+='</div>';
       return h;
     }
@@ -4864,6 +4911,10 @@ function _worstStatus(statuses) {
 }
 
 function _findWeekCols(rows) {
+  // >>> TESTE TEMPORARIO (15/07) — forca colunas BC/BD (semana 'Atualizacao Qui, 09/07')
+  // pra validar a heuristica do Resumo Executivo com dados reais preenchidos. REMOVER esta
+  // linha de return antes de commitar — volta a detectar a semana mais recente automaticamente.
+  return {pC:54,eC:55,weekLabel:'Atualização Qui, 09/07'};
   const h1=rows[0]||[], h2=rows[1]||[];
   let baseCol=-1;
   for(let i=h1.length-1;i>=0;i--) {
