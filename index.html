@@ -545,8 +545,8 @@
         <hr class="ms-divider">
         <label class="ms-option"><input type="checkbox" value="Atrasado" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#FF2525"></span>Atrasado</label>
         <label class="ms-option"><input type="checkbox" value="Risco de atraso" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#FFD966"></span>Risco de atraso</label>
-        <label class="ms-option"><input type="checkbox" value="Em andamento" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#1A56FF"></span>Em andamento</label>
-        <label class="ms-option"><input type="checkbox" value="Feito" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#05C46B"></span>Feito</label>
+        <label class="ms-option"><input type="checkbox" value="Em andamento" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#05C46B"></span>Em andamento</label>
+        <label class="ms-option"><input type="checkbox" value="Feito" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#1A56FF"></span>Feito</label>
         <label class="ms-option"><input type="checkbox" value="A iniciar" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#5A6E85"></span>A iniciar</label>
         <label class="ms-option"><input type="checkbox" value="Definir datas" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#92400E"></span>Definir datas</label>
         <label class="ms-option"><input type="checkbox" value="Cancelado/Congelado" checked onchange="onMsChange('status')"><span class="ms-dot" style="background:#000000"></span>Cancelado/Congelado</label>
@@ -4979,10 +4979,6 @@ function _worstStatus(statuses) {
 }
 
 function _findWeekCols(rows) {
-  // >>> TESTE TEMPORARIO (15/07) — forca colunas BC/BD (semana 'Atualizacao Qui, 09/07')
-  // pra validar a heuristica do Resumo Executivo com dados reais preenchidos. REMOVER esta
-  // linha de return antes de commitar — volta a detectar a semana mais recente automaticamente.
-  return {pC:54,eC:55,weekLabel:'Atualização Qui, 09/07'};
   const h1=rows[0]||[], h2=rows[1]||[];
   let baseCol=-1;
   for(let i=h1.length-1;i>=0;i--) {
