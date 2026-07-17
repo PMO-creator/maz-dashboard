@@ -24,6 +24,8 @@ Caminhos importantes:
 - **Snapshot de referência:** `C:\Users\gagui\Github\maz-dashboard\doc-sync\_snapshot_index.html`
 - **Esta skill:** `C:\Users\gagui\Github\maz-dashboard\doc-sync\`
 - **Relatórios de execução:** `C:\Users\gagui\Github\maz-dashboard\doc-sync\reports\`
+- **Catálogo de erros de vibe coding (versionado, em Manual\):** `C:\Users\gagui\Github\maz-dashboard\Manual\Catalogo_Erros_Vibe_Coding_MAZ_v4.docx`
+  (documento vivo — ver seção "Manutenção do Catálogo de Erros" abaixo; confirme a versão vigente com `ls Manual/*Catalogo_Erros*`)
 
 > ⚠️ Não usar OneDrive como caminho do repo — o OneDrive corrompe a pasta `.git`
 > ao sincronizar arquivos internos do git (ver `CLAUDE.md` do projeto).
@@ -235,6 +237,54 @@ Salvar relatório em: doc-sync/reports/doc-sync-relatorio-[data].md
 
 ---
 
+## Manutenção do Catálogo de Erros
+
+Além do fluxo de sincronização de documentação (Etapas 1-9, disparado por mudança
+de código), o doc-sync também mantém vivo o **Catálogo de Erros de Vibe Coding**
+— documento versionado em `Manual/`, no mesmo padrão de 6a-6c (Manual de Uso,
+Guia Técnico Unificado, Ficha Técnica). Arquivo atual: `Manual/Catalogo_Erros_Vibe_Coding_MAZ_v4.docx`
+— confirme sempre com `ls Manual/*Catalogo_Erros*` qual é a versão vigente antes
+de editar (mesma regra da ETAPA 6f).
+
+Cobre anti-padrões de vibe coding: Parte A (execução técnica — corrupção de
+arquivo, commit ausente, substituição ambígua etc.) e Parte B (sessão
+estratégica — over-engineering, scope creep, sycophancy etc., E01-E08).
+
+**Gatilho — independente do diff de código:** sempre que, em qualquer sessão de
+trabalho neste projeto (doc-sync ou não), um erro correspondente a um item já
+catalogado se repetir, ou um padrão de erro novo (ainda não catalogado) for
+identificado — seja por autodetecção ou apontado pelo usuário — registrar uma
+nova entrada no catálogo:
+
+- Usar a skill `docx` (unpack → editar XML → repack) — nunca reescrever o
+  documento inteiro. Adicionar a entrada na seção correspondente (Parte A ou B),
+  no mesmo formato dos itens existentes:
+  - Título curto + severidade (Parte A) ou código EnN (Parte B)
+  - **O que aconteceu:** descrição objetiva do incidente
+  - **Como evitar:** regra prática, com comando/código se aplicável
+  - **Caso real / Evidência:** data + sessão/feature onde ocorreu
+- Numerar sequencialmente a partir do último item existente (Parte A: Erro 15+;
+  Parte B: E09+).
+- Atualizar também a seção "Log de novas ocorrências" no fim do documento.
+- Incrementar versão ao salvar (ex: `_v4.docx` → `_v5.docx`) e mover a versão
+  anterior para `Manual/old_versions/` — mesma verificação de arquivamento da
+  ETAPA 6f (confirmar que só existe uma versão do catálogo na raiz de `Manual/`
+  ao final).
+- Este passo **não** precisa esperar um ciclo de doc-sync completo (Etapas 1-9)
+  para acontecer — pode ser feito no momento em que o erro é identificado,
+  dentro de qualquer sessão técnica ou estratégica do projeto.
+- **Parte B ativa:** ao iniciar uma sessão de brainstorm/feature nova, execução/
+  entregável, ou revisão de proposta neste projeto, aplicar as provocações
+  E01-E08 relevantes (tabela "Provocações por tipo de tarefa" no catálogo) como
+  autocheck — mesmo havendo sobreposição com as skills genéricas
+  `chat-vibing-guard`/`code-vibing-guard`, elas ficam ativas aqui por decisão do
+  usuário.
+- A versão v3.1 original (pré-migração para docx versionado) fica arquivada em
+  `Manual/old_versions/catalogo_erros_vibe_coding_v3.1_original.docx`, só como
+  referência histórica.
+
+---
+
 ## Regras de qualidade
 
 1. **Nunca reescrever um documento inteiro** — editar cirurgicamente as seções afetadas
@@ -243,6 +293,7 @@ Salvar relatório em: doc-sync/reports/doc-sync-relatorio-[data].md
 4. **Versionar sempre** — nunca sobrescrever sem incrementar versão
 5. **Snapshot obrigatório** — sempre salvar novo snapshot ao final
 6. **Git apenas com instrução explícita** — nunca rodar git add/commit/push automaticamente
+7. **Catálogo de erros sempre atualizado** — todo erro técnico ou estratégico identificado numa sessão vira entrada nova em `catalogo_erros_vibe_coding.md`, sem esperar ciclo completo
 
 ---
 
