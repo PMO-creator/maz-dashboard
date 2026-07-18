@@ -1845,21 +1845,6 @@ function abrevNome(n){
     function hasProg(it){ return !!(it.t.progresso&&it.t.progresso.trim()); }
     function hasEnc(it){ return !!(it.t.encaminhamento&&it.t.encaminhamento.trim()); }
 
-    // motivo do status — deriva de _n2Situacao(); no export Diretoria mostra só datas
-    function motivo(it){
-      var t=it.t, sit=_n2Situacao(t,isDir);
-      if(sit.tipo==='vencido') return 'fim previsto '+fmtBRshort(t.end)+', vencido há <b>'+nd(sit.dias)+'</b>';
-      if(sit.tipo==='herdado') return 'herdado de subtarefa atrasada';
-      if(sit.tipo==='vence') return 'vence '+(sit.dias===0?'<b>hoje</b>':'em <b>'+nd(sit.dias)+'</b>')+' ('+fmtBRshort(t.end)+')';
-      if(sit.tipo==='naoiniciado') return '<b>deveria ter iniciado em '+fmtBRshort(t.start)+'</b> e não foi iniciado';
-      if(sit.tipo==='semdata') return 'sem data conclusiva';
-      if(sit.tipo==='semdatas') return 'sem data de início ou fim definida';
-      var ds=t.start?fmtBRshort(t.start):'', de=t.end?fmtBRshort(t.end):'';
-      if(ds&&de) return ds+' → '+de;
-      if(de) return 'fim '+de;
-      return '';
-    }
-
     // ordena: pior status primeiro; dentro do status, fim mais antigo primeiro
     // (datas ISO YYYY-MM-DD ordenam lexicograficamente — sem parse de Date)
     function sortKey(it){
@@ -1884,7 +1869,6 @@ function abrevNome(n){
     // Cancelado/Congelado e status anômalos (ex: erro de fórmula na planilha) não entram no resumo
 
     var nMarcos=Object.keys(marcosSet).length;
-    var NPA='⚠ Não preenchido';
     var h='';
 
     // ── abertura ──
@@ -1921,29 +1905,14 @@ function abrevNome(n){
       h+='</p>';
     }
 
-    // ── pontos de atencao ──
-    if(atencao.length){
-      h+='<h4 class="exp-res-h">⚠️ Pontos de atenção — '+atencao.length+(atencao.length===1?' item':' itens')+'</h4><ul class="exp-res-list">';
-      atencao.forEach(function(it){
-        var t=it.t, st=stOf(it);
-        h+='<li>';
-        h+='<div class="exp-res-item-top"><b>'+escH(it.eixo)+' · '+escH(it.grupo)+' — '+escH(t.tarefa||'')+'</b>'
-          +(t.resp?' · <span class="exp-res-resp">'+escH(abrevNome(t.resp))+'</span>':'')+'</div>';
-        h+='<div class="exp-res-item-mid"><span class="exp-res-st" style="background:'+sc(st)+'">'+escH(sl(st))+'</span> '+motivo(it)+'</div>';
-        h+='<div class="exp-res-item-low">Progresso: '+(hasProg(it)?escH(t.progresso.trim()):'<span class="exp-res-np">'+NPA+'</span>')
-          +(hasEnc(it)?' · Encaminhamento: '+escH(t.encaminhamento.trim()):'')+'</div>';
-        h+='</li>';
-      });
-      h+='</ul>';
-    }
-
-    // ── demais itens da pauta — contagem, sem texto corrido ──
-    var chips=[['Feito','Concluídas',feitos.length],['Em andamento','Em andamento',andando.length],['A iniciar','A iniciar',aIniciar.length],['Definir datas','Definir datas',definirData.length]].filter(function(c){ return c[2]>0; });
+    // ── panorama geral — contagem de todos os status, sem texto corrido ──
+    var chips=[['Atrasado','Atrasado',c('Atrasado')],['Risco de atraso','Risco de atraso',c('Risco de atraso')],['Em andamento','Em andamento',andando.length],['A iniciar','A iniciar',aIniciar.length],['Definir datas','Definir datas',definirData.length],['Feito','Concluídas',feitos.length]].filter(function(c){ return c[2]>0; });
     if(chips.length){
-      h+='<h4 class="exp-res-h">📊 Outros itens da pauta</h4><div class="exp-res-kpis">';
+      h+='<h4 class="exp-res-h">📊 Panorama geral</h4><div class="exp-res-kpis">';
       h+=chips.map(function(c){ return '<div class="exp-res-kpi" style="border-color:'+sc(c[0])+'"><span class="exp-res-kpi-n" style="color:'+sc(c[0])+'">'+c[2]+'</span><span class="exp-res-kpi-l">'+escH(c[1])+'</span></div>'; }).join('');
       h+='</div>';
     }
+    h+='<p class="exp-res-cta"><b><i>CLIQUE NO BOTÃO "COPIAR PROMPT P/ IA", COLE NA SUA FERRAMENTA DE IA PREFERIDA (EX.: CLAUDE) PARA GERAR UM RELATÓRIO SOBRE A PAUTA DA N2 DESSA SEMANA</i></b></p>';
 
     // ── rodape ──
     var n2=new Date();
@@ -2269,6 +2238,7 @@ function abrevNome(n){
       +'.exp-res-kpi{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:84px;padding:8px 14px;background:#F7FAFF;border:1px solid #DDE8F5;border-left:4px solid #94A3B8;border-radius:6px}'
       +'.exp-res-kpi-n{font-size:20px;font-weight:800;line-height:1.1}'
       +'.exp-res-kpi-l{font-size:11px;color:#5A6E85;margin-top:2px;white-space:nowrap}'
+      +'.exp-resumo-body p.exp-res-cta{margin:28px 0 0;padding-top:12px;border-top:1px solid #E3EDD8;text-align:center;font-size:14px;color:#2F4A18}'
       +'.exp-res-foot{margin-top:14px;padding-top:8px;border-top:1px dashed #DDE8F5;font-size:11px;color:#8898A8;font-style:italic}'
       +'.exp-resumo-hint{display:none;padding:0 16px 12px;font-size:11.5px;color:#8A6D00}'
       +'.exp-resumo.is-editing .exp-resumo-hint{display:block}'
