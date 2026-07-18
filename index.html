@@ -2830,11 +2830,10 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
     const progTxt = t.progresso||'';
     const encTxt  = t.encaminhamento||'';
     const progCls = progTxt ? '' : (isAtrasado ? 'alert' : 'empty');
-    const encCls  = encTxt  ? '' : (isAtrasado ? 'alert' : 'empty');
     const NP  = 'N\u00e3o preenchido';
     const NPA = '\u26a0 N\u00e3o preenchido';
     const progVal = progTxt ? escH(progTxt) : (isAtrasado ? NPA : NP);
-    const encVal  = encTxt  ? escH(encTxt)  : (isAtrasado ? NPA : NP);
+    const encVal  = encTxt ? escH(encTxt) : '';
     const isCancelado=(t.status||'').toLowerCase().includes('cancelado');
     const detailsId = 'td-'+gi+'-'+mi+'-'+(_tcSeq++);
     let h = `<div class="task-card"${n2Id?' id="taskcard-'+n2Id+'"':''} style="border-color:${mc}">`;
@@ -2852,7 +2851,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
     }
     h += `<div class="tc-fields">`;
     h += `<div class="tc-field"><span class="tc-label">Progresso:</span><span class="tc-text ${progCls}">${progVal}</span></div>`;
-    h += `<div class="tc-field"><span class="tc-label">Encaminhamentos:</span><span class="tc-text ${encCls}">${encVal}</span></div>`;
+    if(encTxt) h += `<div class="tc-field"><span class="tc-label">Encaminhamentos:</span><span class="tc-text">${encVal}</span></div>`;
     h += `</div></div></div>`;
     return h;
   }
@@ -2929,11 +2928,10 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
     const progTxt = t.progresso||'';
     const encTxt  = t.encaminhamento||'';
     const progCls = progTxt ? '' : (isAtrasado ? 'alert' : 'empty');
-    const encCls  = encTxt  ? '' : (isAtrasado ? 'alert' : 'empty');
     const NP  = 'Não preenchido';
     const NPA = '⚠ Não preenchido';
     const progVal = progTxt ? escH(progTxt) : (isAtrasado ? NPA : NP);
-    const encVal  = encTxt  ? escH(encTxt)  : (isAtrasado ? NPA : NP);
+    const encVal  = encTxt ? escH(encTxt) : '';
     const isCancelado=(t.status||'').toLowerCase().includes('cancelado');
     const detailsId = 'td-dir-'+gi+'-'+mi+'-'+(_tcSeqDir++);
     let h = `<div class="task-card"${n2Id?' id="taskcard-dir-'+n2Id+'"':''} style="border-color:${mc}">`;
@@ -2951,7 +2949,7 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
     }
     h += `<div class="tc-fields">`;
     h += `<div class="tc-field"><span class="tc-label">Progresso:</span><span class="tc-text ${progCls}">${progVal}</span></div>`;
-    h += `<div class="tc-field"><span class="tc-label">Encaminhamentos:</span><span class="tc-text ${encCls}">${encVal}</span></div>`;
+    if(encTxt) h += `<div class="tc-field"><span class="tc-label">Encaminhamentos:</span><span class="tc-text">${encVal}</span></div>`;
     h += `</div></div></div>`;
     return h;
   }
