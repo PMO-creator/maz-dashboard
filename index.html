@@ -1824,8 +1824,6 @@ function abrevNome(n){
   }
   // ── RESUMO EXECUTIVO N2 — heuristica determinista (sem IA) ───────────────────
   function _n2ResumoHTML(byEixo,weekLabel,isDir){
-    function nd(n){ return n+' dia'+(n===1?'':'s'); }
-
     var items=[], marcosSet={}, eixoNames=[];
     byEixo.forEach(function(e){
       eixoNames.push(e.eixo.name);
@@ -1905,6 +1903,10 @@ function abrevNome(n){
       h+='<b>'+semProg.length+' de '+atencao.length+'</b> '+(atencao.length===1?'item':'itens')+' em atenção '+(semProg.length===1?'está':'estão')+' sem Progresso reportado.';
       h+='</p>';
     }
+
+    // Pontos de atenção (lista item a item) removida do Resumo Executivo:
+    // fica repetitiva com a própria pauta, que já lista cada marco/tarefa em
+    // atenção logo abaixo com o mesmo status/progresso/encaminhamento.
 
     // ── panorama geral — contagem de todos os status, sem texto corrido ──
     var chips=[['Atrasado','Atrasado',c('Atrasado')],['Risco de atraso','Risco de atraso',c('Risco de atraso')],['Em andamento','Em andamento',andando.length],['A iniciar','A iniciar',aIniciar.length],['Definir datas','Definir datas',definirData.length],['Feito','Concluídas',feitos.length]].filter(function(c){ return c[2]>0; });
@@ -2043,21 +2045,19 @@ function abrevNome(n){
   }
 
   function _buildN2HTMLDoc(wbsArr,arr,isDir){
-    var currentFilters=getFilters();
-    var sfArr=currentFilters.status||[];
-    var sfLow=sfArr.map(function(s){return s.toLowerCase();});
-    function sfOk(v){return !sfLow.length||sfLow.indexOf((v||'A iniciar').toLowerCase())>=0;}
+    // A selecao guarda "gi:mi:ti:si" como indice ABSOLUTO nas listas originais
+    // (eixo.children / grupo.tasks / task.subtasks), nunca na lista filtrada
+    // pela busca/status/responsavel ativos no momento do export. Isso evita
+    // que uma tarefa selecionada sob um filtro apareca trocada quando o
+    // filtro muda antes do export (bug de indices deslocados).
     var selected=new Set(arr);
     var byEixo=[];
     wbsArr.forEach(function(eixo,gi){
-      var vis=eixo.children.filter(function(m){return matchesFilter(eixo,m,currentFilters);});
-      if(currentFilters.resp&&currentFilters.resp.length>0)vis=vis.filter(function(m){return grupoHasResp(m,currentFilters.resp);});
       var grupoItems=[];
-      vis.forEach(function(grupo,mi){
+      eixo.children.forEach(function(grupo,mi){
         var tasks=grupo.tasks||[];
-        var visTasks=sfLow.length===0?tasks:tasks.filter(function(t){return sfOk(t.status);});
         var marcoItems=[];
-        visTasks.forEach(function(task,ti){
+        tasks.forEach(function(task,ti){
           if(task.tipo==='marco'){
             var allSubs=task.subtasks||[];
             var selectedSubs=[];
@@ -2072,7 +2072,7 @@ function abrevNome(n){
       });
       if(grupoItems.length)byEixo.push({eixo:eixo,grupos:grupoItems});
     });
-    if(!byEixo.length){alert('Nenhuma tarefa selecionada encontrada com os filtros atuais.');return null;}
+    if(!byEixo.length){alert('Nenhuma tarefa selecionada encontrada. Se voce mudou de aba/filtro entre selecionar e exportar, reabra a selecao e tente novamente.');return null;}
 
     var respSet={};
     byEixo.forEach(function(e){
@@ -2843,9 +2843,10 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
     if(!subs.length) return leafOk(node);
     return subs.some(leafOk);
   }
-  let visTasks = filterActive ? tasks.filter(nodeHasMatchingLeaf) : tasks;
+  let taskEntries = tasks.map((t,ti)=>({t:t,ti:ti}));
+  if(filterActive) taskEntries = taskEntries.filter(e=>nodeHasMatchingLeaf(e.t));
   let html = `<div class="marco-comment-panel" id="cpanel-${gi}-${mi}" style="max-height:0">`;
-  visTasks.forEach((t,ti)=>{
+  taskEntries.forEach(({t,ti})=>{
     if(t.tipo === 'marco'){
       const mc  = sc(t.status||'A iniciar');
       const sl_ = sl(t.status||'A iniciar');
@@ -2853,8 +2854,9 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
       const de  = t.end   ? fmtBRshort(t.end)   : '';
       const dateStr = [ds,de].filter(Boolean).join('\u2192');
       const allSubs = t.subtasks||[];
-      const subs = filterActive ? allSubs.filter(leafOk) : allSubs;
-      const hasSubs = subs.length > 0;
+      let subEntries = allSubs.map((s,si)=>({s:s,si:si}));
+      if(filterActive) subEntries = subEntries.filter(e=>leafOk(e.s));
+      const hasSubs = subEntries.length > 0;
       const mKey = gi+'_'+mi+'_'+ti;
       const mIsOpen = !!marcoOpen[mKey];
       const clickAttr = hasSubs ? 'onclick="toggleMarco('+gi+','+mi+','+ti+',event)"' : '';
@@ -2873,7 +2875,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
       if(hasSubs){
         const maxH = mIsOpen ? 'none' : '0';
         html += `<div id="subtask-${gi}-${mi}-${ti}" class="marco-subtasks" style="overflow:hidden;max-height:${maxH};transition:max-height .3s cubic-bezier(.4,0,.2,1)">`;
-        subs.forEach((s,si)=>{ html += taskCard(s, gi+'-'+mi+'-'+ti+'-'+si); });
+        subEntries.forEach(({s,si})=>{ html += taskCard(s, gi+'-'+mi+'-'+ti+'-'+si); });
         html += `</div>`;
       } else { html += taskCard(t); }
     } else {
@@ -2938,9 +2940,10 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
     if(!subs.length) return leafOk(node);
     return subs.some(leafOk);
   }
-  let visTasks = filterActive ? tasks.filter(nodeHasMatchingLeaf) : tasks;
+  let taskEntries = tasks.map((t,ti)=>({t:t,ti:ti}));
+  if(filterActive) taskEntries = taskEntries.filter(e=>nodeHasMatchingLeaf(e.t));
   let html = `<div class="marco-comment-panel" id="dir-cpanel-${gi}-${mi}" style="max-height:0">`;
-  visTasks.forEach((t,ti)=>{
+  taskEntries.forEach(({t,ti})=>{
     if(t.tipo === 'marco'){
       const mc  = sc(t.status||'A iniciar');
       const sl_ = sl(t.status||'A iniciar');
@@ -2948,8 +2951,9 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
       const de  = t.end   ? fmtBRshort(t.end)   : '';
       const dateStr = [ds,de].filter(Boolean).join('→');
       const allSubs = t.subtasks||[];
-      const subs = filterActive ? allSubs.filter(leafOk) : allSubs;
-      const hasSubs = subs.length > 0;
+      let subEntries = allSubs.map((s,si)=>({s:s,si:si}));
+      if(filterActive) subEntries = subEntries.filter(e=>leafOk(e.s));
+      const hasSubs = subEntries.length > 0;
       const mKey = gi+'_'+mi+'_'+ti;
       const mIsOpen = !!marcoOpen_Dir[mKey];
       const clickAttr = hasSubs ? 'onclick="toggleMarco_Dir('+gi+','+mi+','+ti+',event)"' : '';
@@ -2968,7 +2972,7 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
       if(hasSubs){
         const maxH = mIsOpen ? 'none' : '0';
         html += `<div id="dir-subtask-${gi}-${mi}-${ti}" class="marco-subtasks" style="overflow:hidden;max-height:${maxH};transition:max-height .3s cubic-bezier(.4,0,.2,1)">`;
-        subs.forEach((s,si)=>{ html += taskCard_Dir(s, gi+'-'+mi+'-'+ti+'-'+si); });
+        subEntries.forEach(({s,si})=>{ html += taskCard_Dir(s, gi+'-'+mi+'-'+ti+'-'+si); });
         html += `</div>`;
       } else { html += taskCard_Dir(t); }
     } else {
@@ -2988,17 +2992,17 @@ function renderTree_Dir(){
   if(!list)return;
   let html=''; let vg=0,vm=0;
   WBS_DIR.forEach((g,gi)=>{
-    let vis=g.children.filter(m=>matchesFilter(g,m,f));
-    if(f.status.length>0||f.resp.length>0) vis=vis.filter(m=>grupoHasMatchingLeaf(m,f));
+    let visEntries=g.children.map((m,mi)=>({m,mi})).filter(e=>matchesFilter(g,e.m,f));
+    if(f.status.length>0||f.resp.length>0) visEntries=visEntries.filter(e=>grupoHasMatchingLeaf(e.m,f));
     const hasFilter=f.status.length>0||f.resp.length>0||f.search||f.dateStart||f.dateEnd;
-    if(vis.length===0 && hasFilter) return;
-    vg++;vm+=vis.length;
+    if(visEntries.length===0 && hasFilter) return;
+    vg++;vm+=visEntries.length;
     const isOpen=groupOpen_Dir[gi];
     const color=sc(g.status);
     const eixoStyle=g.color?` style="background:${g.color};--eixo-text:${_eixoTextColor(g.color)}"`:'';
     const gName=hl(g.name,f.search);
-    const focoCount=(f.dateStart||f.dateEnd)&&!modoEstrito?vis.filter(m=>dateInRange(m,f.dateStart,f.dateEnd)).length:0;
-    const mItems=vis.map((m,mi)=>{
+    const focoCount=(f.dateStart||f.dateEnd)&&!modoEstrito?visEntries.filter(e=>dateInRange(e.m,f.dateStart,f.dateEnd)).length:0;
+    const mItems=visEntries.map(({m,mi})=>{
       const focoClass=(f.dateStart||f.dateEnd)&&!modoEstrito&&!dateInRange(m,f.dateStart,f.dateEnd)?' marco-foco-dimmed':'';
       const mc=sc(m.status);
       const hasC=!!(m.tasks&&m.tasks.length);
@@ -3028,7 +3032,7 @@ function renderTree_Dir(){
           <span class="group-toggle" id="dir-gtoggle-${gi}" style="transform:rotate(${isOpen?0:-90}deg)">&#9660;</span>
           <span class="group-id" style="background:${color}">${escH(g.id)}</span>
           <span class="eixo-name">${gName}</span>
-          <span class="group-count">${vis.length} grupos</span>${focoCount>0?'<span class="foco-badge">● '+focoCount+' em foco</span>':''}
+          <span class="group-count">${visEntries.length} grupos</span>${focoCount>0?'<span class="foco-badge">● '+focoCount+' em foco</span>':''}
         </div>
       </div>
       <div class="marco-list" id="dir-mlist-${gi}" style="max-height:${isOpen?'none':'0'}">${mItems}</div>
@@ -3286,18 +3290,18 @@ function renderTree(){
   let html=''; let vg=0,vm=0;
 
   WBS.forEach((g,gi)=>{
-    let vis=g.children.filter(m=>matchesFilter(g,m,f));
-    if(f.status.length>0||f.resp.length>0) vis=vis.filter(m=>grupoHasMatchingLeaf(m,f));
+    let visEntries=g.children.map((m,mi)=>({m,mi})).filter(e=>matchesFilter(g,e.m,f));
+    if(f.status.length>0||f.resp.length>0) visEntries=visEntries.filter(e=>grupoHasMatchingLeaf(e.m,f));
     const hasFilter=f.status.length>0||f.resp.length>0||f.search||f.dateStart||f.dateEnd;
-    if(vis.length===0 && hasFilter) return;
-    vg++;vm+=vis.length;
+    if(visEntries.length===0 && hasFilter) return;
+    vg++;vm+=visEntries.length;
     const isOpen=groupOpen[gi];
     const color=sc(g.status);
     const eixoStyle=g.color?` style="background:${g.color};--eixo-text:${_eixoTextColor(g.color)}"`:'';
     const gName=hl(g.name,f.search);
 
-    const focoCount=(f.dateStart||f.dateEnd)&&!modoEstrito?vis.filter(m=>dateInRange(m,f.dateStart,f.dateEnd)).length:0;
-    const mItems=vis.map((m,mi)=>{
+    const focoCount=(f.dateStart||f.dateEnd)&&!modoEstrito?visEntries.filter(e=>dateInRange(e.m,f.dateStart,f.dateEnd)).length:0;
+    const mItems=visEntries.map(({m,mi})=>{
       const focoClass=(f.dateStart||f.dateEnd)&&!modoEstrito&&!dateInRange(m,f.dateStart,f.dateEnd)?' marco-foco-dimmed':'';
       const mc=sc(m.status);
       const hasC=!!(m.tasks&&m.tasks.length);
@@ -3328,7 +3332,7 @@ function renderTree(){
           <span class="group-toggle" id="gtoggle-${gi}" style="transform:rotate(${isOpen?0:-90}deg)">▼</span>
           <span class="group-id" style="background:${color}">${escH(g.id)}</span>
           <span class="eixo-name">${gName}</span>
-          <span class="group-count">${vis.length} grupos</span>${focoCount>0?'<span class="foco-badge">● '+focoCount+' em foco</span>':''}
+          <span class="group-count">${visEntries.length} grupos</span>${focoCount>0?'<span class="foco-badge">● '+focoCount+' em foco</span>':''}
         </div>
       </div>
       <div class="marco-list" id="mlist-${gi}" style="max-height:${isOpen?'none':'0'}">${mItems}</div>
