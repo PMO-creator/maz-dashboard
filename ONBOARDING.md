@@ -363,6 +363,12 @@ Dropdown multi-select na barra de filtros da aba Requisições. Lê valores úni
 | `buildReqFilters()` | Monta os filtros de status, comprador, prioridade e fornecedor |
 | `applyReqFilter()` | Aplica todos os filtros e re-renderiza a lista de requisições |
 
+**Reagrupamento dinâmico COMPRAS/COTAÇÃO (Jul/2026):** `renderReqs()` classifica cada requisição em dois blocos — COMPRAS e COTAÇÃO — via `_reqGroupKey(r)`. Status explícitos de cotação (`Em cotação`, `Cotação em análise`, `Cotação finalizada`) sempre vão para COTAÇÃO; os ambíguos (`Não iniciada`, `Cancelado`) são resolvidos por `_normTipo(r.tipo)` olhando o campo Tipo da planilha; todo o resto cai em COMPRAS. Subquadros por status só aparecem quando há requisições naquele status (sem blocos vazios). Substituiu os 4 grupos fixos antigos (`COTAÇÃO`/`COMPRAS`/`NÃO INICIADA`/`CANCELADA`).
+
+#### Busca por Texto — Abas Gantt e Gantt Diretoria (Jul/2026)
+
+`searchInput-gantt` / `searchInput-gantt-dir`, mesmo padrão da busca já existente em Status Report e Áreas: filtra em tempo real por eixo, marco, tarefa e responsável, com badge de contagem (`search-badge-gantt` / `search-badge-gantt-dir`).
+
 #### Aba Gantt Diretoria (Jun/2026)
 
 Aba `📊 Gantt Diretoria`, visualmente idêntica à aba Gantt, mas com regra de status diferente: usa o status **exatamente como preenchido na planilha**, sem os overrides automáticos por data que a aba Gantt aplica.
@@ -402,18 +408,23 @@ Os mesmos filtros globais (responsável, status, período) e a mesma trava de se
 
 > ⚠️ A aba Gantt original (`WBS`, `preprocessStatuses()`, funções sem sufixo `Dir`) não foi alterada.
 
-#### Aba Áreas — Gantt e Export PDF (Jun/2026)
+#### Aba Áreas — Kanban e Export PDF (Jun/2026, reescrito Jul/2026)
 
-A aba Áreas exibe o Gantt por área física do museu. As colunas de área são detectadas dinamicamente a partir do header da planilha.
+A aba Áreas exibia um Gantt por área física do museu até Jul/2026; agora exibe um **Kanban semanal** (colunas = semanas, cards coloridos por fornecedor). Colunas de área continuam detectadas dinamicamente a partir do header da planilha.
+
+> ⚠️ **Escopo não óbvio:** a aba Áreas considera **apenas** o eixo cujo nome é exatamente `AREAS_EIXO_NOME` (`'MONTAGEM DE EXPO DE LONGA'`) — ver `_buildAreasData()`. Tarefas de outros eixos, mesmo com colunas de área marcadas na planilha, nunca aparecem nesta aba. Isso nunca esteve documentado antes; se o escopo precisar mudar para incluir outros eixos, é `_buildAreasData()` que filtra por `eixo.name!==AREAS_EIXO_NOME`.
 
 | Função JS | Responsabilidade |
 |---|---|
-| `_detectAreaCols(rows)` | Detecta os índices das colunas de área no Sheets usando a coluna FOYER como âncora. Chamada no init após `loadSheetsData`. Antes usava índices fixos — agora é dinâmico. |
-| `_buildGanttSVGForExport(ai, fDS, fDE, viewMode, fmt)` | Gera SVG do Gantt de uma área para export PDF. Parâmetro `fmt` (A1/A2/A3/A4) controla escala — adicionado Jun/2026. |
-| `pdfSelAll()` | Seleciona todas as áreas no wizard de Export PDF. |
-| `pdfSelClear()` | Limpa a seleção de áreas no wizard de Export PDF. |
+| `_detectAreaCols(rows)` | Detecta os índices das colunas de área no Sheets usando a coluna FOYER como âncora. Chamada no init após `loadSheetsData`. |
+| `_buildAreasData()` | Monta `AREAS_DATA` restrito ao eixo `AREAS_EIXO_NOME`. Desde Jul/2026 cada subtask ganha o campo `fornecedor` (antes só existia `resp/status/start/end`) — é o dado usado para colorir os cards do Kanban. |
+| `_fornColor(name)` / `_FORN_PALETTE` / `_FORN_COLORS` | Cor por fornecedor. Coloração **gulosa por co-ocorrência**: fornecedores que aparecem na mesma área nunca recebem a mesma cor da paleta de 28 tons. Nome vazio → cinza `#94A3B8`. |
+| `_buildKanbanSVGForExport(ai,fDS,fDE,fmt,orient,rowStart,rowEnd,planOnly)` | Substitui `_buildGanttSVGForExport` (Jul/2026) para o export em PDF. Gera cards em **grade cronológica** (atividades ordenadas por data, sem repetir por semana como na tela). `planOnly=true` retorna `{rowHeights,HH:0,totalW}` para a paginação. |
+| `pdfSelAll()` / `pdfSelClear()` | Seleciona/limpa todas as áreas no wizard de Export PDF. |
 
-**Multi-select no Export PDF de Áreas (Jun/2026):** o wizard agora permite selecionar múltiplas áreas. O PDF gerado contém todas em sequência. Arquivo nomeado `Gantt_multiplas_areas_N_[período].pdf` quando > 1 área selecionada.
+**Multi-select no Export PDF de Áreas (Jun/2026):** o wizard permite selecionar múltiplas áreas. Arquivo nomeado `Kanban_multiplas_areas_N_[período].pdf` quando > 1 área selecionada (nome do arquivo mudou de `Gantt_...` para `Kanban_...` em Jul/2026).
+
+**Paginação — 1 área por página (Jul/2026):** o loop de export em `_runExportPDF` pula áreas sem cards no período (evita página em branco) e força `pdf.addPage()` + reset de `state` (`curY`/`first`/`prevColor`) antes de cada área a partir da segunda. Sem isso, uma área pequena preenchia só parte da página e a próxima começava colada embaixo, na mesma folha.
 
 #### Feature: Exportar Pauta N2 como HTML navegável (nome da função mantido por compatibilidade)
 
@@ -493,7 +504,7 @@ Analisa `index.html` completo em busca de problemas de segurança, arquitetura, 
 | Edit tool do Claude Code falha | Arquivo contém backticks JS (template literals). Usar PowerShell com `[System.IO.File]::ReadAllBytes` |
 | String não encontrada no Replace | Arquivo usa CRLF. Normalizar: `$content.Replace("\`r\`n", "\`n")` antes de substituir |
 | Nome "Pingueira" na Área 0 | Nome correto é **"Pinguela"** — corrigido em commit 2970ecd. Usar sempre "Pinguela" em código e docs. |
-| `exportN2PPT()` sem pptxgenjs | Se `PptxGenJS` não estiver definido (falha de CDN), a função alerta o usuário e retorna. Nunca presumir que o CDN carregou. |
+| Quebra de texto em SVG/PDF por contagem de caracteres | Estimar caracteres por linha (ex.: `largura/20`) subestima letras maiúsculas em negrito e a linha vaza a caixa no PDF. Usar medição real via `canvas.measureText()` com a mesma fonte/peso do SVG (helpers `_mw`/`_fitOne`/`_wrapW` em `_buildKanbanSVGForExport`), com ~4% de margem para a diferença Helvetica (jsPDF) vs Arial (browser). Corrigido Jul/2026 no export Kanban da aba Áreas. |
 | `preprocessStatusesDiretoria()` vs `preprocessStatuses()` | São duas funções separadas que processam fontes separadas (`WBS_DIR` vs `WBS`). Editar uma sem editar a outra causa divergência silenciosa entre a aba Status Report normal e a aba Diretoria. Ambas são chamadas em sequência no load (`preprocessStatuses(); preprocessStatusesDiretoria();`) — nunca remover uma achando que é redundante. |
 | `WBS_DIR` é deep copy, não referência | `WBS_DIR.length=0; JSON.parse(JSON.stringify(newWBS)).forEach(e=>WBS_DIR.push(e));` — é uma cópia profunda tirada no momento do load. Edições de status manual feitas na aba Diretoria **não** propagam de volta para `WBS`, e vice-versa. Isso é intencional (permite status divergente para comparação), mas quebra a expectativa de "é a mesma árvore". |
 | `window.print()` no Comparativo | O botão "Exportar PDF" do modal Comparativo (`comp-btn-pdf`) chama `window.print()` puro — não gera PDF programaticamente, depende do diálogo de impressão do browser. Sem CSS `@media print` dedicado, o layout impresso pode não coincidir com o modal na tela. |
@@ -510,7 +521,7 @@ Permite selecionar tarefas individuais dentro de marcos para levar à reunião d
 3. Marcar o checkbox → badge verde **N2** aparece no tile do marco pai; botão flutuante **📋 Pauta N2 · N** mostra a contagem de tarefas
 4. Clicar **📋 Pauta N2 · N** → filtra a árvore mostrando só os marcos que têm tarefas selecionadas
 5. Clicar **✕ Ver todos · N** → volta a exibir tudo
-6. Botão **✕ Limpar N2** (abaixo do FAB) → limpa todas as seleções
+6. Botão **✕ Limpar N2** (abaixo do FAB) → abre modal de confirmação (`n2ConfirmClear`); só limpa as seleções após clicar "Sim, limpar" (`n2ConfirmDo`) — desde Jul/2026 não limpa mais direto no clique
 
 ### Comportamento de persistência
 - Seleções ficam em `localStorage`, chave semanal `n2_pauta_YYYY-Wnn` (gerada por `getN2Key()`, usa `getISOWeek()`) — cada semana ISO tem seu próprio balde de seleções
@@ -522,6 +533,7 @@ Permite selecionar tarefas individuais dentro de marcos para levar à reunião d
 | Elemento | Detalhe |
 |---|---|
 | Funções JS | `toggleN2Task`, `toggleN2Marco`, `toggleN2Group`, `updateN2Fab`, `clearN2Selection`, `applyN2Filter`, `toggleN2Filter`, `initN2Checkboxes`, `initN2FromURL`, `publishN2Pauta`, `unlockN2Edit`, `_n2Hash`, `loadN2`, `saveN2`, `getN2Key` |
+| Limpar N2 — confirmação (Jul/2026) | `n2ConfirmClear(isDir)` abre `#n2-confirm-modal`; `n2ConfirmDo()` chama `clearN2Selection()`/`clearN2Selection_Dir()` só após o "Sim, limpar". `clearN2Selection()` continua existindo mas não é mais chamada direto pelo botão. |
 | Armazenamento | `localStorage.getItem(getN2Key())` — chave semanal, não in-memory |
 | Estado view-only | `var _n2ViewMode=false` — true quando aberto via link publicado |
 | Estado desbloqueado | `var _n2Unlocked=false` — true após PIN correto |
@@ -545,6 +557,18 @@ Gera `.html` com as tarefas selecionadas — não mais `.pptx` (trocado em Jul/2
 | Função | Responsabilidade |
 |---|---|
 | `exportN2PPT()` | Lê seleção via `loadN2()` (IDs no formato `gi:mi:ti:si` — 4 partes), agrupa por marco/eixo, gera HTML via `_buildN2HTMLDoc()`. Arquivo: `Pauta_N2_YYYY-MM-DD.html`. |
+| `_buildN2HTMLDoc(wbsArr,arr,isDir)` | Monta o HTML completo: agrupa a seleção por eixo/grupo/marco, calcula KPIs (`_n2KpiRowHTML`), gera o bloco "📝 Resumo Executivo" (`_n2ResumoHTML`) e injeta os scripts inline `_exp*`. Resolve a seleção por índice absoluto (`gi:mi:ti:si`), nunca pela lista filtrada no momento do export — evita trocar a tarefa errada se o filtro mudou entre selecionar e exportar. |
+
+#### Resumo Executivo (Jul/2026)
+
+O HTML exportado inclui um bloco **"📝 Resumo Executivo"** editável no topo, gerado a partir dos KPIs e situação por eixo da pauta.
+
+| Função JS (dentro do HTML exportado) | Responsabilidade |
+|---|---|
+| `_expEditarResumo()` / `_expSairEdicao()` | Alternam `contentEditable` no bloco do resumo. |
+| `_expRegerarResumo()` | Restaura o HTML original (guardado em `#exp-resumo-orig`) após `confirm()` — descarta edições. |
+| `_expSalvarResumo()` | Sai do modo edição, lê a versão atual via `meta[name="pauta-versao"]` (`_expVersaoAtual()`, default 1) e baixa uma **nova cópia** do arquivo com a versão incrementada. Não há servidor guardando estado — o versionamento é por download (v2, v3...). |
+| `_expCopiarPrompt()` | Copia para a área de transferência um texto estruturado (`_n2PromptText`) com os dados brutos da pauta, para colar em uma IA externa e pedir um resumo mais elaborado. |
 
 ### Compartilhamento via URL+PIN (commit 8d3268f)
 
