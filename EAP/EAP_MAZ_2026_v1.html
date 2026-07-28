@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EAP — Museu das Amazônias 2026</title>
+<style>
+:root {
+  --primary: #1a3a6b;
+  --primary-light: #2c5299;
+  --accent: #c0392b;
+  --bg: #f4f6fa;
+  --white: #ffffff;
+  --text: #1e2430;
+  --text-muted: #6b7280;
+  --border: #d1d5db;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+.header{background:var(--primary);color:white;padding:18px 40px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
+.header-logo{font-size:26px;font-weight:800;letter-spacing:3px;}
+.header-divider{width:2px;height:36px;background:rgba(255,255,255,0.3);}
+.header-info strong{display:block;font-size:15px;}
+.header-info span{opacity:0.75;font-size:12px;}
+
+.toolbar{max-width:1000px;margin:0 auto;padding:16px 20px 0;display:flex;justify-content:flex-end;gap:10px;}
+.btn-clear{background:white;color:var(--danger);border:1.5px solid var(--danger);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-clear:hover{background:#fee2e2;}
+.btn-gen{background:linear-gradient(135deg,#15803d,#16a34a);color:white;border:none;padding:11px 24px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(22,163,74,.35);}
+.btn-gen:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(22,163,74,.45);}
+.btn-export{background:white;color:var(--primary);border:1.5px solid var(--primary-light);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-export:hover{background:#eef2ff;}
+.report-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:14px 0 6px;}
+.report-section-title:first-child{margin-top:0;}
+.report-line{font-size:12px;padding:5px 8px;border-radius:6px;margin-bottom:3px;}
+.report-add{background:#f0fdf4;color:#166534;}
+.report-remove{background:#fef2f2;color:#991b1b;}
+.report-change{background:#fffbeb;color:#78350f;}
+
+.restore-banner{max-width:1000px;margin:16px auto 0;background:#fffbeb;border:1.5px solid #fbbf24;border-radius:10px;padding:14px 20px;display:none;align-items:center;justify-content:space-between;gap:14px;font-size:13px;color:#92400e;}
+.restore-banner strong{font-size:14px;color:#78350f;}
+.rb-btns{display:flex;gap:10px;flex-shrink:0;}
+.rb-btn-yes{background:#d97706;color:white;border:none;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.rb-btn-no{background:white;color:#92400e;border:1.5px solid #fbbf24;padding:8px 16px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit;}
+
+.main{max-width:1000px;margin:20px auto 60px;padding:0 20px;}
+.card{background:white;border-radius:14px;box-shadow:var(--shadow);padding:22px 24px;}
+
+.node-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 6px;border-radius:6px;}
+.node-row:hover{background:#fafbfc;}
+.node-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0;}
+.chevron-btn{background:none;border:none;cursor:pointer;font-size:11px;color:var(--text-muted);width:16px;flex-shrink:0;}
+.name-input{border:1.5px solid transparent;background:transparent;font-family:inherit;padding:4px 6px;border-radius:6px;width:100%;}
+.name-input:hover,.name-input:focus{border-color:var(--border);background:white;outline:none;}
+.node-eixo>.node-row .name-input{font-size:14px;font-weight:800;color:var(--primary);text-transform:uppercase;}
+.node-grupo>.node-row .name-input{font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;}
+.node-marco>.node-row .name-input{font-size:12px;font-weight:600;color:var(--text);}
+.btn-icon{background:none;border:none;cursor:pointer;color:var(--danger);font-size:13px;padding:4px 6px;border-radius:5px;flex-shrink:0;}
+.btn-icon:hover{background:#fee2e2;}
+.btn-add-inline{background:none;border:1.5px dashed var(--primary-light);color:var(--primary);border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+.btn-add-inline:hover{background:#eef2ff;border-style:solid;}
+
+.children-wrap{padding-left:22px;}
+.tarefas-wrap{padding-left:22px;display:flex;flex-direction:column;gap:4px;margin:4px 0 10px;}
+.tarefa-head{display:grid;grid-template-columns:1fr 180px 130px 26px;gap:8px;padding:2px 8px;}
+.tarefa-head span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);}
+.tarefa-row{display:grid;grid-template-columns:1fr 180px 130px 26px;gap:8px;align-items:center;padding:6px 8px;background:#fafbfc;border-radius:6px;}
+.tarefa-row input[type=text]{border:1.5px solid var(--border);border-radius:6px;padding:6px 9px;font-size:12px;font-family:inherit;width:100%;}
+.resp-input{background:#e5e7eb!important;color:var(--text)!important;font-weight:700!important;}
+.prio-select{border-radius:11px;border:none;font-size:10px;font-weight:700;text-transform:uppercase;padding:5px 9px;text-align:center;cursor:pointer;font-family:inherit;}
+.prio-alta{background:#fee2e2;color:#991b1b;}
+.prio-media{background:#fef3c7;color:#92400e;}
+.prio-baixa{background:#dcfce7;color:#166534;}
+.prio-vazia{background:#e5e7eb;color:#374151;}
+
+.node-eixo{margin-bottom:6px;border-top:1.5px solid var(--border);padding-top:10px;}
+.node-eixo:first-child{border-top:none;padding-top:0;}
+.add-eixo-wrap{text-align:center;padding-top:18px;border-top:1.5px solid var(--border);margin-top:10px;}
+.btn-add-eixo{background:none;border:1.5px dashed var(--accent);color:var(--accent);border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-add-eixo:hover{background:#fdecea;border-style:solid;}
+.add-grupo-wrap{text-align:center;padding-top:14px;}
+.btn-add-grupo{background:none;border:1.5px dashed var(--primary-light);color:var(--primary);border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-add-grupo:hover{background:#eef2ff;border-style:solid;}
+
+.toast{position:fixed;bottom:28px;right:28px;background:#1e293b;color:white;padding:12px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .35s;pointer-events:none;}
+.toast.show{opacity:1;}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal-box{background:white;border-radius:14px;padding:32px 36px;max-width:420px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.2);text-align:center;}
+.modal-icon{font-size:40px;margin-bottom:12px;}
+.modal-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.modal-body{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:24px;}
+.modal-btns{display:flex;gap:12px;justify-content:center;}
+.modal-btn-cancel{background:white;color:var(--text);border:1.5px solid var(--border);padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.modal-btn-cancel:hover{background:var(--bg);}
+.modal-btn-confirm{background:var(--danger);color:white;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+.modal-btn-confirm:hover{background:#b91c1c;}
+
+.view-toggle{display:flex;gap:8px;}
+.vt-btn{padding:9px 16px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--text-muted);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.vt-btn.active{background:var(--primary);border-color:var(--primary);color:white;}
+
+.mindmap-wrap{position:relative;overflow-x:auto;}
+.mm-svg{position:absolute;top:0;left:0;z-index:0;pointer-events:none;}
+.mm-cols{position:relative;display:flex;align-items:flex-start;gap:50px;width:max-content;padding:16px 8px 30px;}
+.mm-col-abs{position:relative;flex-shrink:0;}
+.mm-node{position:relative;z-index:1;display:flex;align-items:flex-start;gap:6px;border-radius:8px;padding:8px 10px;box-sizing:border-box;}
+.mm-name{outline:none;word-break:break-word;padding:2px 4px;border-radius:5px;cursor:text;flex:1;min-width:0;}
+.mm-name:hover,.mm-name:focus{background:rgba(255,255,255,.4);}
+.mm-eixo{width:170px;background:var(--primary);flex-shrink:0;}
+.mm-eixo .mm-name{color:#fff;font-size:12.5px;font-weight:800;text-transform:uppercase;}
+.mm-grupo{width:170px;background:white;border:1.5px solid var(--primary-light);flex-shrink:0;}
+.mm-grupo .mm-name{color:var(--text);font-size:11.5px;font-weight:700;text-transform:uppercase;}
+.mm-marco{width:180px;background:#fef3c7;flex-shrink:0;}
+.mm-marco .mm-name{color:#7c4a03;font-size:11px;font-weight:600;}
+.mm-tarefa{width:190px;background:#dcfce7;border-radius:16px;flex-shrink:0;}
+.mm-tarefa .mm-name{color:#14532d;font-size:10.5px;font-weight:500;}
+.mm-chevron{background:none;border:none;cursor:pointer;font-size:10px;color:inherit;opacity:.7;flex-shrink:0;padding-top:3px;}
+.mm-count{color:inherit;opacity:.65;font-weight:600;font-size:10px;flex-shrink:0;padding-top:3px;}
+.mm-del{background:none;border:none;cursor:pointer;color:var(--accent);font-size:13px;flex-shrink:0;opacity:0;transition:opacity .15s;}
+.mm-node:hover .mm-del{opacity:1;}
+.mm-add{width:160px;padding:6px;border-radius:8px;border:1.5px dashed var(--primary-light);background:transparent;color:var(--primary);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0;}
+.mm-add:hover{background:#eef2ff;border-style:solid;}
+.mm-add-eixo{border-color:var(--accent);color:var(--accent);}
+.mm-add-eixo:hover{background:#fdecea;}
+.mm-name:empty:before{content:attr(data-placeholder);color:#9aa5b8;font-style:italic;}
+.mm-node-empty{background:#e5e7eb!important;border-color:#c3c9d3!important;}
+.mm-node-empty .mm-name{color:#6b7280!important;-webkit-text-fill-color:#6b7280;}
+
+.name-input::placeholder{color:#9aa5b8;font-style:italic;}
+.node-grupo>.node-row .name-input:placeholder-shown,
+.node-marco>.node-row .name-input:placeholder-shown{background:#e5e7eb;border-color:#c3c9d3;}
+.tarefa-row input[type=text]::placeholder{color:#9aa5b8;font-style:italic;}
+.tarefa-row input[type=text]:placeholder-shown{background:#e5e7eb;}
+
+@media(max-width:680px){.tarefa-row,.tarefa-head{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">MAZ</div>
+  <div class="header-divider"></div>
+  <div class="header-info">
+    <strong>EAP — Estrutura Analítica do Projeto</strong>
+    <span>Museu das Amazônias 2026 · <span id="version-badge">v1</span></span>
+  </div>
+</div>
+
+<div id="restore-banner" class="restore-banner">
+  <div><strong>📋 Rascunho encontrado</strong><br>Você tem edições salvas automaticamente nesta aba. Deseja continuar de onde parou?</div>
+  <div class="rb-btns">
+    <button class="rb-btn-yes" type="button" onclick="restoreDraft()">Sim, restaurar</button>
+    <button class="rb-btn-no" type="button" onclick="dismissDraft()">Descartar</button>
+  </div>
+</div>
+
+<div class="toolbar" style="justify-content:space-between;flex-wrap:wrap;">
+  <div class="view-toggle">
+    <button class="vt-btn active" type="button" id="vt-tree" onclick="setView('tree')">🌳 Árvore</button>
+    <button class="vt-btn" type="button" id="vt-mindmap" onclick="setView('mindmap')">🧠 Mapa Mental</button>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <button class="btn-export" type="button" onclick="exportarCSV()">📤 Exportar CSV</button>
+    <button class="btn-clear" type="button" onclick="limparTudo()">🗑️ Limpar</button>
+    <button class="btn-gen" type="button" onclick="salvarNovaVersao()">💾 Salvar nova versão</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="card">
+    <div id="tree-root"></div>
+    <div id="mindmap-root" style="display:none"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title" id="modal-title">Excluir?</div>
+    <div class="modal-body" id="modal-body">Tem certeza?</div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" type="button" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn-confirm" type="button" onclick="confirmModalAction()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="report-overlay">
+  <div class="modal-box" style="max-width:560px;text-align:left">
+    <div class="modal-title" style="text-align:center">Resumo de alterações desde a última importação da planilha</div>
+    <div id="report-body" style="max-height:340px;overflow-y:auto;margin:14px 0 20px;"></div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" type="button" onclick="closeReport()">Fechar</button>
+      <button class="btn-gen" type="button" onclick="baixarCSVConfirmado()">💾 Baixar CSV</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script id="eap-data">window.__EAP_DATA__={"eixos":[{"id":"n1","nome":"MONTAGEM DE EXPO DE LONGA","grupos":[{"id":"n2","nome":"[TR 01] OBRAS CIVÍS","marcos":[{"id":"n3","nome":"ÁREA EXPOSITIVA | FORRO","tarefas":[]},{"id":"n4","nome":"ÁREA EXPOSITIVA | PAREDES E PAINÉIS","tarefas":[]},{"id":"n5","nome":"ÁREA EXPOSITIVA | PISO","tarefas":[]},{"id":"n6","nome":"ASSENTAR PISOS CIMENTÍCIOS TIPO GRANILITE","tarefas":[]},{"id":"n7","nome":"ÁREA EXPOSITIVA | INFRAESTRUTURA","tarefas":[]},{"id":"n8","nome":"ÁREA EXPOSITIVA | ACABAMENTOS","tarefas":[]},{"id":"n9","nome":"FOYER, LOJA, MEZANINO | PAREDES E PAINÉIS","tarefas":[]},{"id":"n10","nome":"FOYER, LOJA, MEZANINO | PISO","tarefas":[]},{"id":"n11","nome":"FOYER, LOJA, MEZANINO | ESQUADRIAS","tarefas":[]},{"id":"n12","nome":"FOYER, LOJA, MEZANINO | ACABAMENTOS","tarefas":[]},{"id":"n13","nome":"CHAPIM GUARDA CORPO MEZANINO","tarefas":[]},{"id":"n14","nome":"INSTALAÇÕES ELÉTRICAS","tarefas":[]},{"id":"n15","nome":"DEMANDAS EXTRAS","tarefas":[]}]},{"id":"n16","nome":"[TR 02] ESTRUTURAS DA EXPOGRAFIA","marcos":[{"id":"n17","nome":"ESTRTUTURA | TETO","tarefas":[]},{"id":"n18","nome":"ESTRUTURA | PAREDES","tarefas":[]},{"id":"n19","nome":"ESTRUTURA | PISO","tarefas":[]},{"id":"n20","nome":"ESTRUTURA PISO ORALIDADE","tarefas":[]},{"id":"n21","nome":"DEMANDAS EXTRAS","tarefas":[]},{"id":"n22","nome":"FECHAMENTO | PISO","tarefas":[]},{"id":"n23","nome":"REVESTIMENTO ATURÁ","tarefas":[]}]},{"id":"n24","nome":"[TR 03] CENOTÉCNICA","marcos":[{"id":"n25","nome":"MOBILIÁRIO","tarefas":[]},{"id":"n26","nome":"INSTALAÇÃO CORTINA DE TABOA","tarefas":[]},{"id":"n27","nome":"INSTALAÇÃO CORTINA FACHADA","tarefas":[]},{"id":"n28","nome":"INSTALAÇÃO DO MARETÓRIO","tarefas":[]},{"id":"n29","nome":"INSTALAÇÃO TERRA PRETA","tarefas":[]},{"id":"n30","nome":"INSTALAÇÃO CÉU DE MIRITI","tarefas":[]},{"id":"n31","nome":"INSTALAÇÃO CORTINA DO CORREDOR DA CRISE","tarefas":[]},{"id":"n32","nome":"INSTALAÇÃO \"ÁGUA\" DA PINGUELA E FOYER","tarefas":[]},{"id":"n33","nome":"INSTALAÇÃO DOS BANCOS INDÍGENAS","tarefas":[]},{"id":"n34","nome":"IGNIFUGAÇÃO","tarefas":[]}]},{"id":"n35","nome":"INSTALAÇÕES ESPECIAIS","marcos":[{"id":"n36","nome":"ARCONDICIONADO E DESUMIDIFICAÇÃO","tarefas":[]},{"id":"n37","nome":"ADESIVAGEM DOS VIDROS","tarefas":[]},{"id":"n38","nome":"ADEQUAÇÃO SIST. SEGURANÇA CONTRA INCÊNDIO","tarefas":[]},{"id":"n39","nome":"CFTV","tarefas":[]}]},{"id":"n40","nome":"INSTALAÇÃO COMPLEMENTARES","marcos":[{"id":"n41","nome":"AUDIOVISUAL","tarefas":[]},{"id":"n42","nome":"SONORIZAÇÃO","tarefas":[]},{"id":"n43","nome":"ILUMINAÇÃO","tarefas":[]},{"id":"n44","nome":"AUTOMAÇÃO","tarefas":[]},{"id":"n45","nome":"GRÁFICA","tarefas":[]}]},{"id":"n46","nome":"MONTAGEM DAS SALAS COM CONTEÚDO","marcos":[{"id":"n47","nome":"ÁREA 0 | CORREDOR GEOLÓGICO","tarefas":[]},{"id":"n48","nome":"ÁREA 1 | MESA DAS INTERAÇÕES DAS ESPÉCIES","tarefas":[]},{"id":"n49","nome":"ÁREA 1 |  DIVERSIDADE","tarefas":[]},{"id":"n50","nome":"ÁREA 1 | VITRINES DE INSETOS","tarefas":[]},{"id":"n51","nome":"ÁREA 2 | MAPAS","tarefas":[]},{"id":"n52","nome":"ÁREA 2 | MURAL SHIPIBO","tarefas":[]},{"id":"n53","nome":"ÁREA 2 | SALA ORALIDADE | EXPERIÊNCIA","tarefas":[]},{"id":"n54","nome":"ÁREA 2 | SALA ORALIDADE | PAINEL MARAJOARA","tarefas":[]},{"id":"n55","nome":"ÁREA 2 | MESA TECNOLOGIAS INTEGRADAS","tarefas":[]},{"id":"n56","nome":"ÁREA 3 | ATURÁ","tarefas":[]},{"id":"n57","nome":"ÁREA 3 | MESA DAS FEIRAS","tarefas":[]},{"id":"n58","nome":"FOTOS FINE ART | ÁREAS 3 E 4","tarefas":[]},{"id":"n59","nome":"ÁREA 4 | VÍDEO ATIVISTAS","tarefas":[]},{"id":"n60","nome":"ÁREA 4 | JOGO \"PONTO DE NÃO RETORNO\"","tarefas":[]},{"id":"n61","nome":"ÁREA 5 | BEM VIVER","tarefas":[]}]},{"id":"n62","nome":"ACESSIBILIDADE","marcos":[{"id":"n63","nome":"INSTALAÇÃO DOS OBJETOS TÁTEIS","tarefas":[]},{"id":"n64","nome":"INSTALAÇÃO DO PISO PODOTÁTIL","tarefas":[]},{"id":"n65","nome":"INSTALAÇÃO DO WEBAPP","tarefas":[]}]}]},{"id":"n66","nome":"PROJETO EXPOGRÁFICO","grupos":[{"id":"n67","nome":"ANTEPROJETO","marcos":[{"id":"n68","nome":"ANTEPROJETO","tarefas":[]}]},{"id":"n69","nome":"PROJETO EXECUTIVO","marcos":[{"id":"n70","nome":"PROJETO EXECUTIVO","tarefas":[]}]}]},{"id":"n71","nome":"PROJETOS COMPLEMENTARES","grupos":[{"id":"n72","nome":"AS BUILT ARQUITETURA","marcos":[{"id":"n73","nome":"AS BUILT ARQUITETURA","tarefas":[]}]},{"id":"n74","nome":"AS BUILT ESTRUTURAS","marcos":[{"id":"n75","nome":"AS BUILT ESTRUTURAS","tarefas":[]}]},{"id":"n76","nome":"SISTEMA DE CLIMATIZAÇÃO","marcos":[{"id":"n77","nome":"SISTEMA DE CLIMATIZAÇÃO","tarefas":[]}]},{"id":"n78","nome":"PROJETO ESTRUTURAL EXPOSIÇÃO","marcos":[{"id":"n79","nome":"PROJETO ESTRUTURAL EXPOSIÇÃO","tarefas":[]}]},{"id":"n80","nome":"ACÚSTICA E SONORIZAÇÃO","marcos":[{"id":"n81","nome":"ACÚSTICA E SONORIZAÇÃO","tarefas":[]}]},{"id":"n82","nome":"TECNOLOGIA E AUDIOVISUAL","marcos":[{"id":"n83","nome":"TECNOLOGIA E AUDIOVISUAL","tarefas":[]}]},{"id":"n84","nome":"ILUMINAÇÃO","marcos":[{"id":"n85","nome":"ILUMINAÇÃO","tarefas":[]}]},{"id":"n86","nome":"ELÉTRICA","marcos":[{"id":"n87","nome":"ELÉTRICA","tarefas":[]}]},{"id":"n88","nome":"AUTOMAÇÃO","marcos":[{"id":"n89","nome":"AUTOMAÇÃO","tarefas":[]}]},{"id":"n90","nome":"ACESSIBILIDADE","marcos":[{"id":"n91","nome":"ACESSIBILIDADE","tarefas":[]},{"id":"n92","nome":"PROJETO PISO PODOTÁTIL","tarefas":[]}]},{"id":"n93","nome":"COMUNICAÇÃO VISUAL","marcos":[{"id":"n94","nome":"CONTRATAÇÃO","tarefas":[]},{"id":"n95","nome":"DESENVOLVIMENTO","tarefas":[]},{"id":"n96","nome":"DETALHAMENTO","tarefas":[]}]}]},{"id":"n97","nome":"COMPRAS E CONTRATAÇÃO | COMPLEMENTARES","grupos":[{"id":"n98","nome":"GRÁFICAS","marcos":[{"id":"n99","nome":"GRÁFICAS","tarefas":[]}]},{"id":"n100","nome":"TECNOLOGIA","marcos":[{"id":"n101","nome":"EQUIPAMENTOS","tarefas":[]},{"id":"n102","nome":"INSTALAÇÃO","tarefas":[]}]},{"id":"n103","nome":"ILUMINAÇÃO","marcos":[{"id":"n104","nome":"LUMINÁRIAS","tarefas":[]},{"id":"n105","nome":"LUMINÁRIAS","tarefas":[]},{"id":"n106","nome":"INSTALAÇÃO","tarefas":[]}]},{"id":"n107","nome":"ELÉTRICA","marcos":[{"id":"n108","nome":"ELÉTRICA","tarefas":[]}]},{"id":"n109","nome":"AUTOMAÇÃO","marcos":[{"id":"n110","nome":"EQUIPAMENTOS","tarefas":[]},{"id":"n111","nome":"INSTALAÇÃO","tarefas":[]}]},{"id":"n112","nome":"SISTEMA DE CLIMATIZAÇÃO","marcos":[{"id":"n113","nome":"SISTEMA DE CLIMATIZAÇÃO","tarefas":[]}]},{"id":"n114","nome":"ADEQUAÇÃO DO SISTEMA CONTRA INCÊNDIO","marcos":[{"id":"n115","nome":"ADEQUAÇÃO DO SISTEMA CONTRA INCÊNDIO","tarefas":[]}]},{"id":"n116","nome":"CFTV","marcos":[{"id":"n117","nome":"CFTV","tarefas":[]}]},{"id":"n118","nome":"ACESSIBILIDADE","marcos":[{"id":"n119","nome":"PISO PODOTÁTIL","tarefas":[]},{"id":"n120","nome":"CONTEÚDO AUDIOGUIA","tarefas":[]},{"id":"n121","nome":"SINALIZAÇÃO","tarefas":[]},{"id":"n122","nome":"PRODUÇÃO DE PEÇAS TÁTEIS","tarefas":[]}]}]},{"id":"n123","nome":"COMPRAS E CONTRATAÇÕES | EXPOGRAFIA","grupos":[{"id":"n124","nome":"[TR 01] OBRA CIVÍL","marcos":[{"id":"n125","nome":"[TR 01] OBRA CIVÍL","tarefas":[]}]},{"id":"n126","nome":"[TR 02] ESTRUTURAS DA EXPOGRAFIA","marcos":[{"id":"n127","nome":"[TR 02] ESTRUTURAS DA EXPOGRAFIA","tarefas":[]}]},{"id":"n128","nome":"[TR 03] CENOGRAFIA","marcos":[{"id":"n129","nome":"[TR 03] CENOGRAFIA","tarefas":[]}]},{"id":"n130","nome":"MATERIAIS ESPECIAIS","marcos":[{"id":"n131","nome":"CORTINA DE TABOA","tarefas":[]},{"id":"n132","nome":"CORTINA DA FACHADA","tarefas":[]},{"id":"n133","nome":"MADEIRA CERTIFICADA","tarefas":[]},{"id":"n134","nome":"GRANILITE PISO","tarefas":[]},{"id":"n135","nome":"BICHOS DE MIRITI","tarefas":[]},{"id":"n136","nome":"ÁGUA DA PINGUELA","tarefas":[]},{"id":"n137","nome":"CÉU DE MIRITI","tarefas":[]},{"id":"n138","nome":"BARROS DO MARAJÓ PARA TINTA","tarefas":[]},{"id":"n139","nome":"SERVIÇOS DE MARCENARIA / CARPINTARIA","tarefas":[]}]},{"id":"n140","nome":"IGNIFUGAÇÃO","marcos":[{"id":"n141","nome":"IGNIFUGAÇÃO","tarefas":[]}]}]},{"id":"n142","nome":"PRODUÇÃO DE CONTEÚDO","grupos":[{"id":"n143","nome":"FICHAS BASE E ROTEIROS","marcos":[{"id":"n144","nome":"LOTE 1 | RECEBIMENTO GERAL DE FICHAS DE CONTEÚDO","tarefas":[]},{"id":"n145","nome":"LOTE 2 | RECEBIMENTO GERAL DE FICHAS DE CONTEÚDO","tarefas":[]}]},{"id":"n146","nome":"TEXTOS","marcos":[{"id":"n147","nome":"DEFINIÇÕES E CONTRATAÇÕES","tarefas":[]},{"id":"n148","nome":"LOTE 1","tarefas":[]},{"id":"n149","nome":"LOTE 2","tarefas":[]},{"id":"n150","nome":"LOTE 3","tarefas":[]},{"id":"n151","nome":"FICHA TÉCNICA","tarefas":[]},{"id":"n152","nome":"LEGENDAS PARA AS VITRINES LÍTICOS","tarefas":[]},{"id":"n153","nome":"LEGENDAS PARA AS VITRINES INSETOS","tarefas":[]},{"id":"n154","nome":"LEGENDAS DE FOTOGRAFIAS E LEGENDAS EXPANDIDAS","tarefas":[]}]},{"id":"n155","nome":"OBJETOS","marcos":[{"id":"n156","nome":"OBJETOS ATURÁ","tarefas":[]},{"id":"n157","nome":"VITRINES LÍTICOS","tarefas":[]},{"id":"n158","nome":"VITRINES DE INSETOS","tarefas":[]},{"id":"n159","nome":"DENTES DE PURUSSAURUS E JACARÉ","tarefas":[]},{"id":"n160","nome":"BANCOS INDÍGENAS","tarefas":[]}]},{"id":"n161","nome":"OBRAS COMISSIONADAS","marcos":[{"id":"n162","nome":"ÁREA 1 |  DIVERSIDADE","tarefas":[]},{"id":"n163","nome":"ÁREA 1/2 | MAPAS","tarefas":[]},{"id":"n164","nome":"ÁREA 2 | MURAL SHIPIBO","tarefas":[]},{"id":"n165","nome":"ÁREA 2 | SALA ORALIDADE | EXPERIÊNCIA","tarefas":[]},{"id":"n166","nome":"ÁREA 2 | SALA ORALIDADE | PAINEL MARAJOARA","tarefas":[]},{"id":"n167","nome":"ÁREA 2 | MESA TECNOLOGIAS INTEGRADAS","tarefas":[]},{"id":"n168","nome":"ÁREA 3 | ATURÁ","tarefas":[]},{"id":"n169","nome":"ÁREA 4 | VÍDEO ATIVISTAS","tarefas":[]},{"id":"n170","nome":"ÁREA 4 | JOGO \"PONTO DE NÃO RETORNO\"","tarefas":[]},{"id":"n171","nome":"ÁREA 5 | BEM VIVER","tarefas":[]},{"id":"n172","nome":"ÁREA 1 | MESA DAS INTERAÇÕES DAS ESPÉCIES","tarefas":[]},{"id":"n173","nome":"PAISAGEM SONORA","tarefas":[]}]},{"id":"n174","nome":"CONTEÚDO | OBRAS LICENCIADAS","marcos":[{"id":"n175","nome":"FOTOGRAFIAS ÁREAS 3 E 4","tarefas":[]},{"id":"n176","nome":"PAINEL DE FOTOS DE INSETOS | ANDERSON NIELSEN","tarefas":[]}]}]},{"id":"n177","nome":"INSTITUCIONAL","grupos":[{"id":"n178","nome":"PRESTAÇÃO DE CONTAS","marcos":[{"id":"n179","nome":"PRESTAÇÃO DE CONTAS","tarefas":[]}]},{"id":"n180","nome":"SECULT | PAUTA INSTITUCIONAL","marcos":[{"id":"n181","nome":"SECULT | PAUTA INSTITUCIONAL","tarefas":[]}]},{"id":"n182","nome":"HANDOVER IDG","marcos":[{"id":"n183","nome":"HANDOVER IDG","tarefas":[]}]},{"id":"n184","nome":"EVENTO DE ABERTURA","marcos":[{"id":"n185","nome":"EVENTO DE ABERTURA","tarefas":[]}]},{"id":"n186","nome":"CONTRATO SECULT","marcos":[{"id":"n187","nome":"CONTRATO SECULT","tarefas":[]}]},{"id":"n188","nome":"EMPRÉSTIMOS","marcos":[{"id":"n189","nome":"LÍTICOS","tarefas":[]},{"id":"n190","nome":"INSETOS EMBRAPA","tarefas":[]},{"id":"n191","nome":"INSETOS GOELDI","tarefas":[]}]},{"id":"n192","nome":"LOJA","marcos":[{"id":"n193","nome":"LOJA","tarefas":[]}]},{"id":"n194","nome":"ÁGUA PANTANAL FOGO","marcos":[{"id":"n195","nome":"ÁGUA PANTANAL FOGO","tarefas":[]}]}]},{"id":"n196","nome":"COMUNICAÇÃO","grupos":[{"id":"n197","nome":"CATÁLOGO DA EXPOSIÇÃO DE LONGA","marcos":[{"id":"n198","nome":"PRÉ-TEXTUAL","tarefas":[]},{"id":"n199","nome":"PARTE 1 - AJURÍ DOS SABERES","tarefas":[]},{"id":"n200","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 1","tarefas":[]},{"id":"n201","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 2","tarefas":[]},{"id":"n202","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 3","tarefas":[]},{"id":"n203","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 4","tarefas":[]},{"id":"n204","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 5","tarefas":[]},{"id":"n205","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 6","tarefas":[]}]},{"id":"n206","nome":"MINI DOCUMENTÁRIO","marcos":[{"id":"n207","nome":"MINI DOCUMENTÁRIO","tarefas":[]}]},{"id":"n208","nome":"COMUNICAÇÃO DA REABERTURA","marcos":[{"id":"n209","nome":"COMUNICAÇÃO DA REABERTURA","tarefas":[]}]},{"id":"n210","nome":"SITE DO MAZ","marcos":[{"id":"n211","nome":"SITE DO MAZ","tarefas":[]}]}]},{"id":"n212","nome":"MONTAGEM DE EXPO TEMPORÁRIA","grupos":[{"id":"n213","nome":"MONTAGEM DE EXPO TEMPORÁRIA","marcos":[]},{"id":"n214","nome":"PROJETOS","marcos":[{"id":"n215","nome":"PROJETO EXPOGRÁFICO","tarefas":[]},{"id":"n216","nome":"PROJETO MEZANINO","tarefas":[]},{"id":"n217","nome":"PROJETO ELÉTRICO","tarefas":[]},{"id":"n218","nome":"PROJETO DE ILUMINAÇÃO","tarefas":[]},{"id":"n219","nome":"AUDIOVISUAL","tarefas":[]}]},{"id":"n220","nome":"MONTAGEM","marcos":[{"id":"n221","nome":"CENOGRAFIA","tarefas":[]},{"id":"n222","nome":"ELÉTRICA","tarefas":[]},{"id":"n223","nome":"ILUMINAÇÃO","tarefas":[]},{"id":"n224","nome":"SONORIZAÇÃO E PROJEÇÃO","tarefas":[]},{"id":"n225","nome":"COMUNICAÇÃO VISUAL","tarefas":[]},{"id":"n226","nome":"OBRAS/FOTOGRAFIA","tarefas":[]}]},{"id":"n227","nome":"ACESSIBILIDADE","marcos":[{"id":"n228","nome":"PROJETO","tarefas":[]},{"id":"n229","nome":"COMPRAS/CONTRATAÇÃO","tarefas":[]}]},{"id":"n230","nome":"COTAÇÃO E CONTRATAÇÃO DE SERVIÇOS","marcos":[{"id":"n231","nome":"CURADORIA","tarefas":[]},{"id":"n232","nome":"COORDENAÇÃO","tarefas":[]},{"id":"n233","nome":"FOTÓGRAFOS","tarefas":[]},{"id":"n234","nome":"SEGURO","tarefas":[]},{"id":"n235","nome":"LOGÍSTICA","tarefas":[]},{"id":"n236","nome":"MUSEOLOGIA","tarefas":[]},{"id":"n237","nome":"CENOGRAFIA","tarefas":[]},{"id":"n238","nome":"ELÉTRICA","tarefas":[]},{"id":"n239","nome":"ILUMINAÇÃO","tarefas":[]},{"id":"n240","nome":"GRÁFICA","tarefas":[]},{"id":"n241","nome":"MONTAGEM DA CENOGRAFIA","tarefas":[]}]},{"id":"n242","nome":"CONTEÚDO","marcos":[{"id":"n243","nome":"TEXTOS","tarefas":[]},{"id":"n244","nome":"OBRAS | FOTOGRAFIA","tarefas":[]},{"id":"n245","nome":"EDUCATIVO","tarefas":[]}]},{"id":"n246","nome":"DESMONTAGEM","marcos":[{"id":"n247","nome":"PESQUISA E LAUDOS","tarefas":[]},{"id":"n248","nome":"DESMONTAGEM E ARMAZENAMENTO","tarefas":[]},{"id":"n249","nome":"LOGÍSTICA","tarefas":[]},{"id":"n250","nome":"CENOGRAFIA","tarefas":[]}]}]}],"version":1,"nextIdNum":251,"sheetsBaseline":[{"id":"n1","nome":"MONTAGEM DE EXPO DE LONGA","grupos":[{"id":"n2","nome":"[TR 01] OBRAS CIVÍS","marcos":[{"id":"n3","nome":"ÁREA EXPOSITIVA | FORRO","tarefas":[]},{"id":"n4","nome":"ÁREA EXPOSITIVA | PAREDES E PAINÉIS","tarefas":[]},{"id":"n5","nome":"ÁREA EXPOSITIVA | PISO","tarefas":[]},{"id":"n6","nome":"ASSENTAR PISOS CIMENTÍCIOS TIPO GRANILITE","tarefas":[]},{"id":"n7","nome":"ÁREA EXPOSITIVA | INFRAESTRUTURA","tarefas":[]},{"id":"n8","nome":"ÁREA EXPOSITIVA | ACABAMENTOS","tarefas":[]},{"id":"n9","nome":"FOYER, LOJA, MEZANINO | PAREDES E PAINÉIS","tarefas":[]},{"id":"n10","nome":"FOYER, LOJA, MEZANINO | PISO","tarefas":[]},{"id":"n11","nome":"FOYER, LOJA, MEZANINO | ESQUADRIAS","tarefas":[]},{"id":"n12","nome":"FOYER, LOJA, MEZANINO | ACABAMENTOS","tarefas":[]},{"id":"n13","nome":"CHAPIM GUARDA CORPO MEZANINO","tarefas":[]},{"id":"n14","nome":"INSTALAÇÕES ELÉTRICAS","tarefas":[]},{"id":"n15","nome":"DEMANDAS EXTRAS","tarefas":[]}]},{"id":"n16","nome":"[TR 02] ESTRUTURAS DA EXPOGRAFIA","marcos":[{"id":"n17","nome":"ESTRTUTURA | TETO","tarefas":[]},{"id":"n18","nome":"ESTRUTURA | PAREDES","tarefas":[]},{"id":"n19","nome":"ESTRUTURA | PISO","tarefas":[]},{"id":"n20","nome":"ESTRUTURA PISO ORALIDADE","tarefas":[]},{"id":"n21","nome":"DEMANDAS EXTRAS","tarefas":[]},{"id":"n22","nome":"FECHAMENTO | PISO","tarefas":[]},{"id":"n23","nome":"REVESTIMENTO ATURÁ","tarefas":[]}]},{"id":"n24","nome":"[TR 03] CENOTÉCNICA","marcos":[{"id":"n25","nome":"MOBILIÁRIO","tarefas":[]},{"id":"n26","nome":"INSTALAÇÃO CORTINA DE TABOA","tarefas":[]},{"id":"n27","nome":"INSTALAÇÃO CORTINA FACHADA","tarefas":[]},{"id":"n28","nome":"INSTALAÇÃO DO MARETÓRIO","tarefas":[]},{"id":"n29","nome":"INSTALAÇÃO TERRA PRETA","tarefas":[]},{"id":"n30","nome":"INSTALAÇÃO CÉU DE MIRITI","tarefas":[]},{"id":"n31","nome":"INSTALAÇÃO CORTINA DO CORREDOR DA CRISE","tarefas":[]},{"id":"n32","nome":"INSTALAÇÃO \"ÁGUA\" DA PINGUELA E FOYER","tarefas":[]},{"id":"n33","nome":"INSTALAÇÃO DOS BANCOS INDÍGENAS","tarefas":[]},{"id":"n34","nome":"IGNIFUGAÇÃO","tarefas":[]}]},{"id":"n35","nome":"INSTALAÇÕES ESPECIAIS","marcos":[{"id":"n36","nome":"ARCONDICIONADO E DESUMIDIFICAÇÃO","tarefas":[]},{"id":"n37","nome":"ADESIVAGEM DOS VIDROS","tarefas":[]},{"id":"n38","nome":"ADEQUAÇÃO SIST. SEGURANÇA CONTRA INCÊNDIO","tarefas":[]},{"id":"n39","nome":"CFTV","tarefas":[]}]},{"id":"n40","nome":"INSTALAÇÃO COMPLEMENTARES","marcos":[{"id":"n41","nome":"AUDIOVISUAL","tarefas":[]},{"id":"n42","nome":"SONORIZAÇÃO","tarefas":[]},{"id":"n43","nome":"ILUMINAÇÃO","tarefas":[]},{"id":"n44","nome":"AUTOMAÇÃO","tarefas":[]},{"id":"n45","nome":"GRÁFICA","tarefas":[]}]},{"id":"n46","nome":"MONTAGEM DAS SALAS COM CONTEÚDO","marcos":[{"id":"n47","nome":"ÁREA 0 | CORREDOR GEOLÓGICO","tarefas":[]},{"id":"n48","nome":"ÁREA 1 | MESA DAS INTERAÇÕES DAS ESPÉCIES","tarefas":[]},{"id":"n49","nome":"ÁREA 1 |  DIVERSIDADE","tarefas":[]},{"id":"n50","nome":"ÁREA 1 | VITRINES DE INSETOS","tarefas":[]},{"id":"n51","nome":"ÁREA 2 | MAPAS","tarefas":[]},{"id":"n52","nome":"ÁREA 2 | MURAL SHIPIBO","tarefas":[]},{"id":"n53","nome":"ÁREA 2 | SALA ORALIDADE | EXPERIÊNCIA","tarefas":[]},{"id":"n54","nome":"ÁREA 2 | SALA ORALIDADE | PAINEL MARAJOARA","tarefas":[]},{"id":"n55","nome":"ÁREA 2 | MESA TECNOLOGIAS INTEGRADAS","tarefas":[]},{"id":"n56","nome":"ÁREA 3 | ATURÁ","tarefas":[]},{"id":"n57","nome":"ÁREA 3 | MESA DAS FEIRAS","tarefas":[]},{"id":"n58","nome":"FOTOS FINE ART | ÁREAS 3 E 4","tarefas":[]},{"id":"n59","nome":"ÁREA 4 | VÍDEO ATIVISTAS","tarefas":[]},{"id":"n60","nome":"ÁREA 4 | JOGO \"PONTO DE NÃO RETORNO\"","tarefas":[]},{"id":"n61","nome":"ÁREA 5 | BEM VIVER","tarefas":[]}]},{"id":"n62","nome":"ACESSIBILIDADE","marcos":[{"id":"n63","nome":"INSTALAÇÃO DOS OBJETOS TÁTEIS","tarefas":[]},{"id":"n64","nome":"INSTALAÇÃO DO PISO PODOTÁTIL","tarefas":[]},{"id":"n65","nome":"INSTALAÇÃO DO WEBAPP","tarefas":[]}]}]},{"id":"n66","nome":"PROJETO EXPOGRÁFICO","grupos":[{"id":"n67","nome":"ANTEPROJETO","marcos":[{"id":"n68","nome":"ANTEPROJETO","tarefas":[]}]},{"id":"n69","nome":"PROJETO EXECUTIVO","marcos":[{"id":"n70","nome":"PROJETO EXECUTIVO","tarefas":[]}]}]},{"id":"n71","nome":"PROJETOS COMPLEMENTARES","grupos":[{"id":"n72","nome":"AS BUILT ARQUITETURA","marcos":[{"id":"n73","nome":"AS BUILT ARQUITETURA","tarefas":[]}]},{"id":"n74","nome":"AS BUILT ESTRUTURAS","marcos":[{"id":"n75","nome":"AS BUILT ESTRUTURAS","tarefas":[]}]},{"id":"n76","nome":"SISTEMA DE CLIMATIZAÇÃO","marcos":[{"id":"n77","nome":"SISTEMA DE CLIMATIZAÇÃO","tarefas":[]}]},{"id":"n78","nome":"PROJETO ESTRUTURAL EXPOSIÇÃO","marcos":[{"id":"n79","nome":"PROJETO ESTRUTURAL EXPOSIÇÃO","tarefas":[]}]},{"id":"n80","nome":"ACÚSTICA E SONORIZAÇÃO","marcos":[{"id":"n81","nome":"ACÚSTICA E SONORIZAÇÃO","tarefas":[]}]},{"id":"n82","nome":"TECNOLOGIA E AUDIOVISUAL","marcos":[{"id":"n83","nome":"TECNOLOGIA E AUDIOVISUAL","tarefas":[]}]},{"id":"n84","nome":"ILUMINAÇÃO","marcos":[{"id":"n85","nome":"ILUMINAÇÃO","tarefas":[]}]},{"id":"n86","nome":"ELÉTRICA","marcos":[{"id":"n87","nome":"ELÉTRICA","tarefas":[]}]},{"id":"n88","nome":"AUTOMAÇÃO","marcos":[{"id":"n89","nome":"AUTOMAÇÃO","tarefas":[]}]},{"id":"n90","nome":"ACESSIBILIDADE","marcos":[{"id":"n91","nome":"ACESSIBILIDADE","tarefas":[]},{"id":"n92","nome":"PROJETO PISO PODOTÁTIL","tarefas":[]}]},{"id":"n93","nome":"COMUNICAÇÃO VISUAL","marcos":[{"id":"n94","nome":"CONTRATAÇÃO","tarefas":[]},{"id":"n95","nome":"DESENVOLVIMENTO","tarefas":[]},{"id":"n96","nome":"DETALHAMENTO","tarefas":[]}]}]},{"id":"n97","nome":"COMPRAS E CONTRATAÇÃO | COMPLEMENTARES","grupos":[{"id":"n98","nome":"GRÁFICAS","marcos":[{"id":"n99","nome":"GRÁFICAS","tarefas":[]}]},{"id":"n100","nome":"TECNOLOGIA","marcos":[{"id":"n101","nome":"EQUIPAMENTOS","tarefas":[]},{"id":"n102","nome":"INSTALAÇÃO","tarefas":[]}]},{"id":"n103","nome":"ILUMINAÇÃO","marcos":[{"id":"n104","nome":"LUMINÁRIAS","tarefas":[]},{"id":"n105","nome":"LUMINÁRIAS","tarefas":[]},{"id":"n106","nome":"INSTALAÇÃO","tarefas":[]}]},{"id":"n107","nome":"ELÉTRICA","marcos":[{"id":"n108","nome":"ELÉTRICA","tarefas":[]}]},{"id":"n109","nome":"AUTOMAÇÃO","marcos":[{"id":"n110","nome":"EQUIPAMENTOS","tarefas":[]},{"id":"n111","nome":"INSTALAÇÃO","tarefas":[]}]},{"id":"n112","nome":"SISTEMA DE CLIMATIZAÇÃO","marcos":[{"id":"n113","nome":"SISTEMA DE CLIMATIZAÇÃO","tarefas":[]}]},{"id":"n114","nome":"ADEQUAÇÃO DO SISTEMA CONTRA INCÊNDIO","marcos":[{"id":"n115","nome":"ADEQUAÇÃO DO SISTEMA CONTRA INCÊNDIO","tarefas":[]}]},{"id":"n116","nome":"CFTV","marcos":[{"id":"n117","nome":"CFTV","tarefas":[]}]},{"id":"n118","nome":"ACESSIBILIDADE","marcos":[{"id":"n119","nome":"PISO PODOTÁTIL","tarefas":[]},{"id":"n120","nome":"CONTEÚDO AUDIOGUIA","tarefas":[]},{"id":"n121","nome":"SINALIZAÇÃO","tarefas":[]},{"id":"n122","nome":"PRODUÇÃO DE PEÇAS TÁTEIS","tarefas":[]}]}]},{"id":"n123","nome":"COMPRAS E CONTRATAÇÕES | EXPOGRAFIA","grupos":[{"id":"n124","nome":"[TR 01] OBRA CIVÍL","marcos":[{"id":"n125","nome":"[TR 01] OBRA CIVÍL","tarefas":[]}]},{"id":"n126","nome":"[TR 02] ESTRUTURAS DA EXPOGRAFIA","marcos":[{"id":"n127","nome":"[TR 02] ESTRUTURAS DA EXPOGRAFIA","tarefas":[]}]},{"id":"n128","nome":"[TR 03] CENOGRAFIA","marcos":[{"id":"n129","nome":"[TR 03] CENOGRAFIA","tarefas":[]}]},{"id":"n130","nome":"MATERIAIS ESPECIAIS","marcos":[{"id":"n131","nome":"CORTINA DE TABOA","tarefas":[]},{"id":"n132","nome":"CORTINA DA FACHADA","tarefas":[]},{"id":"n133","nome":"MADEIRA CERTIFICADA","tarefas":[]},{"id":"n134","nome":"GRANILITE PISO","tarefas":[]},{"id":"n135","nome":"BICHOS DE MIRITI","tarefas":[]},{"id":"n136","nome":"ÁGUA DA PINGUELA","tarefas":[]},{"id":"n137","nome":"CÉU DE MIRITI","tarefas":[]},{"id":"n138","nome":"BARROS DO MARAJÓ PARA TINTA","tarefas":[]},{"id":"n139","nome":"SERVIÇOS DE MARCENARIA / CARPINTARIA","tarefas":[]}]},{"id":"n140","nome":"IGNIFUGAÇÃO","marcos":[{"id":"n141","nome":"IGNIFUGAÇÃO","tarefas":[]}]}]},{"id":"n142","nome":"PRODUÇÃO DE CONTEÚDO","grupos":[{"id":"n143","nome":"FICHAS BASE E ROTEIROS","marcos":[{"id":"n144","nome":"LOTE 1 | RECEBIMENTO GERAL DE FICHAS DE CONTEÚDO","tarefas":[]},{"id":"n145","nome":"LOTE 2 | RECEBIMENTO GERAL DE FICHAS DE CONTEÚDO","tarefas":[]}]},{"id":"n146","nome":"TEXTOS","marcos":[{"id":"n147","nome":"DEFINIÇÕES E CONTRATAÇÕES","tarefas":[]},{"id":"n148","nome":"LOTE 1","tarefas":[]},{"id":"n149","nome":"LOTE 2","tarefas":[]},{"id":"n150","nome":"LOTE 3","tarefas":[]},{"id":"n151","nome":"FICHA TÉCNICA","tarefas":[]},{"id":"n152","nome":"LEGENDAS PARA AS VITRINES LÍTICOS","tarefas":[]},{"id":"n153","nome":"LEGENDAS PARA AS VITRINES INSETOS","tarefas":[]},{"id":"n154","nome":"LEGENDAS DE FOTOGRAFIAS E LEGENDAS EXPANDIDAS","tarefas":[]}]},{"id":"n155","nome":"OBJETOS","marcos":[{"id":"n156","nome":"OBJETOS ATURÁ","tarefas":[]},{"id":"n157","nome":"VITRINES LÍTICOS","tarefas":[]},{"id":"n158","nome":"VITRINES DE INSETOS","tarefas":[]},{"id":"n159","nome":"DENTES DE PURUSSAURUS E JACARÉ","tarefas":[]},{"id":"n160","nome":"BANCOS INDÍGENAS","tarefas":[]}]},{"id":"n161","nome":"OBRAS COMISSIONADAS","marcos":[{"id":"n162","nome":"ÁREA 1 |  DIVERSIDADE","tarefas":[]},{"id":"n163","nome":"ÁREA 1/2 | MAPAS","tarefas":[]},{"id":"n164","nome":"ÁREA 2 | MURAL SHIPIBO","tarefas":[]},{"id":"n165","nome":"ÁREA 2 | SALA ORALIDADE | EXPERIÊNCIA","tarefas":[]},{"id":"n166","nome":"ÁREA 2 | SALA ORALIDADE | PAINEL MARAJOARA","tarefas":[]},{"id":"n167","nome":"ÁREA 2 | MESA TECNOLOGIAS INTEGRADAS","tarefas":[]},{"id":"n168","nome":"ÁREA 3 | ATURÁ","tarefas":[]},{"id":"n169","nome":"ÁREA 4 | VÍDEO ATIVISTAS","tarefas":[]},{"id":"n170","nome":"ÁREA 4 | JOGO \"PONTO DE NÃO RETORNO\"","tarefas":[]},{"id":"n171","nome":"ÁREA 5 | BEM VIVER","tarefas":[]},{"id":"n172","nome":"ÁREA 1 | MESA DAS INTERAÇÕES DAS ESPÉCIES","tarefas":[]},{"id":"n173","nome":"PAISAGEM SONORA","tarefas":[]}]},{"id":"n174","nome":"CONTEÚDO | OBRAS LICENCIADAS","marcos":[{"id":"n175","nome":"FOTOGRAFIAS ÁREAS 3 E 4","tarefas":[]},{"id":"n176","nome":"PAINEL DE FOTOS DE INSETOS | ANDERSON NIELSEN","tarefas":[]}]}]},{"id":"n177","nome":"INSTITUCIONAL","grupos":[{"id":"n178","nome":"PRESTAÇÃO DE CONTAS","marcos":[{"id":"n179","nome":"PRESTAÇÃO DE CONTAS","tarefas":[]}]},{"id":"n180","nome":"SECULT | PAUTA INSTITUCIONAL","marcos":[{"id":"n181","nome":"SECULT | PAUTA INSTITUCIONAL","tarefas":[]}]},{"id":"n182","nome":"HANDOVER IDG","marcos":[{"id":"n183","nome":"HANDOVER IDG","tarefas":[]}]},{"id":"n184","nome":"EVENTO DE ABERTURA","marcos":[{"id":"n185","nome":"EVENTO DE ABERTURA","tarefas":[]}]},{"id":"n186","nome":"CONTRATO SECULT","marcos":[{"id":"n187","nome":"CONTRATO SECULT","tarefas":[]}]},{"id":"n188","nome":"EMPRÉSTIMOS","marcos":[{"id":"n189","nome":"LÍTICOS","tarefas":[]},{"id":"n190","nome":"INSETOS EMBRAPA","tarefas":[]},{"id":"n191","nome":"INSETOS GOELDI","tarefas":[]}]},{"id":"n192","nome":"LOJA","marcos":[{"id":"n193","nome":"LOJA","tarefas":[]}]},{"id":"n194","nome":"ÁGUA PANTANAL FOGO","marcos":[{"id":"n195","nome":"ÁGUA PANTANAL FOGO","tarefas":[]}]}]},{"id":"n196","nome":"COMUNICAÇÃO","grupos":[{"id":"n197","nome":"CATÁLOGO DA EXPOSIÇÃO DE LONGA","marcos":[{"id":"n198","nome":"PRÉ-TEXTUAL","tarefas":[]},{"id":"n199","nome":"PARTE 1 - AJURÍ DOS SABERES","tarefas":[]},{"id":"n200","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 1","tarefas":[]},{"id":"n201","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 2","tarefas":[]},{"id":"n202","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 3","tarefas":[]},{"id":"n203","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 4","tarefas":[]},{"id":"n204","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 5","tarefas":[]},{"id":"n205","nome":"PARTE 2 – EXPOSIÇÃO DE LONGA DURÇÃO - Cap. 6","tarefas":[]}]},{"id":"n206","nome":"MINI DOCUMENTÁRIO","marcos":[{"id":"n207","nome":"MINI DOCUMENTÁRIO","tarefas":[]}]},{"id":"n208","nome":"COMUNICAÇÃO DA REABERTURA","marcos":[{"id":"n209","nome":"COMUNICAÇÃO DA REABERTURA","tarefas":[]}]},{"id":"n210","nome":"SITE DO MAZ","marcos":[{"id":"n211","nome":"SITE DO MAZ","tarefas":[]}]}]},{"id":"n212","nome":"MONTAGEM DE EXPO TEMPORÁRIA","grupos":[{"id":"n213","nome":"MONTAGEM DE EXPO TEMPORÁRIA","marcos":[]},{"id":"n214","nome":"PROJETOS","marcos":[{"id":"n215","nome":"PROJETO EXPOGRÁFICO","tarefas":[]},{"id":"n216","nome":"PROJETO MEZANINO","tarefas":[]},{"id":"n217","nome":"PROJETO ELÉTRICO","tarefas":[]},{"id":"n218","nome":"PROJETO DE ILUMINAÇÃO","tarefas":[]},{"id":"n219","nome":"AUDIOVISUAL","tarefas":[]}]},{"id":"n220","nome":"MONTAGEM","marcos":[{"id":"n221","nome":"CENOGRAFIA","tarefas":[]},{"id":"n222","nome":"ELÉTRICA","tarefas":[]},{"id":"n223","nome":"ILUMINAÇÃO","tarefas":[]},{"id":"n224","nome":"SONORIZAÇÃO E PROJEÇÃO","tarefas":[]},{"id":"n225","nome":"COMUNICAÇÃO VISUAL","tarefas":[]},{"id":"n226","nome":"OBRAS/FOTOGRAFIA","tarefas":[]}]},{"id":"n227","nome":"ACESSIBILIDADE","marcos":[{"id":"n228","nome":"PROJETO","tarefas":[]},{"id":"n229","nome":"COMPRAS/CONTRATAÇÃO","tarefas":[]}]},{"id":"n230","nome":"COTAÇÃO E CONTRATAÇÃO DE SERVIÇOS","marcos":[{"id":"n231","nome":"CURADORIA","tarefas":[]},{"id":"n232","nome":"COORDENAÇÃO","tarefas":[]},{"id":"n233","nome":"FOTÓGRAFOS","tarefas":[]},{"id":"n234","nome":"SEGURO","tarefas":[]},{"id":"n235","nome":"LOGÍSTICA","tarefas":[]},{"id":"n236","nome":"MUSEOLOGIA","tarefas":[]},{"id":"n237","nome":"CENOGRAFIA","tarefas":[]},{"id":"n238","nome":"ELÉTRICA","tarefas":[]},{"id":"n239","nome":"ILUMINAÇÃO","tarefas":[]},{"id":"n240","nome":"GRÁFICA","tarefas":[]},{"id":"n241","nome":"MONTAGEM DA CENOGRAFIA","tarefas":[]}]},{"id":"n242","nome":"CONTEÚDO","marcos":[{"id":"n243","nome":"TEXTOS","tarefas":[]},{"id":"n244","nome":"OBRAS | FOTOGRAFIA","tarefas":[]},{"id":"n245","nome":"EDUCATIVO","tarefas":[]}]},{"id":"n246","nome":"DESMONTAGEM","marcos":[{"id":"n247","nome":"PESQUISA E LAUDOS","tarefas":[]},{"id":"n248","nome":"DESMONTAGEM E ARMAZENAMENTO","tarefas":[]},{"id":"n249","nome":"LOGÍSTICA","tarefas":[]},{"id":"n250","nome":"CENOGRAFIA","tarefas":[]}]}]}]};</script>
+<script>
+var DRAFT_KEY = 'eap_maz_draft_v1';
+var state = { eixos: null, version: 1, view: 'tree' };
+var pendingDraft = null;
+var collapsedSet = new Set();
+var deleteTarget = null;
+var saveTimer = null;
+
+function pad(n){ return n<10 ? '0'+n : ''+n; }
+function formatDateBR(d){ return pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear(); }
+function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+
+function el(tag, props, children){
+  var e = document.createElement(tag);
+  if (props) for (var k in props) {
+    if (k === 'class') e.className = props[k];
+    else if (k === 'text') e.textContent = props[k];
+    else if (k === 'style') e.setAttribute('style', props[k]);
+    else if (k.indexOf('on') === 0) e.addEventListener(k.slice(2), props[k]);
+    else e.setAttribute(k, props[k]);
+  }
+  if (children) children.forEach(function(c){ if (c) e.appendChild(c); });
+  return e;
+}
+
+function freshState(){
+  return {
+    eixos: deepClone(window.__EAP_DATA__.eixos),
+    version: window.__EAP_DATA__.version || 1,
+    nextIdNum: window.__EAP_DATA__.nextIdNum || 1,
+    sheetsBaseline: deepClone(window.__EAP_DATA__.sheetsBaseline || window.__EAP_DATA__.eixos),
+    view: 'tree'
+  };
+}
+
+function setView(v){
+  state.view = v;
+  render();
+}
+
+function init(){
+  state = freshState();
+  var raw = localStorage.getItem(DRAFT_KEY);
+  if (raw) {
+    try {
+      pendingDraft = JSON.parse(raw);
+      document.getElementById('restore-banner').style.display = 'flex';
+    } catch (e) { pendingDraft = null; }
+  }
+  render();
+}
+
+function restoreDraft(){
+  if (pendingDraft) {
+    state = {
+      eixos: pendingDraft.eixos,
+      version: pendingDraft.version || state.version,
+      nextIdNum: pendingDraft.nextIdNum || state.nextIdNum,
+      sheetsBaseline: pendingDraft.sheetsBaseline || state.sheetsBaseline,
+      view: state.view
+    };
+  }
+  document.getElementById('restore-banner').style.display = 'none';
+  pendingDraft = null;
+  render();
+}
+function dismissDraft(){
+  localStorage.removeItem(DRAFT_KEY);
+  document.getElementById('restore-banner').style.display = 'none';
+  pendingDraft = null;
+}
+
+function scheduleAutosave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      eixos: state.eixos, version: state.version, nextIdNum: state.nextIdNum,
+      sheetsBaseline: state.sheetsBaseline, ts: new Date().toISOString()
+    }));
+  }, 500);
+}
+
+function newId(){
+  var id = 'n' + state.nextIdNum;
+  state.nextIdNum++;
+  return id;
+}
+
+function toggleCollapse(pathKey){
+  if (collapsedSet.has(pathKey)) collapsedSet.delete(pathKey); else collapsedSet.add(pathKey);
+  render();
+}
+
+function focusNewNode(id){
+  var target = document.querySelector('[data-id="' + id + '"]');
+  if (!target) return;
+  target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  setTimeout(function(){
+    var nameEl = target.querySelector('.mm-name') || target.querySelector('.name-input') || target.querySelector('input[type=text]');
+    if (!nameEl) return;
+    nameEl.focus();
+    if (nameEl.select) nameEl.select();
+  }, 320);
+}
+
+function addEixo(){
+  var id = newId();
+  state.eixos.push({ id: id, nome: '', grupos: [] });
+  render(); scheduleAutosave();
+  focusNewNode(id);
+}
+function addGrupo(ei){
+  var id = newId();
+  state.eixos[ei].grupos.push({ id: id, nome: '', marcos: [] });
+  render(); scheduleAutosave();
+  focusNewNode(id);
+}
+function addMarco(ei, gi){
+  var id = newId();
+  state.eixos[ei].grupos[gi].marcos.push({ id: id, nome: '', tarefas: [] });
+  render(); scheduleAutosave();
+  focusNewNode(id);
+}
+function addTarefa(ei, gi, mi){
+  var id = newId();
+  state.eixos[ei].grupos[gi].marcos[mi].tarefas.push({ id: id, nome: '', responsavel: '', prioridade: '' });
+  render(); scheduleAutosave();
+  focusNewNode(id);
+}
+
+function askDelete(kind, path, label){
+  deleteTarget = { kind: kind, path: path };
+  document.getElementById('modal-title').textContent = 'Excluir ' + kind + '?';
+  var extra = kind !== 'tarefa' ? ' e tudo que está dentro dele' : '';
+  document.getElementById('modal-body').textContent = 'Tem certeza que deseja excluir "' + label + '"' + extra + '? Essa ação não pode ser desfeita.';
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('show');
+  deleteTarget = null;
+}
+function limparTudo(){
+  deleteTarget = { kind: '__clear__' };
+  document.getElementById('modal-title').textContent = 'Limpar tudo?';
+  document.getElementById('modal-body').textContent = 'Isso vai apagar seu rascunho salvo nesta aba e restaurar a estrutura original deste arquivo (a que veio do dashboard). Essa ação não pode ser desfeita.';
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function confirmModalAction(){
+  if (!deleteTarget) return;
+  if (deleteTarget.kind === '__clear__') {
+    localStorage.removeItem(DRAFT_KEY);
+    state = freshState();
+    collapsedSet.clear();
+    closeModal();
+    render();
+    showToast('Estrutura restaurada para a versão original.');
+    return;
+  }
+  var p = deleteTarget.path;
+  if (p.length === 1) state.eixos.splice(p[0], 1);
+  else if (p.length === 2) state.eixos[p[0]].grupos.splice(p[1], 1);
+  else if (p.length === 3) state.eixos[p[0]].grupos[p[1]].marcos.splice(p[2], 1);
+  else state.eixos[p[0]].grupos[p[1]].marcos[p[2]].tarefas.splice(p[3], 1);
+  closeModal();
+  render();
+  scheduleAutosave();
+}
+
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+
+function chevron(pathKey, hasChildren){
+  var isCollapsed = collapsedSet.has(pathKey);
+  return el('button', { class: 'chevron-btn', type: 'button', onclick: function(){ toggleCollapse(pathKey); } }, [
+    document.createTextNode(hasChildren ? (isCollapsed ? '▸' : '▾') : '·')
+  ]);
+}
+function nameInput(value, cls, onChange, placeholder){
+  var inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = cls;
+  inp.value = value;
+  if (placeholder) inp.placeholder = placeholder;
+  inp.addEventListener('input', function(e){ onChange(e.target.value); scheduleAutosave(); });
+  return inp;
+}
+function prioClass(v){
+  if (v === 'Alta') return 'prio-select prio-alta';
+  if (v === 'Média') return 'prio-select prio-media';
+  if (v === 'Baixa') return 'prio-select prio-baixa';
+  return 'prio-select prio-vazia';
+}
+
+function render(){
+  var vb = document.getElementById('version-badge');
+  if (vb) vb.textContent = 'v' + state.version;
+
+  document.getElementById('vt-tree').classList.toggle('active', state.view === 'tree');
+  document.getElementById('vt-mindmap').classList.toggle('active', state.view === 'mindmap');
+  var treeRoot = document.getElementById('tree-root');
+  var mmRoot = document.getElementById('mindmap-root');
+  treeRoot.style.display = state.view === 'tree' ? '' : 'none';
+  mmRoot.style.display = state.view === 'mindmap' ? '' : 'none';
+
+  if (state.view === 'tree') {
+    treeRoot.innerHTML = '';
+    treeRoot.appendChild(buildRoot());
+  } else {
+    mmRoot.innerHTML = '';
+    buildMindMap(mmRoot);
+    drawMMConnectors();
+  }
+}
+
+function buildRoot(){
+  var wrap = el('div', { id: 'eixos-list' });
+  state.eixos.forEach(function(e, ei){ wrap.appendChild(buildEixo(e, ei)); });
+  wrap.appendChild(el('div', { class: 'add-eixo-wrap' }, [
+    el('button', { class: 'btn-add-eixo', type: 'button', text: '+ Eixo', onclick: addEixo })
+  ]));
+  return wrap;
+}
+
+function buildEixo(e, ei){
+  var pathKey = 'e' + ei;
+  var wrap = el('div', { class: 'node-eixo', 'data-id': e.id });
+  var row = el('div', { class: 'node-row' }, [
+    el('div', { class: 'node-left' }, [
+      chevron(pathKey, true),
+      nameInput(e.nome, 'name-input', function(v){ e.nome = v; }, 'Inserir novo Eixo')
+    ]),
+    el('div', { style: 'display:flex;gap:6px;flex-shrink:0' }, [
+      el('button', { class: 'btn-add-inline', type: 'button', text: '+ Grupo', onclick: function(){ addGrupo(ei); } }),
+      el('button', { class: 'btn-icon', type: 'button', title: 'Excluir eixo', text: '🗑', onclick: function(){ askDelete('eixo', [ei], e.nome); } })
+    ])
+  ]);
+  wrap.appendChild(row);
+  if (!collapsedSet.has(pathKey)) {
+    var childWrap = el('div', { class: 'children-wrap' });
+    e.grupos.forEach(function(g, gi){ childWrap.appendChild(buildGrupo(g, ei, gi)); });
+    childWrap.appendChild(el('div', { class: 'add-grupo-wrap' }, [
+      el('button', { class: 'btn-add-grupo', type: 'button', text: '+ Grupo', onclick: function(){ addGrupo(ei); } })
+    ]));
+    wrap.appendChild(childWrap);
+  }
+  return wrap;
+}
+
+function buildGrupo(g, ei, gi){
+  var pathKey = 'g' + ei + '-' + gi;
+  var wrap = el('div', { class: 'node-grupo', 'data-id': g.id });
+  var row = el('div', { class: 'node-row' }, [
+    el('div', { class: 'node-left' }, [
+      chevron(pathKey, true),
+      nameInput(g.nome, 'name-input', function(v){ g.nome = v; }, 'Inserir novo Grupo')
+    ]),
+    el('div', { style: 'display:flex;gap:6px;flex-shrink:0' }, [
+      el('button', { class: 'btn-add-inline', type: 'button', text: '+ Marco', onclick: function(){ addMarco(ei, gi); } }),
+      el('button', { class: 'btn-icon', type: 'button', title: 'Excluir grupo', text: '🗑', onclick: function(){ askDelete('grupo', [ei, gi], g.nome); } })
+    ])
+  ]);
+  wrap.appendChild(row);
+  if (!collapsedSet.has(pathKey)) {
+    var childWrap = el('div', { class: 'children-wrap' });
+    g.marcos.forEach(function(m, mi){ childWrap.appendChild(buildMarco(m, ei, gi, mi)); });
+    wrap.appendChild(childWrap);
+  }
+  return wrap;
+}
+
+function buildMarco(m, ei, gi, mi){
+  var pathKey = 'm' + ei + '-' + gi + '-' + mi;
+  var wrap = el('div', { class: 'node-marco', 'data-id': m.id });
+  var row = el('div', { class: 'node-row' }, [
+    el('div', { class: 'node-left' }, [
+      chevron(pathKey, true),
+      nameInput(m.nome, 'name-input', function(v){ m.nome = v; }, 'Inserir novo Marco')
+    ]),
+    el('div', { style: 'display:flex;gap:6px;flex-shrink:0' }, [
+      el('button', { class: 'btn-add-inline', type: 'button', text: '+ Tarefa', onclick: function(){ addTarefa(ei, gi, mi); } }),
+      el('button', { class: 'btn-icon', type: 'button', title: 'Excluir marco', text: '🗑', onclick: function(){ askDelete('marco', [ei, gi, mi], m.nome); } })
+    ])
+  ]);
+  wrap.appendChild(row);
+  if (!collapsedSet.has(pathKey) && m.tarefas.length > 0) {
+    var tWrap = el('div', { class: 'tarefas-wrap' });
+    tWrap.appendChild(el('div', { class: 'tarefa-head' }, [
+      el('span', { text: 'Tarefa' }), el('span', { text: 'Responsável' }), el('span', { text: 'Prioridade' }), el('span', {})
+    ]));
+    m.tarefas.forEach(function(t, ti){ tWrap.appendChild(buildTarefa(t, ei, gi, mi, ti)); });
+    wrap.appendChild(tWrap);
+  }
+  return wrap;
+}
+
+function buildTarefa(t, ei, gi, mi, ti){
+  var nameInp = document.createElement('input');
+  nameInp.type = 'text';
+  nameInp.value = t.nome;
+  nameInp.placeholder = 'Inserir Nova Tarefa';
+  nameInp.addEventListener('input', function(e){ t.nome = e.target.value; scheduleAutosave(); });
+
+  var respInp = document.createElement('input');
+  respInp.type = 'text';
+  respInp.className = 'resp-input';
+  respInp.placeholder = 'Responsável';
+  respInp.value = t.responsavel || '';
+  respInp.addEventListener('input', function(e){ t.responsavel = e.target.value; scheduleAutosave(); });
+
+  var prioSel = document.createElement('select');
+  prioSel.className = prioClass(t.prioridade);
+  ['', 'Alta', 'Média', 'Baixa'].forEach(function(opt){
+    var o = document.createElement('option');
+    o.value = opt;
+    o.textContent = opt || '—';
+    if (opt === (t.prioridade || '')) o.selected = true;
+    prioSel.appendChild(o);
+  });
+  prioSel.addEventListener('change', function(e){
+    t.prioridade = e.target.value;
+    prioSel.className = prioClass(t.prioridade);
+    scheduleAutosave();
+  });
+
+  var delBtn = el('button', { class: 'btn-icon', type: 'button', title: 'Excluir tarefa', text: '✕', onclick: function(){ askDelete('tarefa', [ei, gi, mi, ti], t.nome); } });
+
+  return el('div', { class: 'tarefa-row', 'data-id': t.id }, [nameInp, respInp, prioSel, delBtn]);
+}
+
+function nameEditableDiv(value, cls, onChange, placeholder){
+  var d = document.createElement('div');
+  d.className = cls;
+  d.contentEditable = 'true';
+  d.spellcheck = false;
+  d.textContent = value;
+  if (placeholder) d.setAttribute('data-placeholder', placeholder);
+  d.addEventListener('input', function(){
+    var v = d.textContent;
+    onChange(v);
+    scheduleAutosave();
+    if (d.parentElement) d.parentElement.classList.toggle('mm-node-empty', v === '');
+  });
+  d.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); d.blur(); } });
+  return d;
+}
+function chevronMM(pathKey, hasChildren){
+  var isCollapsed = collapsedSet.has(pathKey);
+  return el('button', { class: 'mm-chevron', type: 'button', onclick: function(){ toggleCollapse(pathKey); } }, [
+    document.createTextNode(hasChildren ? (isCollapsed ? '▸' : '▾') : '·')
+  ]);
+}
+function mmNode(cls, id, parentId, name, onChange, pathKey, hasChildren, onDelete, countBadge, placeholder){
+  var kids = [];
+  if (pathKey) kids.push(chevronMM(pathKey, hasChildren));
+  kids.push(nameEditableDiv(name, 'mm-name', onChange, placeholder));
+  if (countBadge) kids.push(el('span', { class: 'mm-count', text: '+' + countBadge }));
+  if (onDelete) kids.push(el('button', { class: 'mm-del', type: 'button', title: 'Excluir', text: '×', onclick: onDelete }));
+  var node = el('div', { class: 'mm-node ' + cls + (name === '' ? ' mm-node-empty' : ''), 'data-id': id }, kids);
+  if (parentId) node.setAttribute('data-parent', parentId);
+  return node;
+}
+
+function buildMindMap(container){
+  var wrapOuter = el('div', { class: 'mindmap-wrap', id: 'mindmap-inner' });
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'mm-svg');
+  svg.setAttribute('id', 'mm-svg');
+  var cols = el('div', { class: 'mm-cols', id: 'mm-cols' });
+  var colEixo = el('div', { class: 'mm-col-abs', style: 'width:170px' });
+  var colGrupo = el('div', { class: 'mm-col-abs', style: 'width:170px' });
+  var colMarco = el('div', { class: 'mm-col-abs', style: 'width:180px' });
+  var colTarefa = el('div', { class: 'mm-col-abs', style: 'width:190px' });
+  cols.appendChild(colEixo);
+  cols.appendChild(colGrupo);
+  cols.appendChild(colMarco);
+  cols.appendChild(colTarefa);
+  wrapOuter.appendChild(svg);
+  wrapOuter.appendChild(cols);
+  container.appendChild(wrapOuter);
+
+  function absTop(elm, y){ elm.style.position = 'absolute'; elm.style.left = '0'; elm.style.top = y + 'px'; }
+
+  var probe = el('button', { class: 'mm-add', type: 'button', text: '+ X', style: 'visibility:hidden;position:absolute;top:0;left:0' });
+  colTarefa.appendChild(probe);
+  var ADD_H = probe.getBoundingClientRect().height;
+  colTarefa.removeChild(probe);
+
+  var GAP = 10, GAP_GRUPO = 18, GAP_EIXO = 24, GAP_ROOT = 40;
+  var y = 0;
+  var marcoInfo = {};
+  var addMarcoY = {};
+  var addGrupoYByEixo = {};
+
+  state.eixos.forEach(function(e, ei){
+    var ePathKey = 'e' + ei;
+    if (collapsedSet.has(ePathKey)) { addGrupoYByEixo[e.id] = null; return; }
+
+    e.grupos.forEach(function(g, gi){
+      var gPathKey = 'g' + ei + '-' + gi;
+      if (collapsedSet.has(gPathKey)) return;
+
+      g.marcos.forEach(function(m, mi){
+        var mPathKey = 'm' + ei + '-' + gi + '-' + mi;
+        var top = null, bottom = null;
+
+        if (!collapsedSet.has(mPathKey)) {
+          m.tarefas.forEach(function(t, ti){
+            var tEl = mmNode('mm-tarefa', t.id, m.id, t.nome, function(v){ t.nome = v; }, null, false,
+              function(){ askDelete('tarefa', [ei, gi, mi, ti], t.nome); }, 0, 'Inserir Nova Tarefa');
+            absTop(tEl, y);
+            colTarefa.appendChild(tEl);
+            var h = tEl.getBoundingClientRect().height;
+            if (top === null) top = y;
+            bottom = y + h;
+            y += h + GAP;
+          });
+        }
+        var fallbackY = y;
+        var addT = el('button', { class: 'mm-add', type: 'button', text: '+ Tarefa', onclick: function(){ addTarefa(ei, gi, mi); } });
+        absTop(addT, y);
+        colTarefa.appendChild(addT);
+        y += ADD_H + GAP;
+
+        marcoInfo[m.id] = { top: top, bottom: bottom, fallbackY: fallbackY };
+      });
+
+      addMarcoY[g.id] = y;
+      y += ADD_H + GAP_GRUPO;
+    });
+
+    addGrupoYByEixo[e.id] = y;
+    y += ADD_H + GAP_EIXO;
+    y += GAP_ROOT;
+  });
+
+  var addEixoY = y;
+  y += ADD_H + GAP_EIXO;
+
+  colTarefa.style.height = y + 'px';
+  colMarco.style.height = y + 'px';
+  colGrupo.style.height = y + 'px';
+  colEixo.style.height = y + 'px';
+
+  var grupoInfoByEixo = {};
+  state.eixos.forEach(function(e, ei){
+    var ePathKey = 'e' + ei;
+    if (collapsedSet.has(ePathKey)) return;
+    var eTop = null, eBottom = null;
+
+    e.grupos.forEach(function(g, gi){
+      var gPathKey = 'g' + ei + '-' + gi;
+      var addM = el('button', { class: 'mm-add', type: 'button', text: '+ Marco', onclick: function(){ addMarco(ei, gi); } });
+      if (collapsedSet.has(gPathKey)) {
+        var gEl2 = mmNode('mm-grupo', g.id, e.id, g.nome, function(v){ g.nome = v; }, gPathKey, g.marcos.length > 0,
+          function(){ askDelete('grupo', [ei, gi], g.nome); }, g.marcos.length, 'Inserir novo Grupo');
+        absTop(gEl2, addMarcoY[g.id] !== undefined ? addMarcoY[g.id] : y);
+        colGrupo.appendChild(gEl2);
+        var h2 = gEl2.getBoundingClientRect().height;
+        if (eTop === null) eTop = parseFloat(gEl2.style.top);
+        eBottom = parseFloat(gEl2.style.top) + h2;
+        return;
+      }
+
+      var info = null;
+      g.marcos.forEach(function(m, mi){
+        var mInfo = marcoInfo[m.id];
+        var centerY = (mInfo.top !== null) ? (mInfo.top + mInfo.bottom) / 2 : (mInfo.fallbackY + ADD_H / 2);
+        var mPathKey = 'm' + ei + '-' + gi + '-' + mi;
+        var mEl = mmNode('mm-marco', m.id, g.id, m.nome, function(v){ m.nome = v; }, mPathKey, m.tarefas.length > 0,
+          function(){ askDelete('marco', [ei, gi, mi], m.nome); },
+          (collapsedSet.has(mPathKey) && m.tarefas.length > 0) ? m.tarefas.length : 0, 'Inserir novo Marco');
+        absTop(mEl, 0);
+        colMarco.appendChild(mEl);
+        var h = mEl.getBoundingClientRect().height;
+        var top = centerY - h / 2;
+        mEl.style.top = top + 'px';
+        if (info === null) info = { top: top, bottom: top + h };
+        else info.bottom = top + h;
+      });
+
+      absTop(addM, addMarcoY[g.id]);
+      colMarco.appendChild(addM);
+
+      var gCenterY = info ? (info.top + info.bottom) / 2 : (addMarcoY[g.id] + ADD_H / 2);
+      var gEl = mmNode('mm-grupo', g.id, e.id, g.nome, function(v){ g.nome = v; }, gPathKey, g.marcos.length > 0,
+        function(){ askDelete('grupo', [ei, gi], g.nome); }, 0, 'Inserir novo Grupo');
+      absTop(gEl, 0);
+      colGrupo.appendChild(gEl);
+      var gh = gEl.getBoundingClientRect().height;
+      var gTop = gCenterY - gh / 2;
+      gEl.style.top = gTop + 'px';
+      if (eTop === null) eTop = gTop;
+      eBottom = gTop + gh;
+    });
+
+    var addG = el('button', { class: 'mm-add', type: 'button', text: '+ Grupo', onclick: function(){ addGrupo(ei); } });
+    absTop(addG, addGrupoYByEixo[e.id]);
+    colGrupo.appendChild(addG);
+
+    grupoInfoByEixo[e.id] = { top: eTop, bottom: eBottom };
+  });
+
+  state.eixos.forEach(function(e, ei){
+    var ePathKey = 'e' + ei;
+    var info = grupoInfoByEixo[e.id];
+    var hasChildren = e.grupos.length > 0;
+    var centerY;
+    if (collapsedSet.has(ePathKey)) {
+      centerY = addGrupoYByEixo[e.id] !== null && addGrupoYByEixo[e.id] !== undefined ? addGrupoYByEixo[e.id] + ADD_H / 2 : 0;
+    } else {
+      centerY = (info && info.top !== null) ? (info.top + info.bottom) / 2 : (addGrupoYByEixo[e.id] + ADD_H / 2);
+    }
+    var eEl = mmNode('mm-eixo', e.id, null, e.nome, function(v){ e.nome = v; }, ePathKey, hasChildren,
+      function(){ askDelete('eixo', [ei], e.nome); },
+      (collapsedSet.has(ePathKey) && hasChildren) ? e.grupos.length : 0, 'Inserir novo Eixo');
+    absTop(eEl, 0);
+    colEixo.appendChild(eEl);
+    var eh = eEl.getBoundingClientRect().height;
+    eEl.style.top = (centerY - eh / 2) + 'px';
+  });
+
+  var addE = el('button', { class: 'mm-add mm-add-eixo', type: 'button', text: '+ Eixo', onclick: addEixo });
+  absTop(addE, addEixoY);
+  colEixo.appendChild(addE);
+}
+
+function drawMMConnectors(){
+  var svg = document.getElementById('mm-svg');
+  var colsEl = document.getElementById('mm-cols');
+  if (!svg || !colsEl) return;
+  var totalW = colsEl.scrollWidth;
+  var totalH = colsEl.scrollHeight;
+  svg.setAttribute('width', totalW);
+  svg.setAttribute('height', totalH);
+  svg.setAttribute('viewBox', '0 0 ' + totalW + ' ' + totalH);
+  var wrapRect = colsEl.getBoundingClientRect();
+  var nodes = colsEl.querySelectorAll('.mm-node');
+  var map = {};
+  nodes.forEach(function(n){ map[n.getAttribute('data-id')] = n; });
+  var html = '';
+  nodes.forEach(function(n){
+    var pid = n.getAttribute('data-parent');
+    if (!pid || !map[pid]) return;
+    var p = map[pid];
+    var pr = p.getBoundingClientRect(), cr = n.getBoundingClientRect();
+    var x1 = pr.right - wrapRect.left, y1 = pr.top - wrapRect.top + pr.height / 2;
+    var x2 = cr.left - wrapRect.left, y2 = cr.top - wrapRect.top + cr.height / 2;
+    var mx = (x1 + x2) / 2;
+    html += '<path d="M' + x1 + ',' + y1 + ' C' + mx + ',' + y1 + ' ' + mx + ',' + y2 + ' ' + x2 + ',' + y2 + '" stroke="#c7cedb" stroke-width="1.5" fill="none"/>';
+  });
+  svg.innerHTML = html;
+}
+
+function salvarNovaVersao(){
+  state.version = (state.version || 1) + 1;
+  var clone = document.documentElement.cloneNode(true);
+  var dataScript = clone.querySelector('#eap-data');
+  dataScript.textContent = 'window.__EAP_DATA__=' + JSON.stringify({ eixos: state.eixos, version: state.version, nextIdNum: state.nextIdNum, sheetsBaseline: state.sheetsBaseline }) + ';';
+  var treeRoot = clone.querySelector('#tree-root');
+  if (treeRoot) treeRoot.innerHTML = '';
+  var mmRootClone = clone.querySelector('#mindmap-root');
+  if (mmRootClone) mmRootClone.innerHTML = '';
+  var rb = clone.querySelector('#restore-banner');
+  if (rb) rb.style.display = 'none';
+  var vb = clone.querySelector('#version-badge');
+  if (vb) vb.textContent = 'v' + state.version;
+  var html = '<!DOCTYPE html>\n' + clone.outerHTML;
+  var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  var a = document.createElement('a');
+  var filename = 'EAP_MAZ_' + formatDateBR(new Date()) + '_v' + state.version + '.html';
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  showToast('Nova versão salva: ' + filename);
+}
+
+function flattenTarefas(eixosArr){
+  var map = {};
+  eixosArr.forEach(function(e){
+    e.grupos.forEach(function(g){
+      g.marcos.forEach(function(m){
+        m.tarefas.forEach(function(t){
+          map[t.id] = { nome: t.nome, responsavel: t.responsavel, prioridade: t.prioridade, eixo: e.nome, grupo: g.nome, marco: m.nome };
+        });
+      });
+    });
+  });
+  return map;
+}
+function flattenNodes(eixosArr){
+  var eixos = {}, grupos = {}, marcos = {};
+  eixosArr.forEach(function(e){
+    eixos[e.id] = e.nome;
+    e.grupos.forEach(function(g){
+      grupos[g.id] = { nome: g.nome, eixo: e.nome };
+      g.marcos.forEach(function(m){ marcos[m.id] = { nome: m.nome, grupo: g.nome, eixo: e.nome }; });
+    });
+  });
+  return { eixos: eixos, grupos: grupos, marcos: marcos };
+}
+function computeDiff(){
+  var base = flattenTarefas(state.sheetsBaseline);
+  var cur = flattenTarefas(state.eixos);
+  var added = [], removed = [], changed = [];
+  for (var id in cur) {
+    if (!base[id]) {
+      added.push(cur[id]);
+    } else {
+      var b = base[id], c = cur[id];
+      var fields = [];
+      if (b.nome !== c.nome) fields.push('Nome: "' + b.nome + '" → "' + c.nome + '"');
+      if ((b.responsavel || '') !== (c.responsavel || '')) fields.push('Responsável: "' + (b.responsavel || '—') + '" → "' + (c.responsavel || '—') + '"');
+      if ((b.prioridade || '') !== (c.prioridade || '')) fields.push('Prioridade: "' + (b.prioridade || '—') + '" → "' + (c.prioridade || '—') + '"');
+      if (fields.length) changed.push({ label: c.eixo + ' > ' + c.grupo + ' > ' + c.marco + ' > ' + c.nome, fields: fields });
+    }
+  }
+  for (var id2 in base) { if (!cur[id2]) removed.push(base[id2]); }
+
+  var baseNodes = flattenNodes(state.sheetsBaseline);
+  var curNodes = flattenNodes(state.eixos);
+  var eAdded = [], eRemoved = [], gAdded = [], gRemoved = [], mAdded = [], mRemoved = [];
+  for (var eid in curNodes.eixos) if (!baseNodes.eixos[eid]) eAdded.push(curNodes.eixos[eid]);
+  for (var eid2 in baseNodes.eixos) if (!curNodes.eixos[eid2]) eRemoved.push(baseNodes.eixos[eid2]);
+  for (var gid in curNodes.grupos) if (!baseNodes.grupos[gid]) gAdded.push(curNodes.grupos[gid].eixo + ' > ' + curNodes.grupos[gid].nome);
+  for (var gid2 in baseNodes.grupos) if (!curNodes.grupos[gid2]) gRemoved.push(baseNodes.grupos[gid2].eixo + ' > ' + baseNodes.grupos[gid2].nome);
+  for (var mid in curNodes.marcos) if (!baseNodes.marcos[mid]) mAdded.push(curNodes.marcos[mid].eixo + ' > ' + curNodes.marcos[mid].grupo + ' > ' + curNodes.marcos[mid].nome);
+  for (var mid2 in baseNodes.marcos) if (!curNodes.marcos[mid2]) mRemoved.push(baseNodes.marcos[mid2].eixo + ' > ' + baseNodes.marcos[mid2].grupo + ' > ' + baseNodes.marcos[mid2].nome);
+
+  return { added: added, removed: removed, changed: changed, eAdded: eAdded, eRemoved: eRemoved, gAdded: gAdded, gRemoved: gRemoved, mAdded: mAdded, mRemoved: mRemoved };
+}
+
+function exportarCSV(){
+  var diff = computeDiff();
+  renderReportModal(diff);
+}
+
+function renderReportModal(diff){
+  var body = document.getElementById('report-body');
+  body.innerHTML = '';
+  var total = diff.added.length + diff.removed.length + diff.changed.length + diff.eAdded.length + diff.eRemoved.length + diff.gAdded.length + diff.gRemoved.length + diff.mAdded.length + diff.mRemoved.length;
+  if (total === 0) {
+    body.appendChild(el('p', { text: 'Nenhuma alteração desde a última importação do dashboard.' }));
+  } else {
+    function section(title, items, renderItem){
+      if (!items.length) return;
+      body.appendChild(el('div', { class: 'report-section-title', text: title + ' (' + items.length + ')' }));
+      items.forEach(function(it){ body.appendChild(renderItem(it)); });
+    }
+    section('Eixos adicionados', diff.eAdded, function(n){ return el('div', { class: 'report-line report-add', text: '+ ' + n }); });
+    section('Eixos removidos', diff.eRemoved, function(n){ return el('div', { class: 'report-line report-remove', text: '- ' + n }); });
+    section('Grupos adicionados', diff.gAdded, function(n){ return el('div', { class: 'report-line report-add', text: '+ ' + n }); });
+    section('Grupos removidos', diff.gRemoved, function(n){ return el('div', { class: 'report-line report-remove', text: '- ' + n }); });
+    section('Marcos adicionados', diff.mAdded, function(n){ return el('div', { class: 'report-line report-add', text: '+ ' + n }); });
+    section('Marcos removidos', diff.mRemoved, function(n){ return el('div', { class: 'report-line report-remove', text: '- ' + n }); });
+    section('Tarefas adicionadas', diff.added, function(t){ return el('div', { class: 'report-line report-add', text: '+ ' + t.eixo + ' > ' + t.grupo + ' > ' + t.marco + ' > ' + t.nome }); });
+    section('Tarefas removidas', diff.removed, function(t){ return el('div', { class: 'report-line report-remove', text: '- ' + t.eixo + ' > ' + t.grupo + ' > ' + t.marco + ' > ' + t.nome }); });
+    section('Tarefas alteradas', diff.changed, function(c){
+      var wrap = el('div', { class: 'report-line report-change' });
+      wrap.appendChild(el('div', { style: 'font-weight:700', text: c.label }));
+      c.fields.forEach(function(f){ wrap.appendChild(el('div', { style: 'font-size:11px;margin-top:2px', text: f })); });
+      return wrap;
+    });
+  }
+  document.getElementById('report-overlay').classList.add('show');
+}
+function closeReport(){
+  document.getElementById('report-overlay').classList.remove('show');
+}
+function baixarCSVConfirmado(){
+  var rows = [['Eixo', 'Grupo', 'Marco/Entrega', 'Tarefa', 'Responsável', 'Prioridade']];
+  state.eixos.forEach(function(e){
+    e.grupos.forEach(function(g){
+      g.marcos.forEach(function(m){
+        if (m.tarefas.length === 0) {
+          rows.push([e.nome, g.nome, m.nome, '', '', '']);
+        }
+        m.tarefas.forEach(function(t){
+          rows.push([e.nome, g.nome, m.nome, t.nome, t.responsavel || '', t.prioridade || '']);
+        });
+      });
+    });
+  });
+  var csv = rows.map(function(r){
+    return r.map(function(v){
+      var s = (v == null ? '' : String(v)).replace(/"/g, '""');
+      return /[",\n]/.test(s) ? '"' + s + '"' : s;
+    }).join(',');
+  }).join('\r\n');
+  var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  var a = document.createElement('a');
+  var filename = 'EAP_MAZ_export_' + formatDateBR(new Date()) + '.csv';
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  closeReport();
+  showToast('CSV exportado: ' + filename);
+}
+
+window.addEventListener('resize', function(){
+  if (state.view === 'mindmap') drawMMConnectors();
+});
+
+init();
+</script>
+</body>
+</html>
