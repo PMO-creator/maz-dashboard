@@ -361,27 +361,26 @@
   .req-group-body>.req-quadros-grid{padding:14px}
   /* REQUISIÇÕES QUADROS (sub-seções por status dentro de cada grupo) */
   .req-quadro{border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-  .req-quadro-title{font-size:16px;font-weight:800;color:#FFF;letter-spacing:.5px}
+  .req-quadro-title{font-size:16px;font-weight:800;color:#FFF;letter-spacing:.5px;position:absolute;left:18px;right:18px;text-align:center}
   .req-quadro-count{font-size:13px;font-weight:700;color:rgba(255,255,255,.85);background:rgba(0,0,0,.15);padding:3px 10px;border-radius:12px}
   .req-quadro-body{padding:0;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
-  .req-quadro-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;cursor:pointer;user-select:none}
+  .req-quadro-header{display:flex;align-items:center;justify-content:flex-end;padding:12px 18px;cursor:pointer;user-select:none;position:relative}
   .req-quadro-header:hover{filter:brightness(1.1)}
   .req-quadro-chev{font-size:13px;color:rgba(255,255,255,.85);transition:transform .3s;transform:rotate(-90deg);margin-left:6px;flex-shrink:0}
   table.req-q-table{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
-  .req-q-table th:nth-child(1),.req-q-table td:nth-child(1){width:80px;text-align:center}
-  .req-q-table th:nth-child(2),.req-q-table td:nth-child(2){width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .req-q-table th:nth-child(3),.req-q-table td:nth-child(3){overflow:hidden;text-overflow:ellipsis}
-  .req-q-table th:nth-child(4),.req-q-table td:nth-child(4){width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .req-q-table th:nth-child(5),.req-q-table td:nth-child(5){width:175px}
-  .req-q-table th:nth-child(6),.req-q-table td:nth-child(6){width:130px;white-space:normal}
-  .req-q-table th:nth-child(7),.req-q-table td:nth-child(7){width:130px;white-space:normal}
-  .req-q-table th{padding:10px 14px;text-align:left;font-size:14px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;border-bottom:2px solid var(--border);background:#FAFBFC;white-space:nowrap}
+  .req-q-table th{padding:10px 14px;text-align:center;font-size:14px;font-weight:800;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;border-bottom:2px solid var(--border);background:#FAFBFC;white-space:nowrap}
   .req-q-table td{padding:11px 14px;border-bottom:1px solid #EEF2F6;vertical-align:middle;font-size:16px;font-weight:600}
   .req-q-table tr:last-child td{border-bottom:none}
   .req-q-table tr:hover td{background:#F8FAFC}
-  .req-q-num{font-weight:800;color:var(--muted);white-space:nowrap;font-size:16px}
-  .req-q-comp{white-space:nowrap;font-weight:700;font-size:16px}
-  .req-q-date{white-space:nowrap;color:var(--muted);font-size:16px;font-weight:600}
+  .req-q-table .req-q-num{width:80px;text-align:center;white-space:nowrap}
+  .req-q-table td.req-q-num{font-weight:800;color:var(--muted);font-size:16px}
+  .req-q-table .req-q-comp{width:140px;white-space:normal;text-align:center}
+  .req-q-table td.req-q-comp{font-weight:700;font-size:16px}
+  .req-q-table .req-q-desc{overflow:hidden;text-overflow:ellipsis}
+  .req-q-table .req-q-forn{width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+  .req-q-table .req-q-date{width:130px;white-space:normal;text-align:center}
+  .req-q-table td.req-q-date{color:var(--muted);font-size:16px;font-weight:600}
+  .req-q-table .req-q-extra{width:140px;white-space:normal}
   /* Busca de Requisições */
   .req-search-zone{position:sticky;top:0;z-index:80;background:#1E2E0D;border-bottom:2px solid var(--accent);padding:10px 16px;display:flex;align-items:center;gap:10px}
   .req-search-inner{flex:1;display:flex;align-items:center;gap:8px;background:#FFFFFF;border-radius:8px;padding:8px 14px;border:1.5px solid #CBD5E1}
@@ -3694,6 +3693,9 @@ const REQ_STATUS_ORDER=[
   'Aguardando fornecedor','Cotação finalizada','Projuris','Contrato em assinatura',
   'Emissão do pedido','Compra finalizada','Cancelado'
 ];
+const REQ_STATUS_ORDER_COTACAO=['Não iniciada','Em cotação','Cotação em análise','Cotação finalizada','Cancelado'];
+const REQ_STATUS_ORDER_COMPRAS=['Não iniciada','Aguardando requisitante','Aguardando fornecedor','Projuris','Contrato em assinatura','Emissão do pedido','Compra finalizada','Cancelado'];
+const REQ_STATUS_ORDER_BY_GROUP={'COMPRAS':REQ_STATUS_ORDER_COMPRAS,'COTAÇÃO':REQ_STATUS_ORDER_COTACAO};
 
 function buildReqStatusDropdown(){
   const wrap=document.getElementById('req-status-filter');
@@ -3884,14 +3886,7 @@ function renderReqs(){
   if(badge)badge.textContent=reqSearchTerm?`${filtered.length} resultado${filtered.length!==1?'s':''}`:filtered.length+' requisições';
   const sortByReq=(a,b)=>(parseInt(a.req)||0)-(parseInt(b.req)||0);
   const _normTipo=(t)=>((t||'').toString().trim().toLowerCase().includes('cota')?'COTAÇÃO':'COMPRAS');
-  const _grpCotacaoStatuses=['Em cotação','Cotação em análise','Cotação finalizada'];
-  const _grpAmbiguousStatuses=['Não iniciada','Cancelado'];
-  const _reqGroupKey=(r)=>{
-    const st=r.status||'';
-    if(_grpCotacaoStatuses.includes(st))return 'COTAÇÃO';
-    if(_grpAmbiguousStatuses.includes(st))return _normTipo(r.tipo);
-    return 'COMPRAS';
-  };
+  const _reqGroupKey=(r)=>_normTipo(r.tipo);
   const REQ_GROUPS=[
     {label:'COMPRAS',color:'#16A34A',key:'COMPRAS'},
     {label:'COTAÇÃO',color:'#6366F1',key:'COTAÇÃO'},
@@ -3904,14 +3899,22 @@ function renderReqs(){
     'COMPRAS':[
       {label:'Chegada do Material',field:'chegadaMaterial',type:'date'},
       {label:'Finalização do Serviço',field:'finalizacaoServico',type:'date'},
-      {label:'Advogado',field:'advogado',type:'text'},
+      {label:'Advogado Responsável',field:'advogado',type:'text'},
       {label:'Observação',field:'obs',type:'text'},
     ],
   };
   const _advogadoStatuses=['Projuris','Contrato em assinatura'];
+  const _fmtCompradorNome=(n)=>{
+    const s=(n||'').toString().trim();
+    if(!s) return '';
+    const p=s.split(/\s+/);
+    if(p.length<=1) return escH(s);
+    return escH(p[0])+'<br>'+escH(p.slice(1).join(' '));
+  };
   const buildQuadro=(status,items,groupKey)=>{
     const c=REQ_STATUS_COLORS[status]||{bg:'#F1F5F9',fg:'#6B7280'};
     const cols=(REQ_EXTRA_COLS[groupKey]||[]).filter(col=>col.field!=='advogado'||_advogadoStatuses.includes(status));
+    const showAprovacaoRc=groupKey==='COMPRAS'&&status==='Não iniciada';
     return `<div class="req-quadro">
       <div class="req-quadro-header" style="background:${c.fg}" onclick="toggleQuadro(this)">
         <span class="req-quadro-title">${status}</span>
@@ -3922,19 +3925,18 @@ function renderReqs(){
       </div>
       <div class="req-quadro-body" style="max-height:0" data-open="0">
         <table class="req-q-table">
-          <thead><tr><th>Req #</th><th>Fornecedor</th><th>Descrição</th><th>Comprador</th><th>Status</th>${cols.map(col=>`<th>${col.label}</th>`).join('')}</tr></thead>
+          <thead><tr><th class="req-q-num">Req #</th><th class="req-q-comp">Comprador</th>${showAprovacaoRc?'<th class="req-q-date">Aprovação RC</th>':''}<th class="req-q-desc">Descrição</th><th class="req-q-forn">Fornecedor</th>${cols.map(col=>`<th class="${col.type==='date'?'req-q-date':'req-q-extra'}">${col.label}</th>`).join('')}</tr></thead>
           <tbody>${items.map(r=>{
-            const sc2=REQ_STATUS_COLORS[r.status]||{bg:'#F1F5F9',fg:'#64748B'};
             const extraTds=cols.map(col=>{
               const v=r[col.field]||'';
-              return col.type==='date'?`<td class="req-q-date">${fmtBR(v.substring(0,10))}</td>`:`<td>${escH(v)}</td>`;
+              return col.type==='date'?`<td class="req-q-date">${fmtBR(v.substring(0,10))}</td>`:`<td class="req-q-extra">${escH(v)}</td>`;
             }).join('');
             return `<tr>
               <td class="req-q-num" style="background:#2F4A18;color:#FFF;padding:6px 12px;border-radius:6px;text-align:center">${escH(r.req)}</td>
-              <td style="font-size:16px;font-weight:600">${escH(r.forn)}</td>
-              <td style="font-size:16px;font-weight:600">${escH(r.desc)}</td>
-              <td class="req-q-comp">${escH(r.comp)}</td>
-              <td><span class="req-status-chip" style="background:${sc2.bg};color:${sc2.fg}">${escH(r.status)}</span></td>
+              <td class="req-q-comp">${_fmtCompradorNome(r.comp)}</td>
+              ${showAprovacaoRc?`<td class="req-q-date">${fmtBR((r.aprovacaoRc||'').substring(0,10))}</td>`:''}
+              <td class="req-q-desc" style="font-size:16px;font-weight:600">${escH(r.desc)}</td>
+              <td class="req-q-forn" style="font-size:16px;font-weight:600">${escH(r.forn)}</td>
               ${extraTds}
             </tr>`;
           }).join('')}</tbody>
@@ -3944,10 +3946,10 @@ function renderReqs(){
   };
   const grid=document.getElementById('req-quadros');
   grid.innerHTML=REQ_GROUPS.map(g=>{
-    const groupItems=filtered.filter(r=>_reqGroupKey(r)===g.key);
+    const _grpOrder=REQ_STATUS_ORDER_BY_GROUP[g.key]||REQ_STATUS_ORDER;
+    const groupItems=filtered.filter(r=>_reqGroupKey(r)===g.key&&_grpOrder.includes(r.status||''));
     if(!groupItems.length)return '';
-    const _extraStatuses=[...new Set(groupItems.map(r=>r.status||'').filter(s=>s&&!REQ_STATUS_ORDER.includes(s)))].sort();
-    const _statusesPresent=[...REQ_STATUS_ORDER,..._extraStatuses].filter(s=>groupItems.some(r=>(r.status||'')===s));
+    const _statusesPresent=_grpOrder.filter(s=>groupItems.some(r=>(r.status||'')===s));
     const subQuadros=_statusesPresent.map(s=>{
       const items=groupItems.filter(r=>(r.status||'')===s).sort(sortByReq);
       return items.length?buildQuadro(s,items,g.key):'';
@@ -5093,13 +5095,13 @@ function _parseWBS(rows, rowColors) {
 
 const _REQS_HDR=new Set(['Em andamento','Cotação','Finalizada','Não iniciada','Não inciada','Cancelado','Requisição']);
 function _parseREQS(rows) {
-  return rows.slice(2).filter(r=>r&&r.length).map(r=>{
+  return rows.slice(1).filter(r=>r&&r.length).map(r=>{
     let req=(r[0]||'').toString().trim();
     if(!req||_REQS_HDR.has(req)) return null;
     if(/^\d+\.0$/.test(req)) req=req.slice(0,-2);
-    let prio=(r[3]||'').toString().trim();
+    let prio=(r[5]||'').toString().trim();
     if(/^\d+\.0$/.test(prio)) prio=prio.slice(0,-2);
-    return{req,prio,comp:(r[1]||'').toString().trim(),tipo:(r[4]||'').toString().trim(),desc:(r[5]||'').toString().trim(),status:(r[6]||'').toString().trim(),forn:(r[7]||'').toString().trim(),obs:(r[8]||'').toString().trim(),advogado:(r[10]||'').toString().trim(),dataLimite:_fmtDate((r[12]||'').toString().trim()),chegadaMaterial:_fmtDate((r[13]||'').toString().trim()),finalizacaoServico:_fmtDate((r[15]||'').toString().trim())};
+    return{req,prio,comp:(r[1]||'').toString().trim(),tipo:(r[6]||'').toString().trim(),desc:(r[7]||'').toString().trim(),status:(r[8]||'').toString().trim(),forn:(r[9]||'').toString().trim(),obs:(r[11]||'').toString().trim(),advogado:(r[16]||'').toString().trim(),dataLimite:_fmtDate((r[4]||'').toString().trim()),chegadaMaterial:_fmtDate((r[13]||'').toString().trim()),finalizacaoServico:_fmtDate((r[15]||'').toString().trim()),aprovacaoRc:_fmtDate((r[3]||'').toString().trim())};
   }).filter(Boolean);
 }
 
