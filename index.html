@@ -1514,10 +1514,19 @@ function dateInRange(m, ds, de){
   return true;
 }
 
+function _grupoTextMatch(gr, term){
+  if(gr.name.toLowerCase().includes(term)) return true;
+  if(gr.resp && gr.resp.toLowerCase().includes(term)) return true;
+  return (gr.tasks||[]).some(t=>{
+    if((t.tarefa||'').toLowerCase().includes(term)) return true;
+    if(t.resp && t.resp.toLowerCase().includes(term)) return true;
+    return (t.subtasks||[]).some(s=>(s.tarefa||'').toLowerCase().includes(term)||(s.resp&&s.resp.toLowerCase().includes(term)));
+  });
+}
 function matchesFilter(g, m, f){
   const q  = f.search;
   const tx = !q || g.name.toLowerCase().includes(q) ||
-    (m ? (m.name.toLowerCase().includes(q)||(m.resp&&m.resp.toLowerCase().includes(q))) : g.children.some(c=>c.name.toLowerCase().includes(q)||(c.resp&&c.resp.toLowerCase().includes(q))));
+    (m ? _grupoTextMatch(m,q) : g.children.some(c=>_grupoTextMatch(c,q)));
   const dt = !m ? true : (modoEstrito ? dateInRange(m, f.dateStart, f.dateEnd) : true);
   // Status e responsável são checados à parte (nível de tarefa), via grupoHasMatchingLeaf
   return tx && dt;
@@ -2824,10 +2833,11 @@ function abrevNome(n){
     _downloadHTML(html,'Pauta_N2_DIR_'+_dateStamp(new Date())+'.html');
   }
 
-function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
+function buildCommentPanel(gi, mi, m, statusFilter, respFilter, searchTerm){
   const tasks = m.tasks||[];
   if(!tasks.length) return '';
   let _tcSeq = 0;
+  const qLow = (searchTerm||'').toLowerCase();
 
   function taskCard(t, n2Id){
     const mc  = sc(t.status||'A iniciar');
@@ -2848,7 +2858,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
     let h = `<div class="task-card"${n2Id?' id="taskcard-'+n2Id+'"':''} style="border-color:${mc}">`;
     h += `<div class="tc-header" onclick="toggleTaskDetails('${detailsId}',event)">`;
     if(n2Id) h += `<input type="checkbox" class="n2-check" id="n2c-${n2Id}" onclick="toggleN2Task('${n2Id}',event)">`;
-    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span>`;
+    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${hl(t.tarefa||'Tarefa',qLow)}</span>`;
     h += `<span class="tc-chev" id="tdchev-${detailsId}" style="transform:rotate(-90deg)">\u25bc</span></div>`;
     h += `<div class="tc-details" id="tdw-${detailsId}" style="max-height:0">`;
     if(dateStr||t.resp){
@@ -2870,11 +2880,12 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
   const sfLow=(statusFilter||[]).map(s=>s.toLowerCase());
   function sfOk(v){ return !sfLow.length||sfLow.includes((v||'A iniciar').toLowerCase()); }
   const rfActive = respFilter && respFilter.length>0;
-  const filterActive = sfLow.length>0 || rfActive;
+  const filterActive = sfLow.length>0 || rfActive || !!qLow;
   function leafOk(leaf){
     const sOk = !sfLow.length || sfOk(leaf.status);
     const rOk = !rfActive || (leaf.resp && respFilter.includes(leaf.resp));
-    return sOk && rOk;
+    const qOk = !qLow || (leaf.tarefa||'').toLowerCase().includes(qLow) || (leaf.resp&&leaf.resp.toLowerCase().includes(qLow));
+    return sOk && rOk && qOk;
   }
   function nodeHasMatchingLeaf(node){
     const subs=node.subtasks||[];
@@ -2883,7 +2894,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
   }
   let taskEntries = tasks.map((t,ti)=>({t:t,ti:ti}));
   if(filterActive) taskEntries = taskEntries.filter(e=>nodeHasMatchingLeaf(e.t));
-  let html = `<div class="marco-comment-panel" id="cpanel-${gi}-${mi}" style="max-height:0">`;
+  let html = `<div class="marco-comment-panel" id="cpanel-${gi}-${mi}" style="max-height:${qLow?'none':'0'}">`;
   taskEntries.forEach(({t,ti})=>{
     if(t.tipo === 'marco'){
       const mc  = sc(t.status||'A iniciar');
@@ -2896,7 +2907,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
       if(filterActive) subEntries = subEntries.filter(e=>leafOk(e.s));
       const hasSubs = subEntries.length > 0;
       const mKey = gi+'_'+mi+'_'+ti;
-      const mIsOpen = !!marcoOpen[mKey];
+      const mIsOpen = !!marcoOpen[mKey] || (!!qLow && hasSubs);
       const clickAttr = hasSubs ? 'onclick="toggleMarco('+gi+','+mi+','+ti+',event)"' : '';
       const cursorStyle = hasSubs ? 'pointer' : 'default';
       const chevRot = mIsOpen ? '' : 'transform:rotate(-90deg)';
@@ -2905,7 +2916,7 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
       if(hasSubs) html += `<input type="checkbox" class="n2-marco-check" id="n2gm-${gi}-${mi}-${ti}" onclick="toggleN2Marco(${gi},${mi},${ti},event)" title="Selecionar todas as tarefas deste marco para a Pauta N2">`;
       html += chevron;
       html += `<span class="mb-status" style="background:${mc}">${sl_}</span>`;
-      html += `<span class="marco-name">${escH(t.tarefa||'')}</span>`;
+      html += `<span class="marco-name">${hl(t.tarefa||'',qLow)}</span>`;
       html += `<span class="n2-badge" id="n2badge-${gi}-${mi}-${ti}" style="display:none">N2</span>`;
       if(dateStr) html += `<span class="mb-date">\uD83D\uDCC5 ${dateStr}</span>`;
       if(t.resp)  html += `<span class="mb-resp">\uD83D\uDC64 ${escH(abrevNome(t.resp))}</span>`;
@@ -2925,10 +2936,11 @@ function buildCommentPanel(gi, mi, m, statusFilter, respFilter){
 }
 
 // ── DIR TAB: Comment Panel (sem N2, IDs prefixados dir-) ─────────────────────
-function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
+function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter, searchTerm){
   const tasks = m.tasks||[];
   if(!tasks.length) return '';
   let _tcSeqDir = 0;
+  const qLow = (searchTerm||'').toLowerCase();
   function taskCard_Dir(t, n2Id){
     const mc  = sc(t.status||'A iniciar');
     const sl_ = sl(t.status||'A iniciar');
@@ -2948,13 +2960,13 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
     let h = `<div class="task-card"${n2Id?' id="taskcard-dir-'+n2Id+'"':''} style="border-color:${mc}">`;
     h += `<div class="tc-header" onclick="toggleTaskDetails('${detailsId}',event)">`;
     if(n2Id) h += `<input type="checkbox" class="n2-check n2-check-dir" id="n2c-dir-${n2Id}" onclick="toggleN2Task_Dir('${n2Id}',event)">`;
-    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${escH(t.tarefa||'Tarefa')}</span>`;
+    h += `<span class="tc-status" style="background:${mc}">${sl_}</span><span class="tarefa-name" style="${isCancelado?'text-decoration:line-through;opacity:0.6':''}">${hl(t.tarefa||'Tarefa',qLow)}</span>`;
     h += `<span class="tc-chev" id="tdchev-${detailsId}" style="transform:rotate(-90deg)">▼</span></div>`;
     h += `<div class="tc-details" id="tdw-${detailsId}" style="max-height:0">`;
     if(dateStr||t.resp){
       h += `<div class="tc-meta">`;
       if(dateStr) h += `<span class="tc-date">📅 ${dateStr}</span>`;
-      if(t.resp)  h += `<span class="tc-resp">👤 ${escH(abrevNome(t.resp))}</span>`;
+      if(t.resp)  h += `<span class="tc-resp">👤 ${hl(abrevNome(t.resp),qLow)}</span>`;
       if(t.fornecedor) h += `<span class="tc-forn" title="${escH(t.fornecedor)}">🏢 ${escH(t.fornecedor)}</span>`;
       h += `</div>`;
     }
@@ -2967,11 +2979,12 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
   const sfLow=(statusFilter||[]).map(s=>s.toLowerCase());
   function sfOk(v){ return !sfLow.length||sfLow.includes((v||'A iniciar').toLowerCase()); }
   const rfActive = respFilter && respFilter.length>0;
-  const filterActive = sfLow.length>0 || rfActive;
+  const filterActive = sfLow.length>0 || rfActive || !!qLow;
   function leafOk(leaf){
     const sOk = !sfLow.length || sfOk(leaf.status);
     const rOk = !rfActive || (leaf.resp && respFilter.includes(leaf.resp));
-    return sOk && rOk;
+    const qOk = !qLow || (leaf.tarefa||'').toLowerCase().includes(qLow) || (leaf.resp&&leaf.resp.toLowerCase().includes(qLow));
+    return sOk && rOk && qOk;
   }
   function nodeHasMatchingLeaf(node){
     const subs=node.subtasks||[];
@@ -2980,7 +2993,7 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
   }
   let taskEntries = tasks.map((t,ti)=>({t:t,ti:ti}));
   if(filterActive) taskEntries = taskEntries.filter(e=>nodeHasMatchingLeaf(e.t));
-  let html = `<div class="marco-comment-panel" id="dir-cpanel-${gi}-${mi}" style="max-height:0">`;
+  let html = `<div class="marco-comment-panel" id="dir-cpanel-${gi}-${mi}" style="max-height:${qLow?'none':'0'}">`;
   taskEntries.forEach(({t,ti})=>{
     if(t.tipo === 'marco'){
       const mc  = sc(t.status||'A iniciar');
@@ -2993,7 +3006,7 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
       if(filterActive) subEntries = subEntries.filter(e=>leafOk(e.s));
       const hasSubs = subEntries.length > 0;
       const mKey = gi+'_'+mi+'_'+ti;
-      const mIsOpen = !!marcoOpen_Dir[mKey];
+      const mIsOpen = !!marcoOpen_Dir[mKey] || (!!qLow && hasSubs);
       const clickAttr = hasSubs ? 'onclick="toggleMarco_Dir('+gi+','+mi+','+ti+',event)"' : '';
       const cursorStyle = hasSubs ? 'pointer' : 'default';
       const chevRot = mIsOpen ? '' : 'transform:rotate(-90deg)';
@@ -3002,10 +3015,10 @@ function buildCommentPanel_Dir(gi, mi, m, statusFilter, respFilter){
       if(hasSubs) html += `<input type="checkbox" class="n2-marco-check n2-marco-check-dir" id="n2gm-dir-${gi}-${mi}-${ti}" onclick="toggleN2Marco_Dir(${gi},${mi},${ti},event)" title="Selecionar todas as tarefas deste marco para a Pauta N2">`;
       html += chevron;
       html += `<span class="mb-status" style="background:${mc}">${sl_}</span>`;
-      html += `<span class="marco-name">${escH(t.tarefa||'')}</span>`;
+      html += `<span class="marco-name">${hl(t.tarefa||'',qLow)}</span>`;
       html += `<span class="n2-badge" id="n2badge-dir-${gi}-${mi}-${ti}" style="display:none">N2</span>`;
       if(dateStr) html += `<span class="mb-date">📅 ${dateStr}</span>`;
-      if(t.resp)  html += `<span class="mb-resp">👤 ${escH(abrevNome(t.resp))}</span>`;
+      if(t.resp)  html += `<span class="mb-resp">👤 ${hl(abrevNome(t.resp),qLow)}</span>`;
       html += `</div>`;
       if(hasSubs){
         const maxH = mIsOpen ? 'none' : '0';
@@ -3045,9 +3058,9 @@ function renderTree_Dir(){
       const mc=sc(m.status);
       const hasC=!!(m.tasks&&m.tasks.length);
       const marcoCount=hasC?m.tasks.filter(t=>t.tipo==='marco').length||m.tasks.length:0;
-      const cOpen=!!commentOpen_Dir[gi+'_'+mi];
+      const cOpen=!!commentOpen_Dir[gi+'_'+mi]||!!f.search;
       const cBtn=hasC?`<span class="marco-comment-btn${cOpen?' open':''}" id="dir-cbtn-${gi}-${mi}" onclick="toggleComment_Dir(${gi},${mi},event)">&#9658; ${marcoCount} marco${marcoCount!==1?'s':''}</span>`:'';
-      const cPanel=hasC?buildCommentPanel_Dir(gi,mi,m,f.status,f.resp):'';
+      const cPanel=hasC?buildCommentPanel_Dir(gi,mi,m,f.status,f.resp,f.search):'';
       const dateStr=m.end?`até ${fmtBRshort(m.end)}`:(m.start?`de ${fmtBRshort(m.start)}`:'');
       const clickAttr=hasC?`onclick="toggleComment_Dir(${gi},${mi},event)"`:'';
       return `<div class="marco-wrap${focoClass}" id="dir-mwrap-${gi}-${mi}">
@@ -3344,9 +3357,9 @@ function renderTree(){
       const mc=sc(m.status);
       const hasC=!!(m.tasks&&m.tasks.length);
       const marcoCount=hasC?m.tasks.filter(t=>t.tipo==='marco').length||m.tasks.length:0;
-      const cOpen=!!commentOpen[gi+'_'+mi];
+      const cOpen=!!commentOpen[gi+'_'+mi]||!!f.search;
       const cBtn=hasC?`<span class="marco-comment-btn${cOpen?' open':''}" id="cbtn-${gi}-${mi}" onclick="toggleComment(${gi},${mi},event)">▸ ${marcoCount} marco${marcoCount!==1?'s':''}</span>`:'';
-      const cPanel=hasC?buildCommentPanel(gi,mi,m,f.status,f.resp):'';
+      const cPanel=hasC?buildCommentPanel(gi,mi,m,f.status,f.resp,f.search):'';
       const dateStr=m.end?`até ${fmtBRshort(m.end)}`:(m.start?`de ${fmtBRshort(m.start)}`:'');
       const clickAttr=hasC?`onclick="toggleComment(${gi},${mi},event)"`:'';
       return `<div class="marco-wrap${focoClass}" id="mwrap-${gi}-${mi}">
