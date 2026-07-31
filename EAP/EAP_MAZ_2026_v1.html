@@ -28,7 +28,8 @@ body{font-family:'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--t
 .header-info strong{display:block;font-size:15px;}
 .header-info span{opacity:0.75;font-size:12px;}
 
-.toolbar{max-width:1000px;margin:0 auto;padding:16px 20px 0;display:flex;justify-content:flex-end;gap:10px;}
+.toolbar{padding:0 0 16px;display:flex;justify-content:flex-end;gap:10px;}
+.main-content{flex:1;min-width:0;display:flex;flex-direction:column;}
 .btn-clear{background:white;color:var(--danger);border:1.5px solid var(--danger);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
 .btn-clear:hover{background:#fee2e2;}
 .btn-gen{background:linear-gradient(135deg,#15803d,#16a34a);color:white;border:none;padding:11px 24px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(22,163,74,.35);}
@@ -48,8 +49,20 @@ body{font-family:'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--t
 .rb-btn-yes{background:#d97706;color:white;border:none;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
 .rb-btn-no{background:white;color:#92400e;border:1.5px solid #fbbf24;padding:8px 16px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit;}
 
-.main{max-width:1000px;margin:20px auto 60px;padding:0 20px;}
-.card{background:white;border-radius:14px;box-shadow:var(--shadow);padding:22px 24px;}
+.main{max-width:1220px;margin:20px auto 60px;padding:0 20px;display:flex;align-items:flex-start;gap:20px;}
+.card{background:white;border-radius:14px;box-shadow:var(--shadow);padding:22px 24px;flex:1;min-width:0;}
+
+.legend-panel{width:200px;flex-shrink:0;position:sticky;top:20px;background:white;border-radius:14px;box-shadow:var(--shadow);padding:20px 16px;}
+.legend-title{font-size:12px;font-weight:800;color:var(--text);margin-bottom:16px;text-transform:uppercase;letter-spacing:.4px;}
+.legend-node{border-radius:8px;padding:9px 12px;font-weight:700;}
+.legend-eixo{background:var(--primary);color:#fff;text-transform:uppercase;font-size:12px;margin-bottom:8px;}
+.legend-grupo{background:white;border:1.5px solid var(--primary-light);border-left:3px solid var(--primary-light);color:var(--text);text-transform:uppercase;font-size:11px;margin:0 0 8px 18px;}
+.legend-marco{background:#fef3c7;border-left:3px solid #d97706;color:#7c4a03;font-size:10.5px;margin:0 0 0 36px;}
+
+@media(max-width:680px){
+  .main{flex-direction:column;}
+  .legend-panel{width:100%;position:static;order:-1;}
+}
 
 .node-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 6px;border-radius:6px;}
 .node-row:hover{background:#fafbfc;}
@@ -106,6 +119,15 @@ body{font-family:'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--t
 .vt-btn{padding:9px 16px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--text-muted);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
 .vt-btn.active{background:var(--primary);border-color:var(--primary);color:white;}
 
+.viz-dd-wrap{position:relative;}
+.btn-viz{background:#1d4ed8;color:white;border:1.5px solid #1d4ed8;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-viz:hover{background:#1e40af;border-color:#1e40af;}
+.viz-dd-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;background:white;border:1.5px solid #93c5fd;border-radius:8px;z-index:10100;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.15);padding:6px 0;}
+.viz-dd-menu.open{display:block;}
+.viz-dd-item{padding:8px 16px;font-size:13px;color:var(--text);cursor:pointer;}
+.viz-dd-item:hover{background:#eff6ff;}
+.viz-dd-item.active{color:#1d4ed8;font-weight:700;}
+
 .mindmap-wrap{position:relative;overflow-x:auto;}
 .mm-svg{position:absolute;top:0;left:0;z-index:0;pointer-events:none;}
 .mm-cols{position:relative;display:flex;align-items:flex-start;gap:50px;width:max-content;padding:16px 8px 30px;}
@@ -161,22 +183,38 @@ body{font-family:'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--t
   </div>
 </div>
 
-<div class="toolbar" style="justify-content:space-between;flex-wrap:wrap;">
-  <div class="view-toggle">
-    <button class="vt-btn active" type="button" id="vt-tree" onclick="setView('tree')">🌳 Árvore</button>
-    <button class="vt-btn" type="button" id="vt-mindmap" onclick="setView('mindmap')">🧠 Mapa Mental</button>
-  </div>
-  <div style="display:flex;gap:10px;">
-    <button class="btn-export" type="button" onclick="exportarCSV()">📤 Exportar CSV</button>
-    <button class="btn-clear" type="button" onclick="limparTudo()">🗑️ Limpar</button>
-    <button class="btn-gen" type="button" onclick="salvarNovaVersao()">💾 Salvar nova versão</button>
-  </div>
-</div>
 
 <div class="main">
-  <div class="card">
-    <div id="tree-root"></div>
-    <div id="mindmap-root" style="display:none"></div>
+  <div class="legend-panel">
+    <div class="legend-title">Estrutura do Projeto</div>
+    <div class="legend-node legend-eixo">Eixo</div>
+    <div class="legend-node legend-grupo">Grupo</div>
+    <div class="legend-node legend-marco">Marco</div>
+  </div>
+  <div class="main-content">
+    <div class="toolbar" style="justify-content:space-between;flex-wrap:wrap;">
+      <div class="view-toggle">
+        <button class="vt-btn active" type="button" id="vt-tree" onclick="setView('tree')">🌳 Árvore</button>
+        <button class="vt-btn" type="button" id="vt-mindmap" onclick="setView('mindmap')">🧠 Mapa Mental</button>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div class="viz-dd-wrap">
+          <button class="btn-viz" type="button" onclick="toggleVizDd();event.stopPropagation()">VISUALIZAÇÃO: <span id="viz-label">Marcos</span> ▾</button>
+          <div class="viz-dd-menu" id="viz-dd-menu">
+            <div class="viz-dd-item" data-level="eixos" onclick="setVizLevel('eixos')">Eixos</div>
+            <div class="viz-dd-item" data-level="grupo" onclick="setVizLevel('grupo')">Grupos</div>
+            <div class="viz-dd-item" data-level="marco" onclick="setVizLevel('marco')">Marcos</div>
+          </div>
+        </div>
+        <button class="btn-export" type="button" onclick="exportarCSV()">📤 Exportar CSV</button>
+        <button class="btn-clear" type="button" onclick="limparTudo()">🗑️ Limpar</button>
+        <button class="btn-gen" type="button" onclick="salvarNovaVersao()">💾 Salvar nova versão</button>
+      </div>
+    </div>
+    <div class="card">
+      <div id="tree-root"></div>
+      <div id="mindmap-root" style="display:none"></div>
+    </div>
   </div>
 </div>
 
@@ -213,6 +251,7 @@ var pendingDraft = null;
 var collapsedSet = new Set();
 var deleteTarget = null;
 var saveTimer = null;
+var vizLevel = 'marco';
 
 function pad(n){ return n<10 ? '0'+n : ''+n; }
 function formatDateBR(d){ return pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear(); }
@@ -248,6 +287,7 @@ function setView(v){
 
 function init(){
   state = freshState();
+  applyVizLevel('marco');
   var raw = localStorage.getItem(DRAFT_KEY);
   if (raw) {
     try {
@@ -270,6 +310,7 @@ function restoreDraft(){
   }
   document.getElementById('restore-banner').style.display = 'none';
   pendingDraft = null;
+  applyVizLevel(vizLevel);
   render();
 }
 function dismissDraft(){
@@ -298,6 +339,38 @@ function toggleCollapse(pathKey){
   if (collapsedSet.has(pathKey)) collapsedSet.delete(pathKey); else collapsedSet.add(pathKey);
   render();
 }
+
+function applyVizLevel(level){
+  vizLevel = level;
+  collapsedSet.clear();
+  if (level === 'eixos') {
+    state.eixos.forEach(function(e, ei){ collapsedSet.add('e' + ei); });
+  } else if (level === 'grupo') {
+    state.eixos.forEach(function(e, ei){
+      e.grupos.forEach(function(g, gi){ collapsedSet.add('g' + ei + '-' + gi); });
+    });
+  } else if (level === 'marco') {
+    state.eixos.forEach(function(e, ei){
+      e.grupos.forEach(function(g, gi){
+        g.marcos.forEach(function(m, mi){ collapsedSet.add('m' + ei + '-' + gi + '-' + mi); });
+      });
+    });
+  }
+}
+function setVizLevel(level){
+  applyVizLevel(level);
+  document.getElementById('viz-dd-menu').classList.remove('open');
+  render();
+}
+function toggleVizDd(){
+  document.getElementById('viz-dd-menu').classList.toggle('open');
+}
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.viz-dd-wrap')) {
+    var m = document.getElementById('viz-dd-menu');
+    if (m) m.classList.remove('open');
+  }
+});
 
 function focusNewNode(id){
   var target = document.querySelector('[data-id="' + id + '"]');
@@ -358,7 +431,7 @@ function confirmModalAction(){
   if (deleteTarget.kind === '__clear__') {
     localStorage.removeItem(DRAFT_KEY);
     state = freshState();
-    collapsedSet.clear();
+    applyVizLevel(vizLevel);
     closeModal();
     render();
     showToast('Estrutura restaurada para a versão original.');
@@ -409,6 +482,12 @@ function render(){
 
   document.getElementById('vt-tree').classList.toggle('active', state.view === 'tree');
   document.getElementById('vt-mindmap').classList.toggle('active', state.view === 'mindmap');
+
+  var vizLabelEl = document.getElementById('viz-label');
+  if (vizLabelEl) vizLabelEl.textContent = vizLevel === 'eixos' ? 'Eixos' : (vizLevel === 'grupo' ? 'Grupos' : 'Marcos');
+  document.querySelectorAll('.viz-dd-item').forEach(function(it){
+    it.classList.toggle('active', it.getAttribute('data-level') === vizLevel);
+  });
   var treeRoot = document.getElementById('tree-root');
   var mmRoot = document.getElementById('mindmap-root');
   treeRoot.style.display = state.view === 'tree' ? '' : 'none';
@@ -602,14 +681,35 @@ function buildMindMap(container){
   var marcoInfo = {};
   var addMarcoY = {};
   var addGrupoYByEixo = {};
+  var eixoCollapsedH = {};
+
+  function measureNodeHeight(cls, col, id, parentId, name, pathKey, hasChildren, countBadge, placeholder){
+    var probeNode = mmNode(cls, id, parentId, name, function(){}, pathKey, hasChildren, function(){}, countBadge, placeholder);
+    absTop(probeNode, 0);
+    col.appendChild(probeNode);
+    var h = probeNode.getBoundingClientRect().height;
+    col.removeChild(probeNode);
+    return h;
+  }
 
   state.eixos.forEach(function(e, ei){
     var ePathKey = 'e' + ei;
-    if (collapsedSet.has(ePathKey)) { addGrupoYByEixo[e.id] = null; return; }
+    if (collapsedSet.has(ePathKey)) {
+      var eixoH = measureNodeHeight('mm-eixo', colEixo, e.id, null, e.nome, ePathKey, e.grupos.length > 0, e.grupos.length, 'Inserir novo Eixo');
+      eixoCollapsedH[e.id] = Math.max(eixoH, ADD_H);
+      addGrupoYByEixo[e.id] = y;
+      y += eixoCollapsedH[e.id] + GAP_EIXO + GAP_ROOT;
+      return;
+    }
 
     e.grupos.forEach(function(g, gi){
       var gPathKey = 'g' + ei + '-' + gi;
-      if (collapsedSet.has(gPathKey)) return;
+      if (collapsedSet.has(gPathKey)) {
+        var grupoH = measureNodeHeight('mm-grupo', colGrupo, g.id, e.id, g.nome, gPathKey, g.marcos.length > 0, g.marcos.length, 'Inserir novo Grupo');
+        addMarcoY[g.id] = y;
+        y += Math.max(grupoH, ADD_H) + GAP_GRUPO;
+        return;
+      }
 
       g.marcos.forEach(function(m, mi){
         var mPathKey = 'm' + ei + '-' + gi + '-' + mi;
@@ -631,9 +731,12 @@ function buildMindMap(container){
         var addT = el('button', { class: 'mm-add', type: 'button', text: '+ Tarefa', onclick: function(){ addTarefa(ei, gi, mi); } });
         absTop(addT, y);
         colTarefa.appendChild(addT);
-        y += ADD_H + GAP;
 
-        marcoInfo[m.id] = { top: top, bottom: bottom, fallbackY: fallbackY };
+        var mOwnH = measureNodeHeight('mm-marco', colMarco, m.id, g.id, m.nome, mPathKey, m.tarefas.length > 0,
+          (collapsedSet.has(mPathKey) && m.tarefas.length > 0) ? m.tarefas.length : 0, 'Inserir novo Marco');
+        y += Math.max(mOwnH, ADD_H) + GAP;
+
+        marcoInfo[m.id] = { top: top, bottom: bottom, fallbackY: fallbackY, ownH: mOwnH };
       });
 
       addMarcoY[g.id] = y;
@@ -676,7 +779,7 @@ function buildMindMap(container){
       var info = null;
       g.marcos.forEach(function(m, mi){
         var mInfo = marcoInfo[m.id];
-        var centerY = (mInfo.top !== null) ? (mInfo.top + mInfo.bottom) / 2 : (mInfo.fallbackY + ADD_H / 2);
+        var centerY = (mInfo.top !== null) ? (mInfo.top + mInfo.bottom) / 2 : (mInfo.fallbackY + (mInfo.ownH || ADD_H) / 2);
         var mPathKey = 'm' + ei + '-' + gi + '-' + mi;
         var mEl = mmNode('mm-marco', m.id, g.id, m.nome, function(v){ m.nome = v; }, mPathKey, m.tarefas.length > 0,
           function(){ askDelete('marco', [ei, gi, mi], m.nome); },
@@ -718,7 +821,7 @@ function buildMindMap(container){
     var hasChildren = e.grupos.length > 0;
     var centerY;
     if (collapsedSet.has(ePathKey)) {
-      centerY = addGrupoYByEixo[e.id] !== null && addGrupoYByEixo[e.id] !== undefined ? addGrupoYByEixo[e.id] + ADD_H / 2 : 0;
+      centerY = addGrupoYByEixo[e.id] !== null && addGrupoYByEixo[e.id] !== undefined ? addGrupoYByEixo[e.id] + (eixoCollapsedH[e.id] || ADD_H) / 2 : 0;
     } else {
       centerY = (info && info.top !== null) ? (info.top + info.bottom) / 2 : (addGrupoYByEixo[e.id] + ADD_H / 2);
     }
