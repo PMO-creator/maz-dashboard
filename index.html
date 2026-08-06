@@ -5114,7 +5114,7 @@ function _parseREQS(rows) {
     if(/^\d+\.0$/.test(req)) req=req.slice(0,-2);
     let prio=(r[5]||'').toString().trim();
     if(/^\d+\.0$/.test(prio)) prio=prio.slice(0,-2);
-    return{req,prio,comp:(r[1]||'').toString().trim(),tipo:(r[6]||'').toString().trim(),desc:(r[7]||'').toString().trim(),status:(r[8]||'').toString().trim(),forn:(r[9]||'').toString().trim(),obs:(r[11]||'').toString().trim(),advogado:(r[16]||'').toString().trim(),dataLimite:_fmtDate((r[4]||'').toString().trim()),chegadaMaterial:_fmtDate((r[13]||'').toString().trim()),finalizacaoServico:_fmtDate((r[15]||'').toString().trim()),aprovacaoRc:_fmtDate((r[3]||'').toString().trim())};
+    return{req,prio,comp:(r[1]||'').toString().trim(),tipo:(r[6]||'').toString().trim(),status:(r[7]||'').toString().trim(),desc:(r[8]||'').toString().trim(),forn:(r[9]||'').toString().trim(),obs:(r[11]||'').toString().trim(),advogado:(r[16]||'').toString().trim(),dataLimite:_fmtDate((r[4]||'').toString().trim()),chegadaMaterial:_fmtDate((r[13]||'').toString().trim()),finalizacaoServico:_fmtDate((r[15]||'').toString().trim()),aprovacaoRc:_fmtDate((r[3]||'').toString().trim())};
   }).filter(Boolean);
 }
 
