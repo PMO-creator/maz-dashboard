@@ -8,7 +8,7 @@
 :root {
   --accent:#B8E85C; --accentD:#90CC3A; --bg:#2E4A13; --bg2:#3A5820; --bg3:#486826;
   --text:#F0F4E8; --muted:#CCDFA0; --card:#1C2C0A; --border:#5A8030;
-  --feito:#05C46B; --andam:#1A56FF; --risco:#FF6B00; --atraso:#FF2525;
+  --feito:#1A56FF; --andam:#05C46B; --risco:#FFD966; --atraso:#FF2525;
   --warn:#FF6B00; --info:#1A56FF;
   --tooltip-bg:#152208; --tooltip-border:#78BB35;
 }
@@ -560,11 +560,11 @@ tr:hover td{background:rgba(138,196,58,.04)}
   <div class="card">
     <div class="card-label">Legenda de status</div>
     <div class="status-grid">
-      <div class="status-row" onclick="openModal('st_feito')"><div class="status-dot" style="background:#05C46B"></div><div class="status-name">Feito</div><div class="status-meaning">Entregue e concluído</div><div class="status-rank">melhor</div></div>
-      <div class="status-row" onclick="openModal('st_andam')"><div class="status-dot" style="background:#1A56FF"></div><div class="status-name">Em andamento</div><div class="status-meaning">Trabalho em progresso, no prazo</div><div class="status-rank"></div></div>
+      <div class="status-row" onclick="openModal('st_feito')"><div class="status-dot" style="background:#1A56FF"></div><div class="status-name">Feito</div><div class="status-meaning">Entregue e concluído</div><div class="status-rank">melhor</div></div>
+      <div class="status-row" onclick="openModal('st_andam')"><div class="status-dot" style="background:#05C46B"></div><div class="status-name">Em andamento</div><div class="status-meaning">Trabalho em progresso, no prazo</div><div class="status-rank"></div></div>
       <div class="status-row" onclick="openModal('st_iniciar')"><div class="status-dot" style="background:#5A6E85"></div><div class="status-name">A iniciar</div><div class="status-meaning">Ainda não começou, mas tem data definida</div><div class="status-rank"></div></div>
       <div class="status-row" onclick="openModal('st_definir')"><div class="status-dot" style="background:#92400E"></div><div class="status-name">Definir datas</div><div class="status-meaning">Sem data ainda — precisa de decisão</div><div class="status-rank"></div></div>
-      <div class="status-row" onclick="openModal('st_risco')"><div class="status-dot" style="background:#FF6B00"></div><div class="status-name">Risco de atraso</div><div class="status-meaning">Prazo em 7 dias ou menos — atenção necessária</div><div class="status-rank">⚠️</div></div>
+      <div class="status-row" onclick="openModal('st_risco')"><div class="status-dot" style="background:#FFD966"></div><div class="status-name">Risco de atraso</div><div class="status-meaning">Prazo em 7 dias ou menos — atenção necessária</div><div class="status-rank">⚠️</div></div>
       <div class="status-row" onclick="openModal('st_atraso')"><div class="status-dot" style="background:#FF2525"></div><div class="status-name">Atrasado</div><div class="status-meaning">Prazo já passou sem conclusão</div><div class="status-rank">🚨 pior</div></div>
       <div class="status-row" onclick="openModal('st_cancel')"><div class="status-dot" style="background:#374151"></div><div class="status-name">Cancelado / Congelado</div><div class="status-meaning">Descontinuado ou pausado sem previsão</div><div class="status-rank"></div></div>
     </div>
@@ -777,15 +777,15 @@ tr:hover td{background:rgba(138,196,58,.04)}
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px">
         <span style="background:#1A0000;border:1px solid #FF2525;color:#FF2525;padding:4px 10px;border-radius:20px;font-weight:700">Atrasado</span>
         <span style="color:var(--muted);font-weight:700">›</span>
-        <span style="background:#1F0D00;border:1px solid #FF6B00;color:#FF6B00;padding:4px 10px;border-radius:20px;font-weight:700">Risco de atraso</span>
+        <span style="background:#1F0D00;border:1px solid #FFD966;color:#FFD966;padding:4px 10px;border-radius:20px;font-weight:700">Risco de atraso</span>
         <span style="color:var(--muted);font-weight:700">›</span>
-        <span style="background:#00102A;border:1px solid #1A56FF;color:#80AAFF;padding:4px 10px;border-radius:20px;font-weight:700">Em andamento</span>
+        <span style="background:#001810;border:1px solid #05C46B;color:#05C46B;padding:4px 10px;border-radius:20px;font-weight:700">Em andamento</span>
         <span style="color:var(--muted);font-weight:700">›</span>
         <span style="background:var(--bg2);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:20px;font-weight:700">A iniciar = (vazio)</span>
         <span style="color:var(--muted);font-weight:700">›</span>
         <span style="background:#1C0F00;border:1px solid #92400E;color:#C2692A;padding:4px 10px;border-radius:20px;font-weight:700">Definir datas</span>
         <span style="color:var(--muted);font-weight:700">›</span>
-        <span style="background:#001810;border:1px solid #05C46B;color:#05C46B;padding:4px 10px;border-radius:20px;font-weight:700">Feito</span>
+        <span style="background:#00102A;border:1px solid #1A56FF;color:#80AAFF;padding:4px 10px;border-radius:20px;font-weight:700">Feito</span>
         <span style="color:var(--muted);font-weight:700">›</span>
         <span style="background:#111827;border:1px solid #374151;color:#9CA3AF;padding:4px 10px;border-radius:20px;font-weight:700">Cancelado/Congelado = Cancelado</span>
       </div>
@@ -850,10 +850,10 @@ tr:hover td{background:rgba(138,196,58,.04)}
     <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Roda sobre cada tarefa/subtask individual, sobrescrevendo o status da planilha com base nas datas:</div>
     <table>
       <tr><th>Status na planilha</th><th>Condição de data</th><th>Status resultante</th></tr>
-      <tr><td><span style="color:#5A6E85;font-weight:700">A iniciar</span></td><td>Data de início já passou</td><td><span style="color:#FF6B00;font-weight:700">Risco de atraso</span></td></tr>
+      <tr><td><span style="color:#5A6E85;font-weight:700">A iniciar</span></td><td>Data de início já passou</td><td><span style="color:#FFD966;font-weight:700">Risco de atraso</span></td></tr>
       <tr><td><span style="color:#5A6E85;font-weight:700">A iniciar</span></td><td>Sem data de início</td><td><span style="color:var(--muted)">mantém A iniciar</span></td></tr>
       <tr><td><span style="color:var(--muted)">Qualquer outro ¹</span></td><td>Data de fim &lt; hoje</td><td><span style="color:#FF2525;font-weight:700">Atrasado</span></td></tr>
-      <tr><td><span style="color:var(--muted)">Qualquer outro ¹</span></td><td>Data de fim ≤ hoje + 7 dias</td><td><span style="color:#FF6B00;font-weight:700">Risco de atraso</span></td></tr>
+      <tr><td><span style="color:var(--muted)">Qualquer outro ¹</span></td><td>Data de fim ≤ hoje + 7 dias</td><td><span style="color:#FFD966;font-weight:700">Risco de atraso</span></td></tr>
       <tr><td><span style="color:var(--muted)">Qualquer outro ¹</span></td><td>Data de fim ok</td><td><span style="color:var(--muted)">mantém como está</span></td></tr>
     </table>
     <div class="alert info" style="margin-top:10px">
@@ -983,6 +983,29 @@ tr:hover td{background:rgba(138,196,58,.04)}
     </div>
   </div>
 
+  <!-- GRUPO 7 -->
+  <div class="card">
+    <div class="card-label">Grupo 7 — Aba Áreas (Kanban, Jul/2026)</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+
+      <div style="background:var(--bg2);border-radius:8px;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="background:#0A1204;border:1px solid var(--accent);border-radius:4px;padding:2px 8px;font-family:monospace;font-size:11px;font-weight:700;color:var(--accent)">RN-16</span>
+          <strong style="font-size:13px">Aba Áreas só exibe um eixo — restrição nunca documentada antes</strong>
+        </div>
+        <div style="font-size:12px;color:var(--muted)"><code style="background:#0A1204;padding:1px 5px;border-radius:3px">_buildAreasData()</code> filtra <code style="background:#0A1204;padding:1px 5px;border-radius:3px">eixo.name!==AREAS_EIXO_NOME</code> ('MONTAGEM DE EXPO DE LONGA'). Tarefas de qualquer outro eixo, mesmo com colunas de área marcadas na planilha, nunca aparecem no Kanban da aba Áreas. Antes de "consertar" uma tarefa que parece sumida dessa aba, confirmar o eixo dela.</div>
+      </div>
+
+      <div style="background:var(--bg2);border-radius:8px;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="background:#0A1204;border:1px solid var(--accent);border-radius:4px;padding:2px 8px;font-family:monospace;font-size:11px;font-weight:700;color:var(--accent)">RN-17</span>
+          <strong style="font-size:13px">Export PDF do Kanban: 1 área por página + quebra de texto medida, não estimada</strong>
+        </div>
+        <div style="font-size:12px;color:var(--muted)"><code style="background:#0A1204;padding:1px 5px;border-radius:3px">_buildKanbanSVGForExport()</code> gera os cards em grade cronológica (substituiu <code style="background:#0A1204;padding:1px 5px;border-radius:3px">_buildGanttSVGForExport</code>). O loop de <code style="background:#0A1204;padding:1px 5px;border-radius:3px">_runExportPDF</code> força nova página antes de cada área a partir da segunda — nunca duas áreas dividem a mesma folha. A quebra de linha do texto usa <code style="background:#0A1204;padding:1px 5px;border-radius:3px">canvas.measureText()</code> (não contagem de caracteres): estimar por caractere subestima maiúsculas em negrito e o texto vaza a caixa do card.</div>
+      </div>
+    </div>
+  </div>
+
 </div>
 </div><!-- /content -->
 
@@ -1077,19 +1100,19 @@ const MODALS = {
   ]},
   st_feito:{title:'✅ Feito',rows:[
     {i:'🎯',l:'O que significa',v:'A tarefa, marco, grupo ou eixo foi concluído.'},
-    {i:'🎨',l:'Cor',v:'Verde (#05C46B)'},
-    {i:'⚙️',l:'Regra importante',v:'Um marco só pode ser "Feito" se 100% das suas subtasks estão como Feito ou Cancelado (RN-02a). Nunca é sobrescrito por data.'}
-  ],tech:'CSS var: --feito: #05C46B'},
-  st_andam:{title:'🔵 Em andamento',rows:[
-    {i:'🎯',l:'O que significa',v:'O trabalho está em progresso e dentro do prazo esperado.'},
     {i:'🎨',l:'Cor',v:'Azul (#1A56FF)'},
+    {i:'⚙️',l:'Regra importante',v:'Um marco só pode ser "Feito" se 100% das suas subtasks estão como Feito ou Cancelado (RN-02a). Nunca é sobrescrito por data.'}
+  ],tech:'CSS var: --feito: #1A56FF'},
+  st_andam:{title:'🟢 Em andamento',rows:[
+    {i:'🎯',l:'O que significa',v:'O trabalho está em progresso e dentro do prazo esperado.'},
+    {i:'🎨',l:'Cor',v:'Verde (#05C46B)'},
     {i:'⚙️',l:'Comportamento',v:'Pode ser sobrescrito para "Atrasado" ou "Risco de atraso" se a data de fim estiver comprometida (preprocessStatuses).'}
-  ],tech:'CSS var: --andam: #1A56FF'},
-  st_risco:{title:'🟠 Risco de atraso',rows:[
+  ],tech:'CSS var: --andam: #05C46B'},
+  st_risco:{title:'🟡 Risco de atraso',rows:[
     {i:'🎯',l:'O que significa',v:'O prazo de entrega é em 7 dias ou menos — atenção necessária.'},
-    {i:'🎨',l:'Cor',v:'Laranja (#FF6B00)'},
+    {i:'🎨',l:'Cor',v:'Amarelo (#FFD966)'},
     {i:'⚙️',l:'Gatilho automático',v:'Ativado quando: (a) status é "A iniciar" e a data de início já passou, ou (b) data de fim ≤ hoje + 7 dias (RN-02, preprocessStatuses).'}
-  ],tech:'CSS var: --risco: #FF6B00\nJanela de risco: 7 dias (hoje + 7)'},
+  ],tech:'CSS var: --risco: #FFD966\nJanela de risco: 7 dias (hoje + 7)'},
   st_atraso:{title:'🔴 Atrasado',rows:[
     {i:'🎯',l:'O que significa',v:'O prazo de entrega já passou sem que a tarefa fosse concluída.'},
     {i:'🎨',l:'Cor',v:'Vermelho (#FF2525)'},
