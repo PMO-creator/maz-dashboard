@@ -184,3 +184,4 @@ Regra universal: grep primeiro, editar depois. Nunca abrir o arquivo completo.
 | `node --check` | Extrair bloco `<script>` para `.js` temporário |
 | Edit tool falha | Usar Python `str.replace()` via bash em vez do Edit tool (ver regra 3) |
 | String não encontrada | Normalizar CRLF: `content.replace("\r\n","\n")` antes de substituir, converter de volta antes de gravar |
+
