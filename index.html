@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EAP – MAZ 2026 | Dashboard Interativo</title>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/svg2pdf.js@2.2.3/dist/svg2pdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
 <style>
@@ -555,6 +556,31 @@
   .comp-modal-banner{background:#fff3cd!important;color:#856404!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .comp-badge{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* ── Fornecedores (Ajustes Finais) ───────────── */
+.forn-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.forn-kpi{background:var(--surface);border-left:4px solid var(--accent);border-radius:var(--radius);padding:12px 15px}
+.forn-kpi.crit{border-left-color:#FF2525}
+.forn-kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.forn-kpi-value{font-size:22px;font-weight:800;line-height:1.15;color:var(--text)}
+.forn-kpi-value.crit{color:#FF2525}
+.forn-kpi-sub{font-size:12px;color:var(--muted);margin-top:3px;font-weight:500}
+.forn-table-wrap{overflow-x:auto}
+.forn-table{width:100%;border-collapse:collapse;font-size:13px}
+.forn-table thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;padding:9px 14px;background:var(--surface);border-bottom:1px solid var(--border);white-space:nowrap}
+.forn-table tbody td{padding:8px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.forn-table tbody tr:last-child td{border-bottom:none}
+.ft-eixo{color:var(--muted);font-weight:700;white-space:nowrap;opacity:.8;font-size:12px}
+.ft-grupo{color:var(--muted);font-weight:600;white-space:nowrap;font-size:12.5px}
+.ft-marco{color:var(--muted);white-space:nowrap;font-size:12.5px}
+.ft-tarefa{color:var(--text);font-weight:600;min-width:220px}
+.ft-status{white-space:nowrap}
+.ft-ini,.ft-fim{color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;font-size:12.5px}
+.ft-pill{display:inline-block;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;padding:3px 9px;border-radius:20px;color:#fff;white-space:nowrap}
+@media(max-width:768px){
+  .forn-kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .forn-table{min-width:760px}
+}
 </style>
 </head>
 <body>
@@ -582,6 +608,7 @@
     <button class="tab-btn" data-group="ajustes" onclick="switchTab('gantt-ajustes-dir')" id="tab-btn-gantt-ajustes-dir">📊 Gantt Diretoria</button>
     <button class="tab-btn" data-group="ajustes" onclick="switchTab('eap-ajustes')" id="tab-btn-eap-ajustes">📋 Status Report</button>
     <button class="tab-btn" data-group="ajustes" onclick="switchTab('eap-ajustes-dir')" id="tab-btn-eap-ajustes-dir">📋 Status Report Diretoria</button>
+    <button class="tab-btn" data-group="ajustes" onclick="switchTab('fornecedores-ajustes')" id="tab-btn-fornecedores-ajustes">🏢 Fornecedores</button>
   </div>
 </div>
 
@@ -599,7 +626,7 @@
   <div class="group-card" onclick="openGroup('ajustes')">
     <div class="group-card-icon">🎉</div>
     <div class="group-card-title">AJUSTES FINAIS PARA INAUGURAÇÃO</div>
-    <div class="group-card-desc">Gantt · Gantt Diretoria · Status Report · Status Report Diretoria</div>
+    <div class="group-card-desc">Gantt · Gantt Diretoria · Status Report · Status Report Diretoria · Fornecedores</div>
   </div>
 </div>
 
@@ -1048,6 +1075,34 @@
 
   </div><!-- /tab-eap-ajustes-dir -->
 
+  <div id="tab-fornecedores-ajustes" class="tab-panel">
+  <div class="wbs-card" id="wbs-main-forn-ajustes">
+    <div class="wbs-sticky-head">
+    <div class="wbs-header">
+      <h2>Fornecedores — Ajustes Finais</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="visible-count-forn-ajustes" style="font-size:15px;color:#8AB870">Exibindo todos os fornecedores</span>
+        <button class="btn-collapse" id="forn-pdf-btn" onclick="openFornPDFModal()" style="background:#1A3A8A;color:#fff;border-color:#1A3A8A">📄 Exportar PDF</button>
+        <button class="btn-collapse" onclick="collapseAllFornAjustes()">▲ Recolher Tudo</button>
+      </div>
+    </div>
+    <div class="search-zone" id="forn-search-zone">
+      <div class="search-zone-inner">
+        <span class="lupa">🔍</span>
+        <input class="search-bar" id="searchInput-forn-ajustes" type="text" placeholder="Buscar fornecedor, grupo, marco, tarefa, responsável..." oninput="renderFornecedoresAjustes()">
+      </div>
+      <div class="search-badge" id="search-badge-forn-ajustes">Todos os itens</div>
+    </div>
+    <div class="legend" id="legend-forn-ajustes"></div>
+    </div>
+    <div class="wbs-body">
+      <div class="forn-kpi-grid" id="forn-kpi-row" style="margin:16px 20px 0"></div>
+      <div id="group-list-forn-ajustes" class="group-list"></div>
+      <div class="no-results" id="no-results-forn-ajustes" style="display:none">Nenhum resultado encontrado.</div>
+    </div>
+  </div>
+  </div><!-- /tab-fornecedores-ajustes -->
+
 <button id="n2-fab" onclick="toggleN2Filter()" style="display:none;position:fixed;bottom:82px;right:28px;z-index:1000;padding:11px 20px;border:none;border-radius:21px;font-size:16px;font-weight:700;cursor:pointer;background:#3D6218;color:#B8E85C;box-shadow:0 4px 16px rgba(0,0,0,.3);align-items:center;gap:8px">📋 Pauta N2 · 0</button>
 <button id="n2-clear-fab" onclick="n2ConfirmClear(false)" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
 <button id="n2-publish-fab" onclick="publishN2Pauta()" style="display:none;position:fixed;bottom:140px;right:28px;z-index:1001;padding:10px 18px;border:none;border-radius:21px;font-size:14px;font-weight:700;cursor:pointer;background:#1A3A8A;color:white;box-shadow:0 4px 16px rgba(0,0,0,.4);align-items:center;gap:6px">📤 Publicar pauta</button>
@@ -1362,6 +1417,23 @@
     </div>
   </div>
 </div>
+<div id="forn-pdf-modal" style="display:none;position:fixed;inset:0;background:rgba(15,28,5,0.88);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#2F4A18;border:1px solid rgba(138,196,58,0.35);border-radius:14px;padding:28px 32px;min-width:500px;max-width:620px;box-shadow:0 24px 64px rgba(0,0,0,0.55);max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+      <h2 style="margin:0;font-size:18px;color:#8AB870;font-weight:700;letter-spacing:.3px">Exportar PDF — Fornecedores</h2>
+      <button onclick="closeFornPDFModal()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:#8AB870;line-height:1;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <p style="color:#8AB870;margin:0 0 8px;font-size:14px;font-weight:600">Selecione os fornecedores <span id="forn-pdf-count" style="color:#8AC43A;font-size:12px;font-weight:400"></span>:</p>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button onclick="fornPdfSelAll()" style="padding:5px 14px;border:1px solid rgba(138,196,58,0.45);border-radius:6px;cursor:pointer;background:transparent;color:#8AC43A;font-size:12px;font-weight:600">Selecionar todos</button>
+      <button onclick="fornPdfSelClear()" style="padding:5px 14px;border:1px solid rgba(138,196,58,0.2);border-radius:6px;cursor:pointer;background:transparent;color:#8AB870;font-size:12px">Limpar</button>
+    </div>
+    <div id="forn-pdf-list" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:340px;overflow-y:auto"></div>
+    <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:24px;padding-top:18px;border-top:1px solid rgba(138,196,58,0.15)">
+      <button onclick="fornPdfGenerate()" style="padding:10px 30px;background:#8AC43A;color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px">Gerar PDF ↓</button>
+    </div>
+  </div>
+</div>
 <div id="gantt-pdf-export-modal" style="display:none;position:fixed;inset:0;background:rgba(15,28,5,0.88);z-index:9999;align-items:center;justify-content:center">
   <div style="background:#2F4A18;border:1px solid rgba(138,196,58,0.35);border-radius:14px;padding:28px 32px;min-width:500px;max-width:620px;box-shadow:0 24px 64px rgba(0,0,0,0.55);max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
@@ -1609,7 +1681,7 @@ function switchTab(name){
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('tab-btn-'+name).classList.add('active');
   const fb=document.getElementById('filter-bar');
-  if(fb) fb.style.display=(name==='reqs'||name==='m2')?'none':'flex';
+  if(fb) fb.style.display=(name==='reqs'||name==='m2'||name==='fornecedores-ajustes')?'none':'flex';
   const _ajTabs=['gantt-ajustes','gantt-ajustes-dir','eap-ajustes','eap-ajustes-dir'];
   if(fb && _ajTabs.includes(name)) fb.style.display='none';
   const fbAj=document.getElementById('filter-bar-ajustes');
@@ -1642,6 +1714,7 @@ function switchTab(name){
   if(name==='eap'){updateN2Fab();}
   if(name==='areas'){buildAreasFilter();if(AREAS_DATA.length)renderAreasTab();}
   if(name==='m2'){renderM2Charts();}
+  if(name==='fornecedores-ajustes'){renderFornecedoresAjustes();}
   var n2fabAj=document.getElementById('n2-fab-ajustes');
   var n2cfabAj=document.getElementById('n2-clear-fab-ajustes');
   if(n2fabAj)n2fabAj.style.display=(name==='eap-ajustes')?'flex':'none';
@@ -1719,12 +1792,14 @@ function buildLegend(){
   const legAj=document.getElementById('legend-ajustes');
   const ganttLegAj=document.getElementById('gantt-legend-ajustes');
   const dirLegAj=document.getElementById('legend-ajustes-dir');
+  const fornLegAj=document.getElementById('legend-forn-ajustes');
   if(leg)leg.innerHTML='';
   if(ganttLeg)ganttLeg.innerHTML='';
   if(dirLeg)dirLeg.innerHTML='';
   if(legAj)legAj.innerHTML='';
   if(ganttLegAj)ganttLegAj.innerHTML='';
   if(dirLegAj)dirLegAj.innerHTML='';
+  if(fornLegAj)fornLegAj.innerHTML='';
   Object.entries(STATUS).forEach(([k,v])=>{
     const item=`<div class="legend-item"><div class="legend-dot" style="background:${v.color}"></div><span>${k}</span></div>`;
     if(leg) leg.innerHTML+=item;
@@ -1733,6 +1808,7 @@ function buildLegend(){
     if(legAj) legAj.innerHTML+=item;
     if(ganttLegAj) ganttLegAj.innerHTML+=item;
     if(dirLegAj) dirLegAj.innerHTML+=item;
+    if(fornLegAj) fornLegAj.innerHTML+=item;
   });
 }
 function renderKPIs(){
@@ -5767,6 +5843,7 @@ async function loadSheetsData() {
         renderGanttSectionAjustes();
         renderGanttSectionAjustesDir();
         var _glAj=document.getElementById('group-list-ajustes'); if(_glAj) _glAj.style.maxHeight='none';
+        var _tfp=document.getElementById('tab-fornecedores-ajustes'); if(_tfp&&_tfp.classList.contains('active')) renderFornecedoresAjustes();
       }
     } catch(_ajErr){ console.error('Erro ao processar aba Ajustes Finais:',_ajErr); }
     if(reqsRows){ const newREQS=_parseREQS(reqsRows); REQS.length=0; newREQS.forEach(r=>REQS.push(r)); }
@@ -5874,6 +5951,305 @@ function preprocessStatusesAjustes(){
     const es=worstStatus(eixo.children.map(g=>g.status||''));
     if(eixo.status!=='Cancelado/Congelado'&&eixo.status!=='Cancelado') eixo.status=es;
   });
+}
+
+// ── FORNECEDORES (Ajustes Finais) ──────────────
+let fornAjustesOpen={};
+
+// Lista plana de entregas por fornecedor, na MESMA ordem em que aparecem no
+// cronograma (Eixo → Grupo → Marco → Tarefa) -- nunca reordenar por status,
+// senao tarefas do mesmo marco ficam espalhadas pela tabela.
+function _buildFornRows(){
+  const buckets={};
+  const order=[];
+  function ensure(name){
+    if(!buckets[name]){ buckets[name]={rows:[]}; order.push(name); }
+    return buckets[name];
+  }
+  WBS_AJUSTES.forEach(function(eixo){
+    eixo.children.forEach(function(grupo){
+      grupo.tasks.forEach(function(task){
+        const hasSub=task.subtasks&&task.subtasks.length>0;
+        const leaves=hasSub?task.subtasks:[task];
+        const marcoName=task.tarefa||grupo.name;
+        leaves.forEach(function(leaf){
+          const forn=(leaf.fornecedor||'').trim()||'Sem fornecedor identificado';
+          const b=ensure(forn);
+          b.rows.push({
+            eixo:eixo.name, grupo:grupo.name, marco:marcoName,
+            tarefa:leaf.tarefa, status:leaf.status||'A iniciar',
+            start:leaf.start, end:leaf.end
+          });
+        });
+      });
+    });
+  });
+
+  const list=order.map(function(name){
+    const rows=buckets[name].rows;
+    const atrasadas=rows.filter(function(r){return r.status==='Atrasado';}).length;
+    return {name:name, rows:rows, atrasadas:atrasadas, total:rows.length};
+  });
+  list.sort(function(a,b){
+    if(a.name==='Sem fornecedor identificado') return 1;
+    if(b.name==='Sem fornecedor identificado') return -1;
+    if(b.atrasadas!==a.atrasadas) return b.atrasadas-a.atrasadas;
+    return b.total-a.total;
+  });
+  return list;
+}
+
+function _fornAjustesColor(name){
+  return '#6B7A5E';
+}
+
+function _fornRowMatches(r,q){
+  return (r.eixo||'').toLowerCase().includes(q)
+    ||(r.grupo||'').toLowerCase().includes(q)
+    ||(r.marco||'').toLowerCase().includes(q)
+    ||(r.tarefa||'').toLowerCase().includes(q);
+}
+
+function _fornKpiHTML(forns){
+  const real=forns.filter(function(f){return f.name!=='Sem fornecedor identificado';});
+  const sem=forns.find(function(f){return f.name==='Sem fornecedor identificado';});
+  const semCount=sem?sem.total:0;
+  const totalAtrasadas=forns.reduce(function(s,f){return s+f.atrasadas;},0);
+  const totalTarefas=forns.reduce(function(s,f){return s+f.total;},0);
+  let critForn='',critN=0,volForn='',volN=0;
+  real.forEach(function(f){
+    if(f.atrasadas>critN){critN=f.atrasadas;critForn=f.name;}
+    if(f.total>volN){volN=f.total;volForn=f.name;}
+  });
+  return ''
+    +'<div class="forn-kpi"><div class="forn-kpi-label">Fornecedores ativos</div>'
+      +'<div class="forn-kpi-value">'+real.length+'</div>'
+      +'<div class="forn-kpi-sub">'+(semCount?('+ '+semCount+' sem fornecedor'):'todas as tarefas identificadas')+'</div></div>'
+    +'<div class="forn-kpi crit"><div class="forn-kpi-label">Tarefas atrasadas</div>'
+      +'<div class="forn-kpi-value crit">'+totalAtrasadas+'</div>'
+      +'<div class="forn-kpi-sub">'+(totalTarefas?Math.round(totalAtrasadas/totalTarefas*100):0)+'% do total de '+totalTarefas+' tarefas</div></div>'
+    +'<div class="forn-kpi"><div class="forn-kpi-label">Fornecedor mais crítico</div>'
+      +'<div class="forn-kpi-value" style="font-size:16px">'+(critN>0?escH(critForn):'—')+'</div>'
+      +'<div class="forn-kpi-sub">'+(critN>0?(critN+' tarefa'+(critN>1?'s':'')+' atrasada'+(critN>1?'s':'')):'nenhum atraso')+'</div></div>'
+    +'<div class="forn-kpi"><div class="forn-kpi-label">Maior volume</div>'
+      +'<div class="forn-kpi-value" style="font-size:16px">'+(volN>0?escH(volForn):'—')+'</div>'
+      +'<div class="forn-kpi-sub">'+volN+' tarefa'+(volN>1?'s':'')+' no cronograma</div></div>';
+}
+
+function _fornTableHTML(rows,q){
+  if(!rows.length) return '<div class="no-results" style="padding:16px">Nenhuma tarefa encontrada.</div>';
+  const rowsHtml=rows.map(function(r){
+    const col=sc(r.status);
+    const ini=r.start?fmtBR(r.start):'—';
+    const fim=r.end?fmtBR(r.end):'—';
+    return '<tr style="border-left:3px solid '+col+'">'
+      +'<td class="ft-eixo">'+hl(r.eixo,q)+'</td>'
+      +'<td class="ft-grupo">'+hl(r.grupo,q)+'</td>'
+      +'<td class="ft-marco">'+hl(r.marco,q)+'</td>'
+      +'<td class="ft-tarefa">'+hl(r.tarefa,q)+'</td>'
+      +'<td class="ft-status"><span class="ft-pill" style="background:'+col+'">'+sl(r.status)+'</span></td>'
+      +'<td class="ft-ini">'+ini+'</td>'
+      +'<td class="ft-fim">'+fim+'</td>'
+    +'</tr>';
+  }).join('');
+  return '<div class="forn-table-wrap"><table class="forn-table">'
+    +'<thead><tr><th>Eixo</th><th>Grupo</th><th>Marco</th><th>Tarefa</th><th>Status</th><th>Início</th><th>Fim</th></tr></thead>'
+    +'<tbody>'+rowsHtml+'</tbody>'
+  +'</table></div>';
+}
+
+function renderFornecedoresAjustes(){
+  const list=document.getElementById('group-list-forn-ajustes');
+  if(!list) return;
+  const qEl=document.getElementById('searchInput-forn-ajustes');
+  const q=(qEl?qEl.value:'').trim().toLowerCase();
+  const forns=_buildFornRows();
+
+  const kpiRow=document.getElementById('forn-kpi-row');
+  if(kpiRow) kpiRow.innerHTML=_fornKpiHTML(forns);
+
+  let html=''; let visCount=0;
+  forns.forEach(function(f,fi){
+    const fornNameMatches=!q||f.name.toLowerCase().includes(q);
+    const filteredRows=q?f.rows.filter(function(r){return _fornRowMatches(r,q);}):f.rows;
+    if(q&&!fornNameMatches&&filteredRows.length===0) return;
+    visCount++;
+    const rowsToShow=(q&&!fornNameMatches)?filteredRows:f.rows;
+    const isOpen=!!fornAjustesOpen[fi]||!!q;
+    const color=_fornAjustesColor(f.name);
+    const textColor=_eixoTextColor(color);
+    const worst=rowsToShow.length?_worstStatus(rowsToShow.map(function(r){return r.status;})):'Feito';
+    const statusColor=sc(worst);
+    const badgeTxt=f.atrasadas>0?(f.atrasadas+' atrasada'+(f.atrasadas>1?'s':'')):'';
+
+    html+='<div class="group-item" id="gitem-forn-'+fi+'">'
+      +'<div class="group-header" style="background:'+color+';--eixo-text:'+textColor+'" onclick="toggleFornGroup('+fi+')">'
+        +'<div class="group-color-bar" style="background:'+color+'"></div>'
+        +'<div class="group-inner">'
+          +'<span class="group-toggle" id="gtoggle-forn-'+fi+'" style="transform:rotate('+(isOpen?0:-90)+'deg)">▼</span>'
+          +'<span class="group-id" style="background:'+statusColor+'">'+(fi+1)+'</span>'
+          +'<span class="eixo-name">'+hl(f.name,q)+'</span>'
+          +'<span class="group-count">'+f.total+' tarefa'+(f.total!==1?'s':'')+'</span>'
+          +(badgeTxt?('<span class="foco-badge" style="color:#FF2525;background:rgba(255,37,37,.12);border-color:rgba(255,37,37,.35)">● '+badgeTxt+'</span>'):'')
+        +'</div>'
+      +'</div>'
+      +'<div class="marco-list" id="mlist-forn-'+fi+'" style="max-height:'+(isOpen?'none':'0')+'">'
+        +_fornTableHTML(rowsToShow,q)
+      +'</div>'
+    +'</div>';
+  });
+
+  list.innerHTML=html||'';
+  const noRes=document.getElementById('no-results-forn-ajustes');
+  if(noRes) noRes.style.display=html?'none':'block';
+  const hasFilter=!!q;
+  const vc=document.getElementById('visible-count-forn-ajustes');
+  if(vc) vc.textContent=hasFilter?('Filtrado: '+visCount+' fornecedor'+(visCount!==1?'es':'')):('Exibindo todos os fornecedores');
+  const sb=document.getElementById('search-badge-forn-ajustes');
+  if(sb) sb.textContent=hasFilter?(visCount+' encontrado'+(visCount!==1?'s':'')):'Todos os itens';
+}
+
+function toggleFornGroup(fi){
+  fornAjustesOpen[fi]=!fornAjustesOpen[fi];
+  const tog=document.getElementById('gtoggle-forn-'+fi);
+  const ml=document.getElementById('mlist-forn-'+fi);
+  if(!ml) return;
+  if(fornAjustesOpen[fi]){
+    tog.style.transform='';
+    ml.style.maxHeight=ml.scrollHeight+'px';
+    setTimeout(function(){ if(fornAjustesOpen[fi]) ml.style.maxHeight='none'; },350);
+  } else {
+    tog.style.transform='rotate(-90deg)';
+    ml.style.maxHeight=ml.scrollHeight+'px';
+    requestAnimationFrame(function(){ ml.style.maxHeight='0px'; });
+  }
+}
+
+function collapseAllFornAjustes(){
+  fornAjustesOpen={};
+  renderFornecedoresAjustes();
+}
+
+var _fornPdfSelected=[];
+
+function openFornPDFModal(){
+  const forns=_buildFornRows();
+  _fornPdfSelected=[];
+  const listEl=document.getElementById('forn-pdf-list');
+  listEl.innerHTML='';
+  forns.forEach(function(f){
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.textContent=f.name+' ('+f.total+(f.atrasadas?' · '+f.atrasadas+' atrasada'+(f.atrasadas>1?'s':''):'')+')';
+    btn.style.cssText='padding:10px 12px;border:2px solid rgba(138,196,58,0.3);border-radius:8px;cursor:pointer;background:#1E2E0D;color:#C8E09A;font-size:13px;text-align:left;width:100%;transition:all .15s;font-weight:normal';
+    btn.onclick=function(){
+      const pos=_fornPdfSelected.indexOf(f.name);
+      if(pos===-1){
+        _fornPdfSelected.push(f.name);
+        btn.style.borderColor='#8AC43A';btn.style.background='rgba(138,196,58,0.18)';btn.style.color='#8AC43A';btn.style.fontWeight='700';
+      } else {
+        _fornPdfSelected.splice(pos,1);
+        btn.style.borderColor='rgba(138,196,58,0.3)';btn.style.background='#1E2E0D';btn.style.color='#C8E09A';btn.style.fontWeight='normal';
+      }
+      _fornPdfUpdateCount();
+    };
+    listEl.appendChild(btn);
+  });
+  _fornPdfUpdateCount();
+  document.getElementById('forn-pdf-modal').style.display='flex';
+}
+function _fornPdfUpdateCount(){
+  const c=document.getElementById('forn-pdf-count');
+  if(c) c.textContent='('+_fornPdfSelected.length+' selecionado'+(_fornPdfSelected.length!==1?'s':'')+')';
+}
+function fornPdfSelAll(){
+  const forns=_buildFornRows();
+  _fornPdfSelected=forns.map(function(f){return f.name;});
+  document.querySelectorAll('#forn-pdf-list button').forEach(function(b){
+    b.style.borderColor='#8AC43A';b.style.background='rgba(138,196,58,0.18)';b.style.color='#8AC43A';b.style.fontWeight='700';
+  });
+  _fornPdfUpdateCount();
+}
+function fornPdfSelClear(){
+  _fornPdfSelected=[];
+  document.querySelectorAll('#forn-pdf-list button').forEach(function(b){
+    b.style.borderColor='rgba(138,196,58,0.3)';b.style.background='#1E2E0D';b.style.color='#C8E09A';b.style.fontWeight='normal';
+  });
+  _fornPdfUpdateCount();
+}
+function closeFornPDFModal(){
+  const m=document.getElementById('forn-pdf-modal'); if(m) m.style.display='none';
+}
+function fornPdfGenerate(){
+  if(!_fornPdfSelected.length){ alert('Selecione ao menos um fornecedor.'); return; }
+  closeFornPDFModal();
+  exportFornecedoresPDF(_fornPdfSelected.slice());
+}
+
+function exportFornecedoresPDF(selectedNames){
+  var _jsPDF=(window.jspdf&&window.jspdf.jsPDF)?window.jspdf.jsPDF:(window.jsPDF||null);
+  if(!_jsPDF){ alert('Biblioteca PDF não carregada. Recarregue a página.'); return; }
+  const forns=_buildFornRows();
+  const sel=(selectedNames&&selectedNames.length)?selectedNames:forns.map(function(f){return f.name;});
+  const chosen=forns.filter(function(f){return sel.indexOf(f.name)>=0;});
+  if(!chosen.length){ alert('Selecione ao menos um fornecedor.'); return; }
+
+  const pdf=new _jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const pageW=pdf.internal.pageSize.getWidth();
+  const pageH=pdf.internal.pageSize.getHeight();
+  const margin=10;
+  const now=new Date();
+  const dt=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear()+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+
+  pdf.setFontSize(14);
+  pdf.setTextColor(30,41,59);
+  pdf.text('Fornecedores — Ajustes Finais', margin, margin+4);
+  pdf.setFontSize(9);
+  pdf.setTextColor(100,116,139);
+  pdf.text('Museu das Amazônias 2026 · '+chosen.length+' fornecedor'+(chosen.length!==1?'es':'')+' · gerado em '+dt, margin, margin+10);
+
+  let startY=margin+16;
+  chosen.forEach(function(f,fi){
+    const rgb=_hexRGB(_fornAjustesColor(f.name));
+    if(startY>pageH-30){ pdf.addPage(); startY=margin; }
+    pdf.setFillColor(rgb[0],rgb[1],rgb[2]);
+    pdf.rect(margin,startY,pageW-margin*2,8,'F');
+    pdf.setFontSize(11);
+    pdf.setTextColor(255,255,255);
+    const badgeTxt=f.atrasadas>0?(' — '+f.atrasadas+' atrasada'+(f.atrasadas>1?'s':'')):'';
+    pdf.text((fi+1)+'. '+f.name+' ('+f.total+' tarefas)'+badgeTxt, margin+3, startY+5.5);
+    startY+=8;
+
+    const body=f.rows.map(function(r){
+      return [r.eixo, r.grupo, r.marco, r.tarefa, sl(r.status), r.start?fmtBR(r.start):'—', r.end?fmtBR(r.end):'—'];
+    });
+    const statusColors=f.rows.map(function(r){return _hexRGB(sc(r.status));});
+
+    pdf.autoTable({
+      startY:startY,
+      margin:{left:margin,right:margin},
+      head:[['Eixo','Grupo','Marco','Tarefa','Status','Início','Fim']],
+      body:body,
+      theme:'grid',
+      styles:{fontSize:8,cellPadding:1.8,textColor:[30,41,59],lineColor:[226,232,240],lineWidth:0.1},
+      headStyles:{fillColor:[238,243,232],textColor:[100,116,139],fontStyle:'bold',fontSize:7.5},
+      columnStyles:{
+        0:{cellWidth:32},1:{cellWidth:30},2:{cellWidth:30},3:{cellWidth:'auto'},
+        4:{cellWidth:24},5:{cellWidth:18},6:{cellWidth:18}
+      },
+      didParseCell:function(data){
+        if(data.section==='body'&&data.column.index===4){
+          const c=statusColors[data.row.index];
+          data.cell.styles.fillColor=c;
+          data.cell.styles.textColor=[255,255,255];
+          data.cell.styles.fontStyle='bold';
+        }
+      }
+    });
+    startY=pdf.lastAutoTable.finalY+8;
+  });
+
+  pdf.save('fornecedores-ajustes-finais-'+now.toISOString().slice(0,10)+'.pdf');
 }
 
 function buildRespFilterAjustes(){
