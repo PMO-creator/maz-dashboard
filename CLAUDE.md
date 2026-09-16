@@ -38,8 +38,24 @@ maz-dashboard/                  ← PASTA ÚNICA (git repo + tudo)
 - **Caminho local do repo:** `C:\Users\gagui\GitHub\maz-dashboard`
 - **⚠️ Não usar OneDrive** — o OneDrive corrompe a pasta `.git` ao sincronizar arquivos internos do git
 - **Branches:**
-  - `main` → produção (GitHub Pages) — protegido, exige PR para merge
-  - `dev` → branch de trabalho padrão — todas as edições vão aqui
+  - `main` → produção (GitHub Pages) — protegida, exige PR para merge.
+  - `dev` → também protegida, exige PR para merge (não aceita push direto).
+    Serve como espelho de `main`, não como branch de trabalho do dia a dia.
+    Ficou ~2.900 linhas defasada em relação a `main` até 16/09/2026 porque PRs de
+    feature (ex.: Ajustes Finais) foram mergeados direto em `main` sem retornar
+    pra `dev` — foi resincronizada nessa data via PR (fast-forward puro, sem
+    commits próprios perdidos). Gera conflito grande se alguém tentar trabalhar
+    a partir dela sem sincronizar antes.
+  - Branches pessoais (`marcela`, `joao`, etc.) → **sem proteção**, aceitam commit
+    e push direto — não é preciso criar branch nova a cada edição.
+  - **Antes de retomar trabalho em qualquer branch** (pessoal ou `dev`), sincronizar
+    com `main` primeiro: `git checkout <branch> && git merge origin/main --ff-only`
+    (ou `origin/dev`, que deve estar sempre igual a `main`). Evita reproduzir o
+    conflito de 16/09/2026.
+  - **Fluxo recomendado:** editar direto na branch pessoal (`marcela`) → quando
+    pronto, abrir PR dessa branch para `main` → revisar e mergear. `dev` não
+    precisa entrar nesse ciclo a menos que se queira um passo intermediário de
+    revisão.
 
 ## Regras de trabalho
 
