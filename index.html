@@ -604,9 +604,6 @@
 .resp-task-date{color:var(--muted);font-variant-numeric:tabular-nums;font-size:11.5px;white-space:nowrap}
 .resp-task-status{font-size:10.5px;font-weight:800;text-transform:uppercase;white-space:nowrap}
 .resp-toggle-btn{align-self:flex-start;background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:2px 0}
-.resp-task-full{max-height:0;overflow:hidden;transition:max-height .3s ease}
-.resp-task-full .forn-table-wrap{margin-top:6px}
-.ft-forn{color:#9A3412;font-weight:600;white-space:nowrap;font-size:12.5px}
 @media(max-width:768px){
   .resp-card-grid{grid-template-columns:1fr}
   .resp-task-main{flex-direction:column;align-items:flex-start;gap:3px}
@@ -6292,29 +6289,6 @@ function _respTaskRowHTML(r,q){
   +'</div>';
 }
 
-function _respTableHTML(rows,q){
-  if(!rows.length) return '<div class="no-results" style="padding:16px">Nenhuma tarefa encontrada.</div>';
-  const rowsHtml=rows.map(function(r){
-    const col=sc(r.status);
-    const ini=r.start?fmtBR(r.start):'—';
-    const fim=r.end?fmtBR(r.end):'—';
-    return '<tr style="border-left:3px solid '+col+'">'
-      +'<td class="ft-eixo">'+hl(r.eixo,q)+'</td>'
-      +'<td class="ft-grupo">'+hl(r.grupo,q)+'</td>'
-      +'<td class="ft-marco">'+hl(r.marco,q)+'</td>'
-      +'<td class="ft-tarefa">'+hl(r.tarefa,q)+'</td>'
-      +'<td class="ft-forn">'+(r.fornecedor?hl(r.fornecedor,q):'—')+'</td>'
-      +'<td class="ft-status"><span class="ft-pill" style="background:'+col+'">'+sl(r.status)+'</span></td>'
-      +'<td class="ft-ini">'+ini+'</td>'
-      +'<td class="ft-fim">'+fim+'</td>'
-    +'</tr>';
-  }).join('');
-  return '<div class="forn-table-wrap"><table class="forn-table">'
-    +'<thead><tr><th>Eixo</th><th>Grupo</th><th>Marco</th><th>Tarefa</th><th>Fornecedor</th><th>Status</th><th>Início</th><th>Fim</th></tr></thead>'
-    +'<tbody>'+rowsHtml+'</tbody>'
-  +'</table></div>';
-}
-
 function renderResponsaveisAjustes(){
   const grid=document.getElementById('resp-card-grid');
   if(!grid) return;
@@ -6337,7 +6311,8 @@ function renderResponsaveisAjustes(){
     const isOpen=!!respAjustesOpen[ri]||!!q;
     const badgeTxt=f.atrasadas>0?(f.atrasadas+' atrasada'+(f.atrasadas>1?'s':'')):'em dia';
     const badgeCls=f.atrasadas>0?'crit':'ok';
-    const preview=rowsToShow.slice(0,PREVIEW_N).map(function(r){return _respTaskRowHTML(r,q);}).join('');
+    const rowsToRender=isOpen?rowsToShow:rowsToShow.slice(0,PREVIEW_N);
+    const preview=rowsToRender.map(function(r){return _respTaskRowHTML(r,q);}).join('');
     const remaining=rowsToShow.length-PREVIEW_N;
 
     html+='<div class="resp-card" id="rcard-'+ri+'">'
@@ -6349,9 +6324,6 @@ function renderResponsaveisAjustes(){
       +_respProgressHTML(f.rows)
       +'<div class="resp-task-preview" id="rprev-'+ri+'">'+preview+'</div>'
       +(rowsToShow.length>PREVIEW_N?('<button class="resp-toggle-btn" onclick="toggleRespCard('+ri+')" id="rtogbtn-'+ri+'">'+(isOpen?'▲ Ver menos':'▼ Ver todas ('+remaining+' mais)')+'</button>'):'')
-      +'<div class="resp-task-full" id="rfull-'+ri+'" style="max-height:'+(isOpen?'3000px':'0')+'">'
-        +_respTableHTML(rowsToShow,q)
-      +'</div>'
     +'</div>';
   });
 
