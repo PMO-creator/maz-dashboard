@@ -581,6 +581,37 @@
   .forn-kpi-grid{grid-template-columns:repeat(2,1fr)}
   .forn-table{min-width:760px}
 }
+
+/* ── Responsáveis (Ajustes Finais) ───────────────────── */
+.resp-card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:16px 20px}
+.resp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.resp-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.resp-name{font-weight:800;font-size:15px;color:var(--text)}
+.resp-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.resp-badge.crit{background:rgba(255,37,37,.12);color:#FF2525}
+.resp-badge.ok{background:rgba(5,196,107,.12);color:#05C46B}
+.resp-card-sub{font-size:12px;color:var(--muted);font-weight:500;margin-top:-4px}
+.resp-progress{display:flex;height:7px;border-radius:4px;overflow:hidden;background:var(--border)}
+.resp-progress>div{height:100%}
+.resp-task-preview{display:flex;flex-direction:column;gap:8px}
+.resp-task-row{display:flex;flex-direction:column;gap:2px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.resp-task-row:last-child{border-bottom:none;padding-bottom:0}
+.resp-path{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.resp-path-sep{margin:0 4px;opacity:.5}
+.resp-task-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px}
+.resp-task-name{color:var(--text);font-weight:600;flex:1;min-width:0}
+.resp-task-forn{font-size:10.5px;font-weight:700;color:#9A3412;background:#FED7AA;padding:1px 8px;border-radius:8px;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle}
+.resp-task-date{color:var(--muted);font-variant-numeric:tabular-nums;font-size:11.5px;white-space:nowrap}
+.resp-task-status{font-size:10.5px;font-weight:800;text-transform:uppercase;white-space:nowrap}
+.resp-toggle-btn{align-self:flex-start;background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:2px 0}
+.resp-task-full{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.resp-task-full .forn-table-wrap{margin-top:6px}
+.ft-forn{color:#9A3412;font-weight:600;white-space:nowrap;font-size:12.5px}
+@media(max-width:768px){
+  .resp-card-grid{grid-template-columns:1fr}
+  .resp-task-main{flex-direction:column;align-items:flex-start;gap:3px}
+  .resp-task-name{width:100%}
+}
 </style>
 </head>
 <body>
@@ -609,6 +640,7 @@
     <button class="tab-btn" data-group="ajustes" onclick="switchTab('eap-ajustes')" id="tab-btn-eap-ajustes">📋 Status Report</button>
     <button class="tab-btn" data-group="ajustes" onclick="switchTab('eap-ajustes-dir')" id="tab-btn-eap-ajustes-dir">📋 Status Report Diretoria</button>
     <button class="tab-btn" data-group="ajustes" onclick="switchTab('fornecedores-ajustes')" id="tab-btn-fornecedores-ajustes">🏢 Fornecedores</button>
+    <button class="tab-btn" data-group="ajustes" onclick="switchTab('responsaveis-ajustes')" id="tab-btn-responsaveis-ajustes">👤 Responsáveis</button>
   </div>
 </div>
 
@@ -626,7 +658,7 @@
   <div class="group-card" onclick="openGroup('ajustes')">
     <div class="group-card-icon">🎉</div>
     <div class="group-card-title">AJUSTES FINAIS PARA INAUGURAÇÃO</div>
-    <div class="group-card-desc">Gantt · Gantt Diretoria · Status Report · Status Report Diretoria · Fornecedores</div>
+    <div class="group-card-desc">Gantt · Gantt Diretoria · Status Report · Status Report Diretoria · Fornecedores · Responsáveis</div>
   </div>
 </div>
 
@@ -1102,6 +1134,33 @@
     </div>
   </div>
   </div><!-- /tab-fornecedores-ajustes -->
+
+  <div id="tab-responsaveis-ajustes" class="tab-panel">
+  <div class="wbs-card" id="wbs-main-resp-ajustes">
+    <div class="wbs-sticky-head">
+    <div class="wbs-header">
+      <h2>Responsáveis — Ajustes Finais</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="visible-count-resp-ajustes" style="font-size:15px;color:#8AB870">Exibindo todos os responsáveis</span>
+        <button class="btn-collapse" onclick="collapseAllRespAjustes()">▲ Recolher Tudo</button>
+      </div>
+    </div>
+    <div class="search-zone" id="resp-search-zone">
+      <div class="search-zone-inner">
+        <span class="lupa">🔍</span>
+        <input class="search-bar" id="searchInput-resp-ajustes" type="text" placeholder="Buscar responsável, eixo, grupo, marco, tarefa..." oninput="renderResponsaveisAjustes()">
+      </div>
+      <div class="search-badge" id="search-badge-resp-ajustes">Todos os itens</div>
+    </div>
+    <div class="legend" id="legend-resp-ajustes"></div>
+    </div>
+    <div class="wbs-body">
+      <div class="forn-kpi-grid" id="resp-kpi-row" style="margin:16px 20px 0"></div>
+      <div id="resp-card-grid" class="resp-card-grid"></div>
+      <div class="no-results" id="no-results-resp-ajustes" style="display:none">Nenhum resultado encontrado.</div>
+    </div>
+  </div>
+  </div><!-- /tab-responsaveis-ajustes -->
 
 <button id="n2-fab" onclick="toggleN2Filter()" style="display:none;position:fixed;bottom:82px;right:28px;z-index:1000;padding:11px 20px;border:none;border-radius:21px;font-size:16px;font-weight:700;cursor:pointer;background:#3D6218;color:#B8E85C;box-shadow:0 4px 16px rgba(0,0,0,.3);align-items:center;gap:8px">📋 Pauta N2 · 0</button>
 <button id="n2-clear-fab" onclick="n2ConfirmClear(false)" title="Limpar seleção N2" style="display:none;position:fixed;bottom:24px;right:28px;z-index:1000;padding:6px 13px;border:none;border-radius:15px;font-size:12px;font-weight:700;cursor:pointer;background:#B8E85C;color:#1C4A08;border:2.5px solid #1C4A08;box-shadow:0 4px 12px rgba(0,0,0,.18)">✕ Limpar N2</button>
@@ -1681,7 +1740,7 @@ function switchTab(name){
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('tab-btn-'+name).classList.add('active');
   const fb=document.getElementById('filter-bar');
-  if(fb) fb.style.display=(name==='reqs'||name==='m2'||name==='fornecedores-ajustes')?'none':'flex';
+  if(fb) fb.style.display=(name==='reqs'||name==='m2'||name==='fornecedores-ajustes'||name==='responsaveis-ajustes')?'none':'flex';
   const _ajTabs=['gantt-ajustes','gantt-ajustes-dir','eap-ajustes','eap-ajustes-dir'];
   if(fb && _ajTabs.includes(name)) fb.style.display='none';
   const fbAj=document.getElementById('filter-bar-ajustes');
@@ -1715,6 +1774,7 @@ function switchTab(name){
   if(name==='areas'){buildAreasFilter();if(AREAS_DATA.length)renderAreasTab();}
   if(name==='m2'){renderM2Charts();}
   if(name==='fornecedores-ajustes'){renderFornecedoresAjustes();}
+  if(name==='responsaveis-ajustes'){renderResponsaveisAjustes();}
   var n2fabAj=document.getElementById('n2-fab-ajustes');
   var n2cfabAj=document.getElementById('n2-clear-fab-ajustes');
   if(n2fabAj)n2fabAj.style.display=(name==='eap-ajustes')?'flex':'none';
@@ -1793,6 +1853,7 @@ function buildLegend(){
   const ganttLegAj=document.getElementById('gantt-legend-ajustes');
   const dirLegAj=document.getElementById('legend-ajustes-dir');
   const fornLegAj=document.getElementById('legend-forn-ajustes');
+  const respLegAj=document.getElementById('legend-resp-ajustes');
   if(leg)leg.innerHTML='';
   if(ganttLeg)ganttLeg.innerHTML='';
   if(dirLeg)dirLeg.innerHTML='';
@@ -1800,6 +1861,7 @@ function buildLegend(){
   if(ganttLegAj)ganttLegAj.innerHTML='';
   if(dirLegAj)dirLegAj.innerHTML='';
   if(fornLegAj)fornLegAj.innerHTML='';
+  if(respLegAj)respLegAj.innerHTML='';
   Object.entries(STATUS).forEach(([k,v])=>{
     const item=`<div class="legend-item"><div class="legend-dot" style="background:${v.color}"></div><span>${k}</span></div>`;
     if(leg) leg.innerHTML+=item;
@@ -1809,6 +1871,7 @@ function buildLegend(){
     if(ganttLegAj) ganttLegAj.innerHTML+=item;
     if(dirLegAj) dirLegAj.innerHTML+=item;
     if(fornLegAj) fornLegAj.innerHTML+=item;
+    if(respLegAj) respLegAj.innerHTML+=item;
   });
 }
 function renderKPIs(){
@@ -5844,6 +5907,7 @@ async function loadSheetsData() {
         renderGanttSectionAjustesDir();
         var _glAj=document.getElementById('group-list-ajustes'); if(_glAj) _glAj.style.maxHeight='none';
         var _tfp=document.getElementById('tab-fornecedores-ajustes'); if(_tfp&&_tfp.classList.contains('active')) renderFornecedoresAjustes();
+        var _trp=document.getElementById('tab-responsaveis-ajustes'); if(_trp&&_trp.classList.contains('active')) renderResponsaveisAjustes();
       }
     } catch(_ajErr){ console.error('Erro ao processar aba Ajustes Finais:',_ajErr); }
     if(reqsRows){ const newREQS=_parseREQS(reqsRows); REQS.length=0; newREQS.forEach(r=>REQS.push(r)); }
@@ -5955,6 +6019,7 @@ function preprocessStatusesAjustes(){
 
 // ── FORNECEDORES (Ajustes Finais) ──────────────
 let fornAjustesOpen={};
+let respAjustesOpen={};
 
 // Lista plana de entregas por fornecedor, na MESMA ordem em que aparecem no
 // cronograma (Eixo → Grupo → Marco → Tarefa) -- nunca reordenar por status,
@@ -6128,6 +6193,186 @@ function toggleFornGroup(fi){
 function collapseAllFornAjustes(){
   fornAjustesOpen={};
   renderFornecedoresAjustes();
+}
+
+// ── Responsaveis (Ajustes Finais) ── mesma fonte de dados da aba
+// Fornecedores (WBS_AJUSTES, coluna F = Responsavel), agrupado por responsavel.
+function _buildRespRows(){
+  const buckets={};
+  const order=[];
+  function ensure(name){
+    if(!buckets[name]){ buckets[name]={rows:[]}; order.push(name); }
+    return buckets[name];
+  }
+  WBS_AJUSTES.forEach(function(eixo){
+    eixo.children.forEach(function(grupo){
+      grupo.tasks.forEach(function(task){
+        const hasSub=task.subtasks&&task.subtasks.length>0;
+        const leaves=hasSub?task.subtasks:[task];
+        const marcoName=task.tarefa||grupo.name;
+        leaves.forEach(function(leaf){
+          const resp=(leaf.resp||'').trim()||'Sem responsável identificado';
+          const b=ensure(resp);
+          b.rows.push({
+            eixo:eixo.name, grupo:grupo.name, marco:marcoName,
+            tarefa:leaf.tarefa, status:leaf.status||'A iniciar',
+            start:leaf.start, end:leaf.end, fornecedor:leaf.fornecedor
+          });
+        });
+      });
+    });
+  });
+
+  const list=order.map(function(name){
+    const rows=buckets[name].rows;
+    const atrasadas=rows.filter(function(r){return r.status==='Atrasado';}).length;
+    return {name:name, rows:rows, atrasadas:atrasadas, total:rows.length};
+  });
+  list.sort(function(a,b){
+    if(a.name==='Sem responsável identificado') return 1;
+    if(b.name==='Sem responsável identificado') return -1;
+    if(b.atrasadas!==a.atrasadas) return b.atrasadas-a.atrasadas;
+    return b.total-a.total;
+  });
+  return list;
+}
+
+function _respKpiHTML(resps){
+  const real=resps.filter(function(f){return f.name!=='Sem responsável identificado';});
+  const sem=resps.find(function(f){return f.name==='Sem responsável identificado';});
+  const semCount=sem?sem.total:0;
+  const totalAtrasadas=resps.reduce(function(s,f){return s+f.atrasadas;},0);
+  const totalTarefas=resps.reduce(function(s,f){return s+f.total;},0);
+  let critResp='',critN=0,volResp='',volN=0;
+  real.forEach(function(f){
+    if(f.atrasadas>critN){critN=f.atrasadas;critResp=f.name;}
+    if(f.total>volN){volN=f.total;volResp=f.name;}
+  });
+  return ''
+    +'<div class="forn-kpi"><div class="forn-kpi-label">Responsáveis ativos</div>'
+      +'<div class="forn-kpi-value">'+real.length+'</div>'
+      +'<div class="forn-kpi-sub">'+(semCount?('+ '+semCount+' sem responsável'):'todas as tarefas identificadas')+'</div></div>'
+    +'<div class="forn-kpi crit"><div class="forn-kpi-label">Tarefas atrasadas</div>'
+      +'<div class="forn-kpi-value crit">'+totalAtrasadas+'</div>'
+      +'<div class="forn-kpi-sub">'+(totalTarefas?Math.round(totalAtrasadas/totalTarefas*100):0)+'% do total de '+totalTarefas+' tarefas</div></div>'
+    +'<div class="forn-kpi"><div class="forn-kpi-label">Responsável mais crítico</div>'
+      +'<div class="forn-kpi-value" style="font-size:16px">'+(critN>0?escH(critResp):'—')+'</div>'
+      +'<div class="forn-kpi-sub">'+(critN>0?(critN+' tarefa'+(critN>1?'s':'')+' atrasada'+(critN>1?'s':'')):'nenhum atraso')+'</div></div>'
+    +'<div class="forn-kpi"><div class="forn-kpi-label">Maior volume</div>'
+      +'<div class="forn-kpi-value" style="font-size:16px">'+(volN>0?escH(volResp):'—')+'</div>'
+      +'<div class="forn-kpi-sub">'+volN+' tarefa'+(volN>1?'s':'')+' no cronograma</div></div>';
+}
+
+function _respProgressHTML(rows){
+  if(!rows.length) return '<div class="resp-progress"></div>';
+  const order=['Atrasado','Risco de atraso','Definir datas','Em andamento','A iniciar','Feito','Cancelado','Cancelado/Congelado'];
+  const counts={};
+  rows.forEach(function(r){ const s=r.status||'A iniciar'; counts[s]=(counts[s]||0)+1; });
+  const total=rows.length;
+  return '<div class="resp-progress">'+order.filter(function(s){return counts[s];}).map(function(s){
+    const pct=(counts[s]/total*100);
+    return '<div style="width:'+pct+'%;background:'+sc(s)+'" title="'+sl(s)+': '+counts[s]+'"></div>';
+  }).join('')+'</div>';
+}
+
+function _respTaskRowHTML(r,q){
+  const col=sc(r.status);
+  const ini=r.start?fmtBR(r.start):'—';
+  const fim=r.end?fmtBR(r.end):'—';
+  const forn=(r.fornecedor||'').trim();
+  const fornHtml=forn?('<span class="resp-task-forn" title="Fornecedor">🏢 '+hl(forn,q)+'</span>'):'';
+  return '<div class="resp-task-row">'
+    +'<div class="resp-path">'+hl(r.eixo,q)+'<span class="resp-path-sep">›</span>'+hl(r.grupo,q)+'<span class="resp-path-sep">›</span>'+hl(r.marco,q)+'</div>'
+    +'<div class="resp-task-main">'
+      +'<span class="resp-task-name">'+hl(r.tarefa,q)+'</span>'
+      +fornHtml
+      +'<span class="resp-task-date">'+ini+' – '+fim+'</span>'
+      +'<span class="resp-task-status" style="color:'+col+'">'+sl(r.status)+'</span>'
+    +'</div>'
+  +'</div>';
+}
+
+function _respTableHTML(rows,q){
+  if(!rows.length) return '<div class="no-results" style="padding:16px">Nenhuma tarefa encontrada.</div>';
+  const rowsHtml=rows.map(function(r){
+    const col=sc(r.status);
+    const ini=r.start?fmtBR(r.start):'—';
+    const fim=r.end?fmtBR(r.end):'—';
+    return '<tr style="border-left:3px solid '+col+'">'
+      +'<td class="ft-eixo">'+hl(r.eixo,q)+'</td>'
+      +'<td class="ft-grupo">'+hl(r.grupo,q)+'</td>'
+      +'<td class="ft-marco">'+hl(r.marco,q)+'</td>'
+      +'<td class="ft-tarefa">'+hl(r.tarefa,q)+'</td>'
+      +'<td class="ft-forn">'+(r.fornecedor?hl(r.fornecedor,q):'—')+'</td>'
+      +'<td class="ft-status"><span class="ft-pill" style="background:'+col+'">'+sl(r.status)+'</span></td>'
+      +'<td class="ft-ini">'+ini+'</td>'
+      +'<td class="ft-fim">'+fim+'</td>'
+    +'</tr>';
+  }).join('');
+  return '<div class="forn-table-wrap"><table class="forn-table">'
+    +'<thead><tr><th>Eixo</th><th>Grupo</th><th>Marco</th><th>Tarefa</th><th>Fornecedor</th><th>Status</th><th>Início</th><th>Fim</th></tr></thead>'
+    +'<tbody>'+rowsHtml+'</tbody>'
+  +'</table></div>';
+}
+
+function renderResponsaveisAjustes(){
+  const grid=document.getElementById('resp-card-grid');
+  if(!grid) return;
+  const qEl=document.getElementById('searchInput-resp-ajustes');
+  const q=(qEl?qEl.value:'').trim().toLowerCase();
+  const resps=_buildRespRows();
+
+  const kpiRow=document.getElementById('resp-kpi-row');
+  if(kpiRow) kpiRow.innerHTML=_respKpiHTML(resps);
+
+  let html=''; let visCount=0;
+  const PREVIEW_N=4;
+  resps.forEach(function(f,ri){
+    const nameMatches=!q||f.name.toLowerCase().includes(q);
+    // _fornRowMatches: mesma checagem eixo/grupo/marco/tarefa, campos identicos aos de Fornecedores
+    const filteredRows=q?f.rows.filter(function(r){return _fornRowMatches(r,q);}):f.rows;
+    if(q&&!nameMatches&&filteredRows.length===0) return;
+    visCount++;
+    const rowsToShow=(q&&!nameMatches)?filteredRows:f.rows;
+    const isOpen=!!respAjustesOpen[ri]||!!q;
+    const badgeTxt=f.atrasadas>0?(f.atrasadas+' atrasada'+(f.atrasadas>1?'s':'')):'em dia';
+    const badgeCls=f.atrasadas>0?'crit':'ok';
+    const preview=rowsToShow.slice(0,PREVIEW_N).map(function(r){return _respTaskRowHTML(r,q);}).join('');
+    const remaining=rowsToShow.length-PREVIEW_N;
+
+    html+='<div class="resp-card" id="rcard-'+ri+'">'
+      +'<div class="resp-card-head">'
+        +'<span class="resp-name">'+hl(f.name,q)+'</span>'
+        +'<span class="resp-badge '+badgeCls+'">'+badgeTxt+'</span>'
+      +'</div>'
+      +'<div class="resp-card-sub">'+f.total+' tarefa'+(f.total!==1?'s':'')+' no cronograma</div>'
+      +_respProgressHTML(f.rows)
+      +'<div class="resp-task-preview" id="rprev-'+ri+'">'+preview+'</div>'
+      +(rowsToShow.length>PREVIEW_N?('<button class="resp-toggle-btn" onclick="toggleRespCard('+ri+')" id="rtogbtn-'+ri+'">'+(isOpen?'▲ Ver menos':'▼ Ver todas ('+remaining+' mais)')+'</button>'):'')
+      +'<div class="resp-task-full" id="rfull-'+ri+'" style="max-height:'+(isOpen?'3000px':'0')+'">'
+        +_respTableHTML(rowsToShow,q)
+      +'</div>'
+    +'</div>';
+  });
+
+  grid.innerHTML=html||'';
+  const noRes=document.getElementById('no-results-resp-ajustes');
+  if(noRes) noRes.style.display=html?'none':'block';
+  const hasFilter=!!q;
+  const vc=document.getElementById('visible-count-resp-ajustes');
+  if(vc) vc.textContent=hasFilter?('Filtrado: '+visCount+' '+(visCount!==1?'responsáveis':'responsável')):('Exibindo todos os responsáveis');
+  const sb=document.getElementById('search-badge-resp-ajustes');
+  if(sb) sb.textContent=hasFilter?(visCount+' encontrado'+(visCount!==1?'s':'')):'Todos os itens';
+}
+
+function toggleRespCard(ri){
+  respAjustesOpen[ri]=!respAjustesOpen[ri];
+  renderResponsaveisAjustes();
+}
+
+function collapseAllRespAjustes(){
+  respAjustesOpen={};
+  renderResponsaveisAjustes();
 }
 
 var _fornPdfSelected=[];
