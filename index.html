@@ -5460,8 +5460,8 @@ function _updateMsLabel(id){
   const checked=items.filter(i=>i.checked).map(i=>i.value);
   const lbl=document.getElementById('ms-'+id+'-label');
   if(checked.length===0||checked.length===items.length){
-    if(id==='resp'&&checked.length===0){lbl.textContent='Nenhum selecionado';}
-    else{lbl.textContent=id==='status'?'Todos os status':'Todos os responsáveis';}
+    if(id.indexOf('resp')===0&&checked.length===0){lbl.textContent='Nenhum selecionado';}
+    else{lbl.textContent=id.indexOf('status')===0?'Todos os status':'Todos os responsáveis';}
     // Sync "Todos" checkbox
     const allChk=document.getElementById('ms-'+id+'-chk-all');
     if(allChk){allChk.checked=checked.length===items.length&&items.length>0;allChk.indeterminate=false;}
@@ -6590,7 +6590,7 @@ function buildRespFilterAjustes(){
   allLbl.className='ms-option ms-all-opt';
   const allInp=document.createElement('input');
   allInp.type='checkbox';allInp.id='ms-resp-ajustes-chk-all';allInp.checked=true;
-  allInp.onchange=function(){onMsAll('resp',this);};
+  allInp.onchange=function(){onMsAll('resp-ajustes',this);};
   const allTxt=document.createElement('span');
   allTxt.textContent='Todos';allTxt.style.cssText='font-weight:700;font-style:italic;color:#8AC43A';
   allLbl.appendChild(allInp);allLbl.appendChild(allTxt);
@@ -6609,7 +6609,7 @@ function buildRespFilterAjustes(){
     label.className='ms-option';
     const inp=document.createElement('input');
     inp.type='checkbox';inp.value=resp;inp.checked=true;
-    inp.onchange=()=>onMsChange('resp');
+    inp.onchange=()=>onMsChange('resp-ajustes');
     label.appendChild(inp);
     label.appendChild(document.createTextNode(resp.length>35?resp.substring(0,33)+'…':resp));
     menu.appendChild(label);
