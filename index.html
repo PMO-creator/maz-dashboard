@@ -1479,6 +1479,9 @@
       <button onclick="fornPdfSelClear()" style="padding:5px 14px;border:1px solid rgba(138,196,58,0.2);border-radius:6px;cursor:pointer;background:transparent;color:#8AB870;font-size:12px">Limpar</button>
     </div>
     <div id="forn-pdf-list" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:340px;overflow-y:auto"></div>
+    <p style="color:#8AB870;margin:18px 0 8px;font-size:14px;font-weight:600">Status <span id="forn-pdf-st-count" style="color:#8AC43A;font-size:12px;font-weight:400"></span>:</p>
+    <div style="display:flex;gap:8px;margin-bottom:10px"><button type="button" onclick="_ajPdfStatusSet('forn',true)" style="padding:5px 14px;border:1px solid rgba(138,196,58,0.45);border-radius:6px;cursor:pointer;background:transparent;color:#8AC43A;font-size:12px;font-weight:600">Selecionar todos</button><button type="button" onclick="_ajPdfStatusSet('forn',false)" style="padding:5px 14px;border:1px solid rgba(138,196,58,0.2);border-radius:6px;cursor:pointer;background:transparent;color:#8AB870;font-size:12px">Limpar</button></div>
+    <div id="forn-pdf-st-list" style="display:flex;flex-wrap:wrap;gap:8px 18px"></div>
     <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:24px;padding-top:18px;border-top:1px solid rgba(138,196,58,0.15)">
       <button onclick="fornPdfGenerate()" style="padding:10px 30px;background:#8AC43A;color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px">Gerar PDF ↓</button>
     </div>
@@ -1496,6 +1499,9 @@
       <button onclick="respPdfSelClear()" style="padding:5px 14px;border:1px solid rgba(138,196,58,0.2);border-radius:6px;cursor:pointer;background:transparent;color:#8AB870;font-size:12px">Limpar</button>
     </div>
     <div id="resp-pdf-list" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:340px;overflow-y:auto"></div>
+    <p style="color:#8AB870;margin:18px 0 8px;font-size:14px;font-weight:600">Status <span id="resp-pdf-st-count" style="color:#8AC43A;font-size:12px;font-weight:400"></span>:</p>
+    <div style="display:flex;gap:8px;margin-bottom:10px"><button type="button" onclick="_ajPdfStatusSet('resp',true)" style="padding:5px 14px;border:1px solid rgba(138,196,58,0.45);border-radius:6px;cursor:pointer;background:transparent;color:#8AC43A;font-size:12px;font-weight:600">Selecionar todos</button><button type="button" onclick="_ajPdfStatusSet('resp',false)" style="padding:5px 14px;border:1px solid rgba(138,196,58,0.2);border-radius:6px;cursor:pointer;background:transparent;color:#8AB870;font-size:12px">Limpar</button></div>
+    <div id="resp-pdf-st-list" style="display:flex;flex-wrap:wrap;gap:8px 18px"></div>
     <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:24px;padding-top:18px;border-top:1px solid rgba(138,196,58,0.15)">
       <button onclick="respPdfGenerate()" style="padding:10px 30px;background:#8AC43A;color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px">Gerar PDF ↓</button>
     </div>
@@ -6338,6 +6344,50 @@ function collapseAllRespAjustes(){
   renderResponsaveisAjustes();
 }
 
+// Filtro de status dos modais de PDF (Fornecedores/Responsáveis — Ajustes Finais)
+const _AJ_PDF_STATUSES=['Atrasado','Risco de atraso','Em andamento','Feito','A iniciar','Definir datas','Cancelado/Congelado'];
+function _ajPdfStatusKey(s){
+  if(s==='Cancelado') return 'Cancelado/Congelado';
+  return STATUS[s]?s:'A iniciar';
+}
+function _ajPdfBuildStatus(k){
+  const el=document.getElementById(k+'-pdf-st-list');
+  if(!el) return;
+  el.innerHTML=_AJ_PDF_STATUSES.map(function(s){
+    return '<label style="font-size:13px;color:#C8E09A;cursor:pointer;display:flex;align-items:center;gap:7px"><input type="checkbox" class="'+k+'-pdf-st-chk" value="'+escH(s)+'" checked onchange="_ajPdfStatusCount(\''+k+'\')" style="accent-color:#8AC43A;width:15px;height:15px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+sc(s)+'"></span>'+escH(s)+'</label>';
+  }).join('');
+  _ajPdfStatusCount(k);
+}
+function _ajPdfStatusGet(k){
+  return Array.prototype.slice.call(document.querySelectorAll('.'+k+'-pdf-st-chk:checked')).map(function(el){return el.value;});
+}
+function _ajPdfStatusCount(k){
+  const c=document.getElementById(k+'-pdf-st-count');
+  if(!c) return;
+  const n=_ajPdfStatusGet(k).length;
+  c.textContent=n===_AJ_PDF_STATUSES.length?'(todos)':'('+n+' selecionado'+(n!==1?'s':'')+')';
+}
+function _ajPdfStatusSet(k,on){
+  document.querySelectorAll('.'+k+'-pdf-st-chk').forEach(function(el){el.checked=on;});
+  _ajPdfStatusCount(k);
+}
+// Aplica o filtro de status às linhas de cada grupo; remove grupos que ficaram vazios.
+// Tarefas "Feito" vão agrupadas no início de cada grupo; as demais mantêm a ordem da planilha.
+function _ajPdfFilterByStatus(groups,statuses){
+  const all=!statuses||statuses.length===_AJ_PDF_STATUSES.length;
+  return groups.map(function(f){
+    const rows=all?f.rows:f.rows.filter(function(r){return statuses.indexOf(_ajPdfStatusKey(r.status))>=0;});
+    const feitas=rows.filter(function(r){return r.status==='Feito';});
+    const outras=rows.filter(function(r){return r.status!=='Feito';});
+    return {name:f.name, rows:feitas.concat(outras), total:rows.length,
+            atrasadas:rows.filter(function(r){return r.status==='Atrasado';}).length};
+  }).filter(function(f){return f.rows.length>0;});
+}
+function _ajPdfStatusLine(statuses){
+  if(!statuses||statuses.length===_AJ_PDF_STATUSES.length) return '';
+  return ' · status: '+statuses.join(', ');
+}
+
 var _fornPdfSelected=[];
 
 function openFornPDFModal(){
@@ -6364,6 +6414,7 @@ function openFornPDFModal(){
     listEl.appendChild(btn);
   });
   _fornPdfUpdateCount();
+  _ajPdfBuildStatus('forn');
   document.getElementById('forn-pdf-modal').style.display='flex';
 }
 function _fornPdfUpdateCount(){
@@ -6390,17 +6441,19 @@ function closeFornPDFModal(){
 }
 function fornPdfGenerate(){
   if(!_fornPdfSelected.length){ alert('Selecione ao menos um fornecedor.'); return; }
+  const st=_ajPdfStatusGet('forn');
+  if(!st.length){ alert('Selecione ao menos um status.'); return; }
   closeFornPDFModal();
-  exportFornecedoresPDF(_fornPdfSelected.slice());
+  exportFornecedoresPDF(_fornPdfSelected.slice(), st);
 }
 
-function exportFornecedoresPDF(selectedNames){
+function exportFornecedoresPDF(selectedNames, statuses){
   var _jsPDF=(window.jspdf&&window.jspdf.jsPDF)?window.jspdf.jsPDF:(window.jsPDF||null);
   if(!_jsPDF){ alert('Biblioteca PDF não carregada. Recarregue a página.'); return; }
   const forns=_buildFornRows();
   const sel=(selectedNames&&selectedNames.length)?selectedNames:forns.map(function(f){return f.name;});
-  const chosen=forns.filter(function(f){return sel.indexOf(f.name)>=0;});
-  if(!chosen.length){ alert('Selecione ao menos um fornecedor.'); return; }
+  const chosen=_ajPdfFilterByStatus(forns.filter(function(f){return sel.indexOf(f.name)>=0;}), statuses);
+  if(!chosen.length){ alert('Nenhuma tarefa dos fornecedores selecionados tem os status escolhidos.'); return; }
 
   const pdf=new _jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
   const pageW=pdf.internal.pageSize.getWidth();
@@ -6414,7 +6467,7 @@ function exportFornecedoresPDF(selectedNames){
   pdf.text('Fornecedores — Ajustes Finais', margin, margin+4);
   pdf.setFontSize(9);
   pdf.setTextColor(100,116,139);
-  pdf.text('Museu das Amazônias 2026 · '+chosen.length+' fornecedor'+(chosen.length!==1?'es':'')+' · gerado em '+dt, margin, margin+10);
+  pdf.text('Museu das Amazônias 2026 · '+chosen.length+' fornecedor'+(chosen.length!==1?'es':'')+_ajPdfStatusLine(statuses)+' · gerado em '+dt, margin, margin+10);
 
   let startY=margin+16;
   chosen.forEach(function(f,fi){
@@ -6486,6 +6539,7 @@ function openRespPDFModal(){
     listEl.appendChild(btn);
   });
   _respPdfUpdateCount();
+  _ajPdfBuildStatus('resp');
   document.getElementById('resp-pdf-modal').style.display='flex';
 }
 function _respPdfUpdateCount(){
@@ -6512,17 +6566,19 @@ function closeRespPDFModal(){
 }
 function respPdfGenerate(){
   if(!_respPdfSelected.length){ alert('Selecione ao menos um responsável.'); return; }
+  const st=_ajPdfStatusGet('resp');
+  if(!st.length){ alert('Selecione ao menos um status.'); return; }
   closeRespPDFModal();
-  exportResponsaveisPDF(_respPdfSelected.slice());
+  exportResponsaveisPDF(_respPdfSelected.slice(), st);
 }
 
-function exportResponsaveisPDF(selectedNames){
+function exportResponsaveisPDF(selectedNames, statuses){
   var _jsPDF=(window.jspdf&&window.jspdf.jsPDF)?window.jspdf.jsPDF:(window.jsPDF||null);
   if(!_jsPDF){ alert('Biblioteca PDF não carregada. Recarregue a página.'); return; }
   const resps=_buildRespRows();
   const sel=(selectedNames&&selectedNames.length)?selectedNames:resps.map(function(f){return f.name;});
-  const chosen=resps.filter(function(f){return sel.indexOf(f.name)>=0;});
-  if(!chosen.length){ alert('Selecione ao menos um responsável.'); return; }
+  const chosen=_ajPdfFilterByStatus(resps.filter(function(f){return sel.indexOf(f.name)>=0;}), statuses);
+  if(!chosen.length){ alert('Nenhuma tarefa dos responsáveis selecionados tem os status escolhidos.'); return; }
 
   const pdf=new _jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
   const pageW=pdf.internal.pageSize.getWidth();
@@ -6536,7 +6592,7 @@ function exportResponsaveisPDF(selectedNames){
   pdf.text('Responsáveis — Ajustes Finais', margin, margin+4);
   pdf.setFontSize(9);
   pdf.setTextColor(100,116,139);
-  pdf.text('Museu das Amazônias 2026 · '+chosen.length+' '+(chosen.length!==1?'responsáveis':'responsável')+' · gerado em '+dt, margin, margin+10);
+  pdf.text('Museu das Amazônias 2026 · '+chosen.length+' '+(chosen.length!==1?'responsáveis':'responsável')+_ajPdfStatusLine(statuses)+' · gerado em '+dt, margin, margin+10);
 
   let startY=margin+16;
   chosen.forEach(function(f,fi){
