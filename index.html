@@ -594,6 +594,7 @@
 .resp-task-forn{font-size:10.5px;font-weight:700;color:#9A3412;background:#FED7AA;padding:1px 8px;border-radius:8px;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle}
 .resp-task-resp{font-size:10.5px;font-weight:700;color:#1D4ED8;background:#DBEAFE;padding:1px 8px;border-radius:8px;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle}
 .resp-task-date{color:var(--muted);font-variant-numeric:tabular-nums;font-size:11.5px;white-space:nowrap}
+.resp-task-linha{font-size:10.5px;font-weight:700;color:#475569;background:#E2E8F0;padding:1px 6px;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums;flex-shrink:0}
 .resp-task-status{font-size:10.5px;font-weight:800;text-transform:uppercase;white-space:nowrap}
 .resp-toggle-btn{align-self:flex-start;background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:2px 0}
 @media(max-width:768px){
@@ -5845,7 +5846,7 @@ function _parseWBSAjustes(rows, rowColors) {
     const em=eixoMap[eixo];
     if(!em.groups[grupo]){em.groups[grupo]={summary:null,tasks:[]};em.groupOrder.push(grupo);}
     const gm=em.groups[grupo];
-    const obj={tarefa,resp:_sg(row,CR),fornecedor:_sg(row,CFO),status:_sg(row,CS),prioridade:_sg(row,CPR),complexidade:_sg(row,CCX),start:_fmtDateAjustes(_sg(row,CST)),end:_fmtDateAjustes(_sg(row,CEN)),progresso:_sg(row,CPRG),impacto:_sg(row,CIMP),encaminhamento:_sg(row,CENC)};
+    const obj={tarefa,linha:_wbsRowNum,resp:_sg(row,CR),fornecedor:_sg(row,CFO),status:_sg(row,CS),prioridade:_sg(row,CPR),complexidade:_sg(row,CCX),start:_fmtDateAjustes(_sg(row,CST)),end:_fmtDateAjustes(_sg(row,CEN)),progresso:_sg(row,CPRG),impacto:_sg(row,CIMP),encaminhamento:_sg(row,CENC)};
     if(tarefa===grupo){gm.summary=obj;}
     else if(!marco||tarefa===marco){gm.tasks.push({...obj,tipo:'marco',subtasks:[]});}
     else if(gm.tasks.length&&gm.tasks[gm.tasks.length-1].tipo==='marco'){gm.tasks[gm.tasks.length-1].subtasks.push(obj);}
@@ -6057,7 +6058,7 @@ function _buildFornRows(){
           b.rows.push({
             eixo:eixo.name, grupo:grupo.name, marco:marcoName,
             tarefa:leaf.tarefa, status:leaf.status||'A iniciar',
-            start:leaf.start, end:leaf.end, resp:leaf.resp
+            start:leaf.start, end:leaf.end, resp:leaf.resp, linha:leaf.linha
           });
         });
       });
@@ -6124,6 +6125,7 @@ function _fornTaskRowHTML(r,q){
   return '<div class="resp-task-row">'
     +'<div class="resp-path">'+hl(r.eixo,q)+'<span class="resp-path-sep">›</span>'+hl(r.grupo,q)+'<span class="resp-path-sep">›</span>'+hl(r.marco,q)+'</div>'
     +'<div class="resp-task-main">'
+      +(r.linha?('<span class="resp-task-linha" title="Linha na planilha (aba Ajustes)">L. '+r.linha+'</span>'):'')
       +'<span class="resp-task-name">'+hl(r.tarefa,q)+'</span>'
       +respHtml
       +'<span class="resp-task-date">'+ini+' – '+fim+'</span>'
@@ -6210,7 +6212,7 @@ function _buildRespRows(){
           b.rows.push({
             eixo:eixo.name, grupo:grupo.name, marco:marcoName,
             tarefa:leaf.tarefa, status:leaf.status||'A iniciar',
-            start:leaf.start, end:leaf.end, fornecedor:leaf.fornecedor
+            start:leaf.start, end:leaf.end, fornecedor:leaf.fornecedor, linha:leaf.linha
           });
         });
       });
@@ -6278,6 +6280,7 @@ function _respTaskRowHTML(r,q){
   return '<div class="resp-task-row">'
     +'<div class="resp-path">'+hl(r.eixo,q)+'<span class="resp-path-sep">›</span>'+hl(r.grupo,q)+'<span class="resp-path-sep">›</span>'+hl(r.marco,q)+'</div>'
     +'<div class="resp-task-main">'
+      +(r.linha?('<span class="resp-task-linha" title="Linha na planilha (aba Ajustes)">L. '+r.linha+'</span>'):'')
       +'<span class="resp-task-name">'+hl(r.tarefa,q)+'</span>'
       +fornHtml
       +'<span class="resp-task-date">'+ini+' – '+fim+'</span>'
@@ -6482,24 +6485,24 @@ function exportFornecedoresPDF(selectedNames, statuses){
     startY+=8;
 
     const body=f.rows.map(function(r){
-      return [r.eixo, r.grupo, r.marco, r.tarefa, sl(r.status), r.start?fmtBR(r.start):'—', r.end?fmtBR(r.end):'—'];
+      return [r.linha||'—', r.eixo, r.grupo, r.marco, r.tarefa, sl(r.status), r.start?fmtBR(r.start):'—', r.end?fmtBR(r.end):'—'];
     });
     const statusColors=f.rows.map(function(r){return _hexRGB(sc(r.status));});
 
     pdf.autoTable({
       startY:startY,
       margin:{left:margin,right:margin},
-      head:[['Eixo','Grupo','Marco','Tarefa','Status','Início','Fim']],
+      head:[['Linha','Eixo','Grupo','Marco','Tarefa','Status','Início','Fim']],
       body:body,
       theme:'grid',
       styles:{fontSize:8,cellPadding:1.8,textColor:[30,41,59],lineColor:[226,232,240],lineWidth:0.1},
       headStyles:{fillColor:[238,243,232],textColor:[100,116,139],fontStyle:'bold',fontSize:7.5},
       columnStyles:{
-        0:{cellWidth:32},1:{cellWidth:30},2:{cellWidth:30},3:{cellWidth:'auto'},
-        4:{cellWidth:24},5:{cellWidth:18},6:{cellWidth:18}
+        0:{cellWidth:12,halign:'center'},1:{cellWidth:32},2:{cellWidth:30},3:{cellWidth:30},4:{cellWidth:'auto'},
+        5:{cellWidth:24},6:{cellWidth:18},7:{cellWidth:18}
       },
       didParseCell:function(data){
-        if(data.section==='body'&&data.column.index===4){
+        if(data.section==='body'&&data.column.index===5){
           const c=statusColors[data.row.index];
           data.cell.styles.fillColor=c;
           data.cell.styles.textColor=[255,255,255];
@@ -6607,24 +6610,24 @@ function exportResponsaveisPDF(selectedNames, statuses){
     startY+=8;
 
     const body=f.rows.map(function(r){
-      return [r.eixo, r.grupo, r.marco, r.tarefa, sl(r.status), r.start?fmtBR(r.start):'—', r.end?fmtBR(r.end):'—'];
+      return [r.linha||'—', r.eixo, r.grupo, r.marco, r.tarefa, sl(r.status), r.start?fmtBR(r.start):'—', r.end?fmtBR(r.end):'—'];
     });
     const statusColors=f.rows.map(function(r){return _hexRGB(sc(r.status));});
 
     pdf.autoTable({
       startY:startY,
       margin:{left:margin,right:margin},
-      head:[['Eixo','Grupo','Marco','Tarefa','Status','Início','Fim']],
+      head:[['Linha','Eixo','Grupo','Marco','Tarefa','Status','Início','Fim']],
       body:body,
       theme:'grid',
       styles:{fontSize:8,cellPadding:1.8,textColor:[30,41,59],lineColor:[226,232,240],lineWidth:0.1},
       headStyles:{fillColor:[238,243,232],textColor:[100,116,139],fontStyle:'bold',fontSize:7.5},
       columnStyles:{
-        0:{cellWidth:32},1:{cellWidth:30},2:{cellWidth:30},3:{cellWidth:'auto'},
-        4:{cellWidth:24},5:{cellWidth:18},6:{cellWidth:18}
+        0:{cellWidth:12,halign:'center'},1:{cellWidth:32},2:{cellWidth:30},3:{cellWidth:30},4:{cellWidth:'auto'},
+        5:{cellWidth:24},6:{cellWidth:18},7:{cellWidth:18}
       },
       didParseCell:function(data){
-        if(data.section==='body'&&data.column.index===4){
+        if(data.section==='body'&&data.column.index===5){
           const c=statusColors[data.row.index];
           data.cell.styles.fillColor=c;
           data.cell.styles.textColor=[255,255,255];
